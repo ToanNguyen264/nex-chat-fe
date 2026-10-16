@@ -4,9 +4,14 @@ import PostList from "./components/PostList";
 import StoryList from "./components/StoryList";
 import type { Post } from "./types";
 import avatarNam from "../../assets/home/profile-nam.png";
-import { createPost, getPosts } from "../../api/post.api";
+import { createPost, deletePost, getPosts } from "../../api/post.api";
+import type { CurrentUser } from "../../api/user.api";
 
-export default function Feed() {
+type FeedProps = {
+    currentUser: CurrentUser | null;
+};
+
+export default function Feed({ currentUser }: FeedProps) {
     const [posts, setPosts] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -43,12 +48,12 @@ export default function Feed() {
                 });
 
                 setPosts(formattedPosts);
-                setIsLoading(false);
             } catch (error) {
                 console.error(
                     "Không thể lấy danh sách bài viết:",
                     error
                 );
+            } finally {
                 setIsLoading(false);
             }
         }
@@ -78,14 +83,21 @@ export default function Feed() {
         try {
             const createdPost = await createPost(content);
 
+            const fullName = [
+                createdPost.users.first_name,
+                createdPost.users.last_name,
+            ]
+                .filter(Boolean)
+                .join(" ");
+
             const newPost: Post = {
                 id: Number(createdPost.id),
-                author: "Nguyễn Văn A",
+                author: fullName || createdPost.users.user_name || "Người dùng",
                 content: createdPost.content,
                 createdAt: "Vừa xong",
                 isLiked: false,
                 likeCount: 0,
-                avatar: avatarNam,
+                avatar: createdPost.users.avatar || avatarNam,
                 commentCount: 0,
                 shareCount: 0,
             };
@@ -96,6 +108,20 @@ export default function Feed() {
             ]);
         } catch (error) {
             console.error("Không thể tạo bài viết:", error);
+            throw error;
+        }
+    }
+
+    async function handleDeletePost(postId: number) {
+        try {
+            await deletePost(postId);
+
+            setPosts((currentPosts) =>
+                currentPosts.filter((post) => post.id !== postId)
+            );
+        } catch (error) {
+            console.error("Không thể xóa bài viết:", error);
+            throw error;
         }
     }
 
@@ -103,7 +129,10 @@ export default function Feed() {
         <div className="flex flex-col gap-4">
             <StoryList />
 
-            <CreatePost onCreatePost={handleCreatePost} />
+            <CreatePost
+                currentUser={currentUser}
+                onCreatePost={handleCreatePost}
+            />
 
             {isLoading ? (
                 <p className="rounded-2xl bg-white p-5 text-center text-sm text-slate-500">
@@ -113,6 +142,7 @@ export default function Feed() {
                 <PostList
                     posts={posts}
                     onToggleLike={handleToggleLike}
+                    onDeletePost={handleDeletePost}
                 />
             )}
         </div>

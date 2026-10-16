@@ -2,6 +2,8 @@ import { BarChart3, Bookmark, Newspaper, Network, TrendingUp } from "lucide-reac
 
 import profileNam from "../../assets/home/profile-nam.png";
 import ProfileCard from "./ProfileCard";
+import type { CurrentUser } from "../../api/user.api";
+import { getUserDisplayName } from "../../utils/user";
 const menuItems = [
     { label: "Bảng tin bạn bè", icon: Newspaper, active: true },
     { label: "Đã lưu", icon: Bookmark },
@@ -9,13 +11,19 @@ const menuItems = [
     { label: "Thống kê tương tác", icon: BarChart3 },
 ];
 
-export default function Sidebar() {
+type SidebarProps = {
+    currentUser: CurrentUser | null;
+};
+
+export default function Sidebar({ currentUser }: SidebarProps) {
+    const displayName = getUserDisplayName(currentUser);
+
     return (
         <div className="flex flex-col gap-4">
             <ProfileCard
-                avatar={profileNam}
-                name="Văn Hải Nam"
-                username="@nam.pulse.io"
+                avatar={currentUser?.avatar || profileNam}
+                name={displayName}
+                username={currentUser?.user_name ? `@${currentUser.user_name}` : "@user"}
                 postCount={842}
                 followerCount="14.6k"
                 followingCount={589}

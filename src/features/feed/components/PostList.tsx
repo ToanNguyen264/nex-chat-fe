@@ -4,9 +4,14 @@ import type { Post } from "../types";
 type PostListProps = {
     posts: Post[];
     onToggleLike: (postId: number) => void;
+    onDeletePost: (postId: number) => Promise<void>;
 };
 
-export default function PostList({ posts, onToggleLike }: PostListProps) {
+export default function PostList({
+    posts,
+    onToggleLike,
+    onDeletePost,
+}: PostListProps) {
     if (posts.length === 0) {
         return (
             <p className="rounded-2xl bg-white p-5 text-center text-sm text-slate-500">
@@ -22,6 +27,7 @@ export default function PostList({ posts, onToggleLike }: PostListProps) {
                     key={post.id}
                     post={post}
                     onToggleLike={onToggleLike}
+                    onDeletePost={onDeletePost}
                 />
             ))}
         </section>

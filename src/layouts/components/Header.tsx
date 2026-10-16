@@ -3,10 +3,18 @@ import { Link } from "react-router";
 
 import profileImage from "../../assets/home/profile-header.png";
 import pulseLogo from "../../assets/home/pulse-logo.png";
+import type { CurrentUser } from "../../api/user.api";
+import { getUserDisplayName } from "../../utils/user";
 
 const navItems = ["Bảng tin", "Khám phá", "Video", "Nhóm"];
 
-export default function Header() {
+type HeaderProps = {
+    currentUser: CurrentUser | null;
+};
+
+export default function Header({ currentUser }: HeaderProps) {
+    const displayName = getUserDisplayName(currentUser);
+
     return (
         <header className="sticky top-0 z-40 h-16 border-b border-[#eef0ff] bg-white/95 shadow-[0_1px_2px_rgba(0,0,0,0.03)] backdrop-blur">
             <div className="mx-auto flex h-full max-w-[1280px] items-center gap-6 px-4 sm:px-6 lg:px-8">
@@ -60,7 +68,11 @@ export default function Header() {
 
                     <button type="button" className="ml-1 flex items-center gap-1">
                         <span className="relative">
-                            <img src={profileImage} alt="Văn Hải Nam" className="h-8 w-8 rounded-full object-cover" />
+                            <img
+                                src={currentUser?.avatar || profileImage}
+                                alt={displayName}
+                                className="h-8 w-8 rounded-full object-cover"
+                            />
                             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#57dffe]" />
                         </span>
                         <ChevronDown className="h-3 w-3 text-[#767586]" />

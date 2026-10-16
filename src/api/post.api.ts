@@ -1,5 +1,13 @@
 import api from "./axios";
 
+export type PostAuthorFromApi = {
+    first_name: string | null;
+    last_name: string | null;
+    user_name: string | null;
+    avatar: string | null;
+};
+
+
 export type CreatedPost = {
     id: string;
     user_id: string;
@@ -8,6 +16,7 @@ export type CreatedPost = {
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
+    users: PostAuthorFromApi;
 };
 
 type CreatePostResponse = {
@@ -24,12 +33,7 @@ export type PostFromApi = {
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
-    users: {
-        first_name: string | null;
-        last_name: string | null;
-        user_name: string | null;
-        avatar: string | null;
-    };
+    users: PostAuthorFromApi;
 };
 
 type GetPostsResponse = {
@@ -53,4 +57,8 @@ export const createPost = async (
     );
 
     return response.data.data;
+};
+
+export const deletePost = async (postId: number): Promise<void> => {
+    await api.delete(`/posts/${postId}`);
 };

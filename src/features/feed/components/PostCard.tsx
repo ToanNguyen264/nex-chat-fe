@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import {
     BadgeCheck,
     Globe2,
@@ -6,6 +7,7 @@ import {
     MessageCircle,
     MoreHorizontal,
     Share2,
+    Trash2,
 } from "lucide-react";
 
 import type { Post } from "../types";
@@ -13,12 +15,67 @@ import type { Post } from "../types";
 type PostCardProps = {
     post: Post;
     onToggleLike: (postId: number) => void;
+    onDeletePost: (postId: number) => Promise<void>;
 };
 
 export default function PostCard({
     post,
     onToggleLike,
+    onDeletePost,
 }: PostCardProps) {
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isMenuOpen) {
+            return;
+        }
+
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                menuRef.current &&
+                event.target instanceof Node &&
+                !menuRef.current.contains(event.target)
+            ) {
+                setIsMenuOpen(false);
+            }
+        }
+
+        function handleEscape(event: KeyboardEvent) {
+            if (event.key === "Escape") {
+                setIsMenuOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleEscape);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, [isMenuOpen]);
+
+    async function handleDelete() {
+        const confirmed = window.confirm(
+            "Bạn có chắc muốn xóa bài viết này không?"
+        );
+
+        if (!confirmed || isDeleting) {
+            return;
+        }
+
+        setIsDeleting(true);
+
+        try {
+            await onDeletePost(post.id);
+        } catch {
+            window.alert("Không thể xóa bài viết này.");
+            setIsDeleting(false);
+        }
+    }
+
     return (
         <article className="rounded-2xl bg-white p-5 shadow-[0_1px_1px_rgba(0,0,0,0.05)]">
             <header className="flex items-start justify-between">
@@ -44,13 +101,37 @@ export default function PostCard({
                     </div>
                 </div>
 
-                <button
-                    type="button"
-                    aria-label="Tùy chọn bài viết"
-                    className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
-                >
-                    <MoreHorizontal className="h-5 w-5" />
-                </button>
+                <div ref={menuRef} className="relative">
+                    <button
+                        type="button"
+                        aria-label="Tùy chọn bài viết"
+                        aria-haspopup="menu"
+                        aria-expanded={isMenuOpen}
+                        disabled={isDeleting}
+                        onClick={() => setIsMenuOpen((current) => !current)}
+                        className="rounded-full p-2 text-slate-500 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <MoreHorizontal className="h-5 w-5" />
+                    </button>
+
+                    {isMenuOpen && (
+                        <div
+                            role="menu"
+                            className="absolute right-0 top-10 z-20 w-44 rounded-xl border border-slate-100 bg-white p-1.5 shadow-lg"
+                        >
+                            <button
+                                type="button"
+                                role="menuitem"
+                                disabled={isDeleting}
+                                onClick={() => void handleDelete()}
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                {isDeleting ? "Đang xóa..." : "Xóa bài viết"}
+                            </button>
+                        </div>
+                    )}
+                </div>
             </header>
 
             <p className="mt-4 whitespace-pre-wrap text-[15px] leading-[25px] text-[#131b2e]">

@@ -7,29 +7,44 @@ import {
 } from "lucide-react";
 
 import avatarCreatePost from "../../../assets/home/avatar-create-post.png";
+import type { CurrentUser } from "../../../api/user.api";
+import { getUserDisplayName } from "../../../utils/user";
+
 
 type CreatePostProps = {
-    onCreatePost: (content: string) => void;
+    currentUser: CurrentUser | null;
+    onCreatePost: (content: string) => Promise<void>;
 };
 
 
 export default function CreatePost({
+    currentUser,
     onCreatePost,
 }: CreatePostProps) {
     const [content, setContent] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const displayName = getUserDisplayName(currentUser);
+    const firstName = currentUser?.first_name || displayName;
 
-    function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         const newContent = content.trim();
 
-        if (!newContent) {
+        if (!newContent || isSubmitting) {
             return;
         }
 
-        onCreatePost(newContent);
+        setIsSubmitting(true);
 
-        setContent("");
+        try {
+            await onCreatePost(newContent);
+            setContent("");
+        } catch (error) {
+            console.error("Không thể tạo bài viết:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     return (
@@ -38,7 +53,11 @@ export default function CreatePost({
             className="rounded-2xl bg-white p-4 shadow-[0_1px_1px_rgba(0,0,0,0.05)]"
         >
             <div className="flex items-center gap-3">
-                <img src={avatarCreatePost} alt="Hải Nam" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                <img
+                    src={currentUser?.avatar || avatarCreatePost}
+                    alt={displayName}
+                    className="h-10 w-10 shrink-0 rounded-full object-cover"
+                />
 
                 <input
                     id="create-post-content"
@@ -46,7 +65,7 @@ export default function CreatePost({
                     type="text"
                     value={content}
                     onChange={(event) => setContent(event.target.value)}
-                    placeholder="Hải Nam ơi, bạn đang nghĩ gì?"
+                    placeholder={`${firstName} ơi, bạn đang nghĩ gì?`}
                     className="h-[42px] min-w-0 flex-1 rounded-full bg-[#f2f3ff] px-4 text-sm text-[#131b2e] outline-none placeholder:text-[#8b8998] focus:ring-2 focus:ring-[#4648d4]/20"
                 />
             </div>
@@ -80,10 +99,13 @@ export default function CreatePost({
 
                 <button
                     type="submit"
-                    disabled={!content.trim()}
-                    className={`ml-2 rounded-xl bg-[#4648d4] px-4 py-2 text-xs font-semibold text-white transition ${content.trim() ? "opacity-100" : "pointer-events-none w-0 overflow-hidden px-0 opacity-0"}`}
+                    disabled={!content.trim() || isSubmitting}
+                    className={`ml-2 rounded-xl bg-[#4648d4] px-4 py-2 text-xs font-semibold text-white transition ${content.trim()
+                            ? "opacity-100"
+                            : "pointer-events-none w-0 overflow-hidden px-0 opacity-0"
+                        }`}
                 >
-                    Đăng
+                    {isSubmitting ? "Đang đăng..." : "Đăng"}
                 </button>
             </div>
         </form>

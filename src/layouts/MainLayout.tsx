@@ -1,14 +1,19 @@
 import type { ReactNode } from "react";
 import Header from "./components/Header";
+import type { CurrentUser } from "../api/user.api";
 
 type MainLayoutProps = {
     children: ReactNode;
+    currentUser: CurrentUser | null;
 };
 
-export default function MainLayout({ children }: MainLayoutProps) {
+export default function MainLayout({
+    children,
+    currentUser,
+}: MainLayoutProps) {
     return (
         <div className="relative min-h-screen overflow-x-hidden bg-[#faf8ff]">
-            <Header />
+            <Header currentUser={currentUser} />
 
             <div className="pointer-events-none absolute left-1/4 top-24 h-96 w-96 rounded-full bg-[#4648d4]/5 blur-3xl" />
             <div className="pointer-events-none absolute right-10 top-96 h-80 w-80 rounded-full bg-[#57dffe]/10 blur-3xl" />
