@@ -7,7 +7,7 @@ export type Post = {
     isLiked: boolean;
     likeCount: number;
     avatar?: string;
-    image?: string;
+    images?: string[];
     tags?: string[];
     commentCount?: number;
     shareCount?: number;

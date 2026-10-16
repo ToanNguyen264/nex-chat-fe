@@ -17,6 +17,7 @@ export type CreatedPost = {
     updated_at: string;
     deleted_at: string | null;
     users: PostAuthorFromApi;
+    attachments: AttachmentFromApi[];
 };
 
 type CreatePostResponse = {
@@ -34,7 +35,20 @@ export type PostFromApi = {
     updated_at: string;
     deleted_at: string | null;
     users: PostAuthorFromApi;
+    attachments: AttachmentFromApi[];
 };
+
+export type AttachmentFromApi = {
+    id: string;
+    owner_type: "post" | "comment" | "message";
+    owner_id: string;
+    file_url: string;
+    file_type: string | null;
+    file_name: string | null;
+    file_size: string | null;
+    created_at: string;
+};
+
 
 type GetPostsResponse = {
     success: boolean;
@@ -49,11 +63,20 @@ export const getPosts = async (): Promise<PostFromApi[]> => {
 
 
 export const createPost = async (
-    content: string
+    content: string,
+    media: File[] = []
 ): Promise<CreatedPost> => {
+    const formData = new FormData();
+
+    formData.append("content", content);
+
+    media.forEach((file) => {
+        formData.append("media", file);
+    });
+
     const response = await api.post<CreatePostResponse>(
         "/posts",
-        { content }
+        formData
     );
 
     return response.data.data;

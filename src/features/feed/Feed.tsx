@@ -42,6 +42,12 @@ export default function Feed({ currentUser }: FeedProps) {
                         isLiked: false,
                         likeCount: 0,
                         avatar: post.users.avatar || avatarNam,
+                        images: post.attachments.filter(
+                            (attachment) =>
+                                attachment.file_type?.startsWith(
+                                    "image/"
+                                )
+                        ).map((attachment) => attachment.file_url),
                         commentCount: 0,
                         shareCount: 0,
                     };
@@ -79,9 +85,12 @@ export default function Feed({ currentUser }: FeedProps) {
         );
     }
 
-    async function handleCreatePost(content: string) {
+    async function handleCreatePost(
+        content: string,
+        media: File[] = []
+    ) {
         try {
-            const createdPost = await createPost(content);
+            const createdPost = await createPost(content, media);
 
             const fullName = [
                 createdPost.users.first_name,
@@ -98,6 +107,10 @@ export default function Feed({ currentUser }: FeedProps) {
                 isLiked: false,
                 likeCount: 0,
                 avatar: createdPost.users.avatar || avatarNam,
+                images: createdPost.attachments.filter(
+                    (attachment) =>
+                        attachment.file_type?.startsWith("image/")
+                ).map((attachment) => attachment.file_url),
                 commentCount: 0,
                 shareCount: 0,
             };
