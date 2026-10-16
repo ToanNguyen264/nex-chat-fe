@@ -5,7 +5,7 @@ type ButtonProps = {
     className?: string;
     onClick?: React.MouseEventHandler<HTMLButtonElement>;
     type?: "button" | "submit" | "reset";
-    loadding?: boolean
+    loading?: boolean
 }
 
 export default function Button({
@@ -13,11 +13,11 @@ export default function Button({
     className = "",
     onClick,
     type = "button",
-    loadding
+    loading = false,
 }: ButtonProps) {
     return (
-        <button className={className} onClick={onClick} type={type} disabled={loadding}>
-            {loadding ? "Please wait..." : children}
+        <button className={className} onClick={onClick} type={type} disabled={loading}>
+            {loading ? "Please wait..." : children}
         </button>
     )
 }

@@ -13,6 +13,7 @@ type inputProps = {
     lableRight?: React.ReactNode
     rightIcon?: React.ReactNode
     name?: string
+    checked?: boolean;
 
 };
 export default function Input({
@@ -25,14 +26,19 @@ export default function Input({
     lableRight,
     rightIcon,
     onBlur,
-    name
+    name,
+    checked
 
 }: inputProps) {
     if (type === "checkbox") {
         return (
             <label className="flex items-center gap-2 cursor-pointer">
                 <input
+                    name={name}
                     type="checkbox"
+                    checked={checked}
+                    onChange={onChange}
+                    onBlur={onBlur}
                     className="cursor-pointer"
                 />
 

@@ -21,6 +21,7 @@ export default function LoginPage() {
         initialValues: {
             email: "",
             password: "",
+            acceptedPolicy: false,
         },
         validationSchema: Yup.object({
             email: Yup.string()
@@ -29,6 +30,8 @@ export default function LoginPage() {
             password: Yup.string()
                 .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
                 .required("Vui lòng nhập mật khẩu"),
+            acceptedPolicy: Yup.boolean()
+                .oneOf([true], "Bạn cần đồng ý với điều khoản để đăng nhập"),
         }),
         onSubmit: async (value) => {
             try {
@@ -186,16 +189,26 @@ export default function LoginPage() {
                             </div>
 
                             <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-                                <Input type="checkbox" label="Đồng ý chính sách" />
+                                <Input
+                                    name="acceptedPolicy"
+                                    type="checkbox"
+                                    label="Đồng ý chính sách"
+                                    checked={formik.values.acceptedPolicy}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                />
                                 <p className="mt-1.5 pl-6 text-xs leading-5 text-slate-500">
                                     Bằng việc tiếp tục, bạn đồng ý với Điều khoản Dịch vụ và Chính sách Quyền riêng tư của Nex.
                                 </p>
+                                {formik.touched.acceptedPolicy && formik.errors.acceptedPolicy && (
+                                    <p className="mt-1.5 pl-6 text-xs text-red-500">{formik.errors.acceptedPolicy}</p>
+                                )}
                             </div>
 
                             <Button
                                 className="mt-6 flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3.5 font-semibold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
                                 type="submit"
-                                loadding={formik.isSubmitting}
+                                loading={formik.isSubmitting}
                             >
                                 Đăng nhập
                             </Button>
