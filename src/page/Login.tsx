@@ -35,10 +35,15 @@ export default function LoginPage() {
         }),
         onSubmit: async (value) => {
             try {
-                await api.post("/auth/login", {
+                const response = await api.post("/auth/login", {
                     email: value.email,
                     password: value.password,
                 });
+
+                const accessToken = response.data.accessToken;
+
+                localStorage.setItem("accessToken", accessToken);
+
                 navigation("/home");
             } catch {
                 showError("Email hoặc mật khẩu không đúng");

@@ -1,13 +1,21 @@
-import { Route,Routes } from "react-router";
+import { Route, Routes } from "react-router";
 import LoginPage from "../page/Login";
 import RegisterPage from "../page/Register";
 import HomePage from "../page/Home";
-export default function AppRouters(){
-    return(
+import ProtectedRoute from "./ProtectedRoute";
+export default function AppRouters() {
+    return (
         <Routes>
             <Route path="/" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/home" element={<HomePage />} />
+            <Route
+                path="/home"
+                element={
+                    <ProtectedRoute>
+                        <HomePage />
+                    </ProtectedRoute>
+                }
+            />
         </Routes>
     )
 }
