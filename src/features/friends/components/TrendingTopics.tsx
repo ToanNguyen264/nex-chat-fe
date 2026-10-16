@@ -9,13 +9,13 @@ const topics: TrendingTopic[] = [
     {
         id: 1,
         category: "Công nghệ",
-        hashtag: "#NexAudioUpdate",
+        hashtag: "#PulseAudioUpdate",
         postCount: "18.4K bài thảo luận",
     },
     {
         id: 2,
         category: "Thiết kế sáng tạo",
-        hashtag: "#VietnamDesigners2026",
+        hashtag: "#VietnamDesigners2024",
         postCount: "9.2K bài thảo luận",
     },
     {
@@ -29,11 +29,11 @@ const topics: TrendingTopic[] = [
 export default function TrendingTopics() {
     return (
         <section className="rounded-2xl bg-white p-4 shadow-sm">
-            <h2 className="mb-4 font-semibold text-[#131b2e]">
-                Xu hướng thảo luận
+            <h2 className="mb-4 flex items-center gap-2 font-semibold text-[#131b2e]">
+                <span className="text-[#4648d4]">♨</span> Xu hướng thảo luận
             </h2>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
                 {topics.map((topic) => (
                     <article key={topic.id}>
                         <p className="text-xs text-[#767586]">

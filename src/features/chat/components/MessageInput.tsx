@@ -32,9 +32,9 @@ export default function MessageInput({
     return (
         <form
             onSubmit={handleSubmit}
-            className="border-t border-slate-100 bg-white p-3"
+            className="border-t border-slate-100 bg-white p-3 shadow-[0_-2px_4px_rgba(0,0,0,0.03)]"
         >
-            <div className="flex items-center gap-1 rounded-2xl bg-[#f2f3ff] px-2">
+            <div className="flex h-12 items-center gap-1 rounded-2xl bg-[#f2f3ff] px-1.5">
                 <button
                     type="button"
                     aria-label="Gửi hình ảnh"
@@ -52,6 +52,8 @@ export default function MessageInput({
                 </button>
 
                 <input
+                    id="chat-message"
+                    name="chatMessage"
                     type="text"
                     value={content}
                     onChange={(event) =>
@@ -73,7 +75,7 @@ export default function MessageInput({
                     type="submit"
                     aria-label="Gửi tin nhắn"
                     disabled={!content.trim()}
-                    className="rounded-full bg-indigo-600 p-2 text-white disabled:opacity-40"
+                    className="rounded-full bg-[#4648d4] p-2.5 text-white shadow-sm disabled:opacity-40"
                 >
                     <Send className="h-4 w-4" />
                 </button>

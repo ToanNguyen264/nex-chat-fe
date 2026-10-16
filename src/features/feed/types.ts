@@ -6,4 +6,10 @@ export type Post = {
     createdAt: string;
     isLiked: boolean;
     likeCount: number;
+    avatar?: string;
+    image?: string;
+    tags?: string[];
+    commentCount?: number;
+    shareCount?: number;
+    isVerified?: boolean;
 };

@@ -1,4 +1,5 @@
 type ProfileCardProps = {
+    avatar: string;
     name: string;
     username: string;
     postCount: number;
@@ -7,6 +8,7 @@ type ProfileCardProps = {
 };
 
 export default function ProfileCard({
+    avatar,
     name,
     username,
     postCount,
@@ -17,15 +19,13 @@ export default function ProfileCard({
         <section className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
                 <div className="relative">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-600">
-                        {name.charAt(0)}
-                    </div>
+                    <img src={avatar} alt={name} className="h-12 w-12 rounded-full object-cover" />
 
                     <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-cyan-400" />
                 </div>
 
                 <div>
-                    <h2 className="font-semibold text-[#131b2e]">
+                    <h2 className="text-lg font-semibold tracking-[-0.18px] text-[#131b2e]">
                         {name}
                     </h2>
 
@@ -35,9 +35,9 @@ export default function ProfileCard({
                 </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-3 rounded-xl bg-[#f2f3ff] p-3 text-center">
+            <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-[#f2f3ff]/70 px-3 pb-3 pt-4 text-center">
                 <div>
-                    <strong className="block text-indigo-600">
+                    <strong className="block text-xl font-semibold text-[#4648d4]">
                         {postCount}
                     </strong>
                     <span className="text-xs text-slate-500">
@@ -46,7 +46,7 @@ export default function ProfileCard({
                 </div>
 
                 <div>
-                    <strong className="block">
+                    <strong className="block text-xl font-semibold">
                         {followerCount}
                     </strong>
                     <span className="text-xs text-slate-500">
@@ -55,7 +55,7 @@ export default function ProfileCard({
                 </div>
 
                 <div>
-                    <strong className="block">
+                    <strong className="block text-xl font-semibold">
                         {followingCount}
                     </strong>
                     <span className="text-xs text-slate-500">
