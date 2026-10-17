@@ -11,30 +11,65 @@ import {
     Trash2,
     X,
 } from "lucide-react";
+import {
+    Emoji,
+    EmojiStyle,
+} from "emoji-picker-react";
 
 import type { Post } from "../types";
+import type { ReactionType } from "../../../api/post.api";
+import CommentSection from "./CommentSection";
+
+const reactionOptions: Array<{
+    type: ReactionType;
+    unified: string;
+    label: string;
+    textClass: string;
+}> = [
+    { type: "like", unified: "1f44d", label: "Thích", textClass: "text-blue-600" },
+    { type: "love", unified: "2764-fe0f", label: "Yêu thích", textClass: "text-rose-600" },
+    { type: "haha", unified: "1f602", label: "Haha", textClass: "text-amber-500" },
+    { type: "wow", unified: "1f62e", label: "Wow", textClass: "text-amber-500" },
+    { type: "sad", unified: "1f622", label: "Buồn", textClass: "text-amber-500" },
+    { type: "angry", unified: "1f621", label: "Phẫn nộ", textClass: "text-orange-600" },
+];
 
 type PostCardProps = {
     post: Post;
-    onToggleLike: (postId: number) => void;
+    onReact: (
+        postId: number,
+        reactionType: ReactionType
+    ) => Promise<void>;
     onDeletePost: (postId: number) => Promise<void>;
 };
 
 export default function PostCard({
     post,
-    onToggleLike,
+    onReact,
     onDeletePost,
 }: PostCardProps) {
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isReactionToggling, setIsReactionToggling] = useState(false);
+    const [isReactionPickerOpen, setIsReactionPickerOpen] = useState(false);
+    const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+    const [commentCount, setCommentCount] = useState(
+        post.commentCount ?? 0
+    );
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+    const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
     const menuRef = useRef<HTMLDivElement>(null);
     const allImages = post.images ?? [];
+    const allVideos = post.videos ?? [];
     const visibleImages = allImages.slice(0, 4);
     const remainingImageCount = Math.max(
         allImages.length - visibleImages.length,
         0
     );
+    const selectedReaction = reactionOptions.find(
+        (reaction) => reaction.type === post.currentReaction
+    );
+    const reactionCount = post.reactionCount ?? 0;
 
     useEffect(() => {
         if (!isMenuOpen) {
@@ -65,6 +100,10 @@ export default function PostCard({
             document.removeEventListener("keydown", handleEscape);
         };
     }, [isMenuOpen]);
+
+    useEffect(() => {
+        setCommentCount(post.commentCount ?? 0);
+    }, [post.commentCount]);
 
     useEffect(() => {
         if (selectedImageIndex === null) {
@@ -100,6 +139,23 @@ export default function PostCard({
         } catch {
             window.alert("Không thể xóa bài viết này.");
             setIsDeleting(false);
+        }
+    }
+
+    async function handleReaction(reactionType: ReactionType) {
+        if (isReactionToggling) {
+            return;
+        }
+
+        setIsReactionToggling(true);
+
+        try {
+            await onReact(post.id, reactionType);
+            setIsReactionPickerOpen(false);
+        } catch {
+            window.alert("Không thể cập nhật cảm xúc.");
+        } finally {
+            setIsReactionToggling(false);
         }
     }
 
@@ -161,7 +217,7 @@ export default function PostCard({
                 </div>
             </header>
 
-            <p className="mt-4 whitespace-pre-wrap text-[15px] leading-[25px] text-[#131b2e]">
+            <p className="emoji-text mt-4 whitespace-pre-wrap text-[15px] leading-[25px] text-[#131b2e]">
                 {post.content}
             </p>
 
@@ -204,6 +260,56 @@ export default function PostCard({
                             )}
                         </button>
                     ))}
+                </div>
+            )}
+
+            {allVideos.length > 0 && (
+                <div className="relative mt-4 overflow-hidden rounded-xl bg-black shadow-sm">
+                    <video
+                        key={allVideos[selectedVideoIndex]}
+                        src={allVideos[selectedVideoIndex]}
+                        controls
+                        playsInline
+                        preload="metadata"
+                        className="max-h-[520px] w-full bg-black object-contain"
+                    >
+                        Trình duyệt của bạn không hỗ trợ phát video.
+                    </video>
+
+                    {allVideos.length > 1 && (
+                        <>
+                            <button
+                                type="button"
+                                aria-label="Xem video trước"
+                                onClick={() =>
+                                    setSelectedVideoIndex((currentIndex) =>
+                                        (currentIndex - 1 + allVideos.length) %
+                                        allVideos.length
+                                    )
+                                }
+                                className="absolute left-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white backdrop-blur-sm hover:bg-black/80"
+                            >
+                                <ChevronLeft className="h-5 w-5" />
+                            </button>
+
+                            <button
+                                type="button"
+                                aria-label="Xem video tiếp theo"
+                                onClick={() =>
+                                    setSelectedVideoIndex((currentIndex) =>
+                                        (currentIndex + 1) % allVideos.length
+                                    )
+                                }
+                                className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white backdrop-blur-sm hover:bg-black/80"
+                            >
+                                <ChevronRight className="h-5 w-5" />
+                            </button>
+
+                            <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+                                {selectedVideoIndex + 1}/{allVideos.length}
+                            </span>
+                        </>
+                    )}
                 </div>
             )}
 
@@ -276,36 +382,106 @@ export default function PostCard({
             )}
 
             <div className="mt-4 flex items-center justify-between text-[11px] text-[#767586]">
-                <div className="flex items-center gap-2">
-                    <span className="grid h-5 w-5 place-items-center rounded-full bg-[#b90538] text-white">♥</span>
-                    <span>Trần Hoàng Long và {post.likeCount} người khác</span>
-                </div>
-                <div className="flex gap-3"><span>{post.commentCount ?? 0} bình luận</span><span>{post.shareCount ?? 0} lượt chia sẻ</span></div>
+                {reactionCount > 0 ? (
+                    <div className="flex items-center gap-2">
+                        <span className="grid h-5 w-5 place-items-center">
+                            <Emoji
+                                unified={selectedReaction?.unified ?? "1f44d"}
+                                size={18}
+                                emojiStyle={EmojiStyle.FACEBOOK}
+                            />
+                        </span>
+                        <span>
+                            {post.currentReaction && reactionCount === 1
+                                ? "Bạn đã bày tỏ cảm xúc"
+                                : post.currentReaction
+                                  ? `Bạn và ${reactionCount - 1} người khác`
+                                  : `${reactionCount} lượt bày tỏ cảm xúc`}
+                        </span>
+                    </div>
+                ) : (
+                    <span />
+                )}
+                <div className="flex gap-3"><span>{commentCount} bình luận</span><span>{post.shareCount ?? 0} lượt chia sẻ</span></div>
             </div>
 
             <footer className="mt-3 grid grid-cols-3 rounded-xl bg-[#f2f3ff]/50 p-1.5">
-                <button
-                    type="button"
-                    onClick={() => onToggleLike(post.id)}
-                    className={`flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold hover:bg-white ${
-                        post.isLiked
-                            ? "font-semibold text-rose-600"
-                            : "text-slate-600"
-                    }`}
+                <div
+                    className="relative"
+                    onMouseEnter={() => setIsReactionPickerOpen(true)}
+                    onMouseLeave={() => setIsReactionPickerOpen(false)}
                 >
-                    <Heart
-                        className={`h-4 w-4 ${
-                            post.isLiked ? "fill-current" : ""
-                        }`}
-                    />
-                    {post.isLiked ? "Đã thích" : "Thích"}
-                </button>
+                    {isReactionPickerOpen && (
+                        <div className="absolute bottom-[calc(100%-2px)] left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-indigo-100 bg-white/95 px-2.5 py-2 shadow-[0_12px_35px_rgba(40,48,68,0.2)] backdrop-blur-md">
+                            {reactionOptions.map((reaction) => (
+                                <button
+                                    key={reaction.type}
+                                    type="button"
+                                    aria-label={reaction.label}
+                                    disabled={isReactionToggling}
+                                    onClick={() =>
+                                        void handleReaction(reaction.type)
+                                    }
+                                    className="group relative grid h-10 w-10 shrink-0 place-items-center rounded-full transition duration-150 hover:-translate-y-1 hover:scale-125 hover:bg-indigo-50 disabled:opacity-50"
+                                >
+                                    <Emoji
+                                        unified={reaction.unified}
+                                        size={30}
+                                        emojiStyle={EmojiStyle.FACEBOOK}
+                                    />
+                                    <span className="pointer-events-none absolute -top-8 hidden whitespace-nowrap rounded-md bg-[#283044] px-2 py-1 text-[10px] font-medium text-white shadow group-hover:block">
+                                        {reaction.label}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            void handleReaction(
+                                post.currentReaction ?? "like"
+                            )
+                        }
+                        disabled={isReactionToggling}
+                        className={`flex w-full items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold hover:bg-white ${
+                            selectedReaction
+                                ? selectedReaction.textClass
+                                : "text-slate-600"
+                        } disabled:cursor-wait disabled:opacity-60`}
+                    >
+                        {selectedReaction ? (
+                            <span className="grid h-5 w-5 place-items-center">
+                                <Emoji
+                                    unified={selectedReaction.unified}
+                                    size={18}
+                                    emojiStyle={EmojiStyle.FACEBOOK}
+                                />
+                            </span>
+                        ) : (
+                            <Heart className="h-4 w-4" />
+                        )}
+                        {selectedReaction?.label ?? "Thích"}
+                    </button>
+                </div>
 
                 <button
                     type="button"
+                    onClick={() => setIsCommentsOpen((current) => !current)}
+                    aria-expanded={isCommentsOpen}
                     className="flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold text-[#464554] hover:bg-white"
                 >
-                    <MessageCircle className="h-4 w-4" />
+                    <span className="relative">
+                        <MessageCircle className="h-4 w-4" />
+                        {commentCount > 0 && (
+                            <span className="absolute -right-2.5 -top-2.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#4648d4] px-1 text-[9px] font-bold leading-none text-white ring-2 ring-[#f2f3ff]">
+                                {commentCount > 99
+                                    ? "99+"
+                                    : commentCount}
+                            </span>
+                        )}
+                    </span>
                     Bình luận
                 </button>
 
@@ -317,6 +493,12 @@ export default function PostCard({
                     Chia sẻ
                 </button>
             </footer>
+
+            <CommentSection
+                postId={post.id}
+                isOpen={isCommentsOpen}
+                onCountChange={setCommentCount}
+            />
         </article>
     );
 }
