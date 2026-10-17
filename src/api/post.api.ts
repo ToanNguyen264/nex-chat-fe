@@ -1,5 +1,13 @@
 import api from "./axios";
 
+export type ReactionType =
+    | "like"
+    | "love"
+    | "haha"
+    | "wow"
+    | "sad"
+    | "angry";
+
 export type PostAuthorFromApi = {
     first_name: string | null;
     last_name: string | null;
@@ -36,6 +44,14 @@ export type PostFromApi = {
     deleted_at: string | null;
     users: PostAuthorFromApi;
     attachments: AttachmentFromApi[];
+    currentReaction: ReactionType | null;
+    reactionCount: number;
+    commentCount: number;
+};
+
+export type SetPostReactionResult = {
+    currentReaction: ReactionType | null;
+    reactionCount: number;
 };
 
 export type AttachmentFromApi = {
@@ -84,4 +100,18 @@ export const createPost = async (
 
 export const deletePost = async (postId: number): Promise<void> => {
     await api.delete(`/posts/${postId}`);
+};
+
+export const setPostReaction = async (
+    postId: number,
+    reactionType: ReactionType
+): Promise<SetPostReactionResult> => {
+    const response = await api.post<{
+        success: boolean;
+        data: SetPostReactionResult;
+    }>(`/posts/${postId}/reaction`, {
+        reactionType,
+    });
+
+    return response.data.data;
 };

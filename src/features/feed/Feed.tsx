@@ -4,7 +4,13 @@ import PostList from "./components/PostList";
 import StoryList from "./components/StoryList";
 import type { Post } from "./types";
 import avatarNam from "../../assets/home/profile-nam.png";
-import { createPost, deletePost, getPosts } from "../../api/post.api";
+import {
+    createPost,
+    deletePost,
+    getPosts,
+    setPostReaction,
+} from "../../api/post.api";
+import type { ReactionType } from "../../api/post.api";
 import type { CurrentUser } from "../../api/user.api";
 
 type FeedProps = {
@@ -39,8 +45,8 @@ export default function Feed({ currentUser }: FeedProps) {
                         createdAt: new Date(
                             post.created_at
                         ).toLocaleString("vi-VN"),
-                        isLiked: false,
-                        likeCount: 0,
+                        currentReaction: post.currentReaction,
+                        reactionCount: post.reactionCount,
                         avatar: post.users.avatar || avatarNam,
                         images: post.attachments.filter(
                             (attachment) =>
@@ -48,7 +54,13 @@ export default function Feed({ currentUser }: FeedProps) {
                                     "image/"
                                 )
                         ).map((attachment) => attachment.file_url),
-                        commentCount: 0,
+                        videos: post.attachments.filter(
+                            (attachment) =>
+                                attachment.file_type?.startsWith(
+                                    "video/"
+                                )
+                        ).map((attachment) => attachment.file_url),
+                        commentCount: post.commentCount,
                         shareCount: 0,
                     };
                 });
@@ -67,7 +79,12 @@ export default function Feed({ currentUser }: FeedProps) {
         void loadPosts();
     }, []);
 
-    function handleToggleLike(postId: number) {
+    async function handleReaction(
+        postId: number,
+        reactionType: ReactionType
+    ) {
+        const result = await setPostReaction(postId, reactionType);
+
         setPosts((currentPosts) =>
             currentPosts.map((post) => {
                 if (post.id !== postId) {
@@ -76,10 +93,8 @@ export default function Feed({ currentUser }: FeedProps) {
 
                 return {
                     ...post,
-                    isLiked: !post.isLiked,
-                    likeCount: post.isLiked
-                        ? post.likeCount - 1
-                        : post.likeCount + 1,
+                    currentReaction: result.currentReaction,
+                    reactionCount: result.reactionCount,
                 };
             }),
         );
@@ -104,12 +119,16 @@ export default function Feed({ currentUser }: FeedProps) {
                 author: fullName || createdPost.users.user_name || "Người dùng",
                 content: createdPost.content,
                 createdAt: "Vừa xong",
-                isLiked: false,
-                likeCount: 0,
+                currentReaction: null,
+                reactionCount: 0,
                 avatar: createdPost.users.avatar || avatarNam,
                 images: createdPost.attachments.filter(
                     (attachment) =>
                         attachment.file_type?.startsWith("image/")
+                ).map((attachment) => attachment.file_url),
+                videos: createdPost.attachments.filter(
+                    (attachment) =>
+                        attachment.file_type?.startsWith("video/")
                 ).map((attachment) => attachment.file_url),
                 commentCount: 0,
                 shareCount: 0,
@@ -154,7 +173,7 @@ export default function Feed({ currentUser }: FeedProps) {
             ) : (
                 <PostList
                     posts={posts}
-                    onToggleLike={handleToggleLike}
+                    onReact={handleReaction}
                     onDeletePost={handleDeletePost}
                 />
             )}

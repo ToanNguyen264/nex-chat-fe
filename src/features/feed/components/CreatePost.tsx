@@ -1,5 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
+import EmojiPicker, {
+    EmojiStyle,
+    Theme,
+} from "emoji-picker-react";
+import type { EmojiClickData } from "emoji-picker-react";
 import {
     Image as ImageIcon,
     Mic,
@@ -29,6 +34,8 @@ export default function CreatePost({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+    const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+    const emojiPickerRef = useRef<HTMLDivElement>(null);
     const displayName = getUserDisplayName(currentUser);
     const firstName = currentUser?.first_name || displayName;
     const canSubmit = Boolean(content.trim() || selectedFiles.length > 0);
@@ -51,6 +58,43 @@ export default function CreatePost({
         };
     }, [selectedFiles]);
 
+    useEffect(() => {
+        if (!isEmojiPickerOpen) {
+            return;
+        }
+
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                emojiPickerRef.current &&
+                event.target instanceof Node &&
+                !emojiPickerRef.current.contains(event.target)
+            ) {
+                setIsEmojiPickerOpen(false);
+            }
+        }
+
+        function handleEscape(event: KeyboardEvent) {
+            if (event.key === "Escape") {
+                setIsEmojiPickerOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleEscape);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, [isEmojiPickerOpen]);
+
+    function handleEmojiClick(emojiData: EmojiClickData) {
+        setContent((currentContent) =>
+            `${currentContent}${currentContent ? " " : ""}${emojiData.emoji}`
+        );
+        setIsEmojiPickerOpen(false);
+    }
+
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
@@ -69,6 +113,7 @@ export default function CreatePost({
             );
             setContent("");
             setSelectedFiles([]);
+            setIsEmojiPickerOpen(false);
         } catch (error) {
             console.error("Không thể tạo bài viết:", error);
         } finally {
@@ -95,7 +140,7 @@ export default function CreatePost({
                     value={content}
                     onChange={(event) => setContent(event.target.value)}
                     placeholder={`${firstName} ơi, bạn đang nghĩ gì?`}
-                    className="h-[42px] min-w-0 flex-1 rounded-full bg-[#f2f3ff] px-4 text-sm text-[#131b2e] outline-none placeholder:text-[#8b8998] focus:ring-2 focus:ring-[#4648d4]/20"
+                    className="emoji-text h-[42px] min-w-0 flex-1 rounded-full bg-[#f2f3ff] px-4 text-sm text-[#131b2e] outline-none placeholder:text-[#8b8998] focus:ring-2 focus:ring-[#4648d4]/20"
                 />
             </div>
 
@@ -177,13 +222,41 @@ export default function CreatePost({
                         Pulse Audio
                     </button>
 
-                    <button
-                        type="button"
-                        className="flex items-center justify-center gap-2 rounded-lg px-2 py-2 text-[11px] text-[#464554] hover:bg-[#f2f3ff]"
-                    >
-                        <Smile className="h-4 w-4 text-cyan-500" />
-                        Cảm xúc
-                    </button>
+                    <div ref={emojiPickerRef} className="relative">
+                        <button
+                            type="button"
+                            aria-haspopup="dialog"
+                            aria-expanded={isEmojiPickerOpen}
+                            onClick={() =>
+                                setIsEmojiPickerOpen((current) => !current)
+                            }
+                            className="flex w-full items-center justify-center gap-2 rounded-lg px-2 py-2 text-[11px] text-[#464554] hover:bg-[#f2f3ff]"
+                        >
+                            <Smile className="h-4 w-4 text-cyan-500" />
+                            Cảm xúc
+                        </button>
+
+                        {isEmojiPickerOpen && (
+                            <div className="absolute right-0 top-12 z-50 w-[min(340px,calc(100vw-2rem))] rounded-2xl border border-indigo-100 bg-white p-2 shadow-[0_20px_60px_rgba(40,48,68,0.22)]">
+                                <EmojiPicker
+                                    onEmojiClick={handleEmojiClick}
+                                    width="100%"
+                                    height={360}
+                                    theme={Theme.LIGHT}
+                                    emojiStyle={EmojiStyle.FACEBOOK}
+                                    previewConfig={{ showPreview: false }}
+                                    searchPlaceholder="Tìm cảm xúc..."
+                                    autoFocusSearch={false}
+                                    lazyLoadEmojis
+                                    style={{
+                                        border: "none",
+                                        borderRadius: "12px",
+                                        boxShadow: "none",
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <button

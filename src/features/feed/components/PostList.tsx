@@ -1,15 +1,19 @@
 import PostCard from "./PostCard";
 import type { Post } from "../types";
+import type { ReactionType } from "../../../api/post.api";
 
 type PostListProps = {
     posts: Post[];
-    onToggleLike: (postId: number) => void;
+    onReact: (
+        postId: number,
+        reactionType: ReactionType
+    ) => Promise<void>;
     onDeletePost: (postId: number) => Promise<void>;
 };
 
 export default function PostList({
     posts,
-    onToggleLike,
+    onReact,
     onDeletePost,
 }: PostListProps) {
     if (posts.length === 0) {
@@ -26,7 +30,7 @@ export default function PostList({
                 <PostCard
                     key={post.id}
                     post={post}
-                    onToggleLike={onToggleLike}
+                    onReact={onReact}
                     onDeletePost={onDeletePost}
                 />
             ))}
