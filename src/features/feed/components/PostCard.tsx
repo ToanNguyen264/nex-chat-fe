@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import {
     BadgeCheck,
+    ChevronLeft,
+    ChevronRight,
     Globe2,
     Heart,
-    Images,
     MessageCircle,
     MoreHorizontal,
     Share2,
     Trash2,
+    X,
 } from "lucide-react";
 
 import type { Post } from "../types";
@@ -25,7 +27,14 @@ export default function PostCard({
 }: PostCardProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
     const menuRef = useRef<HTMLDivElement>(null);
+    const allImages = post.images ?? [];
+    const visibleImages = allImages.slice(0, 4);
+    const remainingImageCount = Math.max(
+        allImages.length - visibleImages.length,
+        0
+    );
 
     useEffect(() => {
         if (!isMenuOpen) {
@@ -56,6 +65,24 @@ export default function PostCard({
             document.removeEventListener("keydown", handleEscape);
         };
     }, [isMenuOpen]);
+
+    useEffect(() => {
+        if (selectedImageIndex === null) {
+            return;
+        }
+
+        function handleEscape(event: KeyboardEvent) {
+            if (event.key === "Escape") {
+                setSelectedImageIndex(null);
+            }
+        }
+
+        document.addEventListener("keydown", handleEscape);
+
+        return () => {
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, [selectedImageIndex]);
 
     async function handleDelete() {
         const confirmed = window.confirm(
@@ -144,10 +171,107 @@ export default function PostCard({
                 </div>
             )}
 
-            {post.image && (
-                <div className="relative mt-4 overflow-hidden rounded-xl bg-[#eaedff] shadow-sm">
-                    <img src={post.image} alt="Giao diện Pulse Messenger" className="h-auto w-full object-cover" />
-                    <span className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-[#283044]/80 px-3 py-1 text-[11px] text-[#eef0ff] backdrop-blur-md"><Images className="h-3.5 w-3.5" />1/3 hình ảnh</span>
+            {visibleImages.length > 0 && (
+                <div
+                    className={`relative mt-4 grid overflow-hidden rounded-xl bg-[#eaedff] shadow-sm ${
+                        visibleImages.length === 1
+                            ? "grid-cols-1"
+                            : "grid-cols-2 gap-1"
+                    }`}
+                >
+                    {visibleImages.map((image, index) => (
+                        <button
+                            key={image}
+                            type="button"
+                            onClick={() => setSelectedImageIndex(index)}
+                            className="relative cursor-pointer overflow-hidden"
+                            aria-label={`Xem ảnh ${index + 1}`}
+                        >
+                            <img
+                                src={image}
+                                alt={`Ảnh bài viết ${index + 1}`}
+                                className={
+                                    visibleImages.length === 1
+                                        ? "max-h-[520px] w-full object-cover"
+                                        : "h-56 w-full object-cover"
+                                }
+                            />
+
+                            {index === 3 && remainingImageCount > 0 && (
+                                <div className="absolute inset-0 grid place-items-center bg-black/60 text-4xl font-semibold text-white">
+                                    +{remainingImageCount}
+                                </div>
+                            )}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {selectedImageIndex !== null && allImages.length > 0 && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Xem ảnh bài viết"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+                    onClick={() => setSelectedImageIndex(null)}
+                >
+                    <div
+                        className="relative flex h-full w-full items-center justify-center"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <img
+                            src={allImages[selectedImageIndex]}
+                            alt={`Ảnh bài viết ${selectedImageIndex + 1}`}
+                            className="max-h-full max-w-full object-contain"
+                        />
+
+                        <button
+                            type="button"
+                            onClick={() => setSelectedImageIndex(null)}
+                            aria-label="Đóng trình xem ảnh"
+                            className="absolute right-2 top-2 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"
+                        >
+                            <X className="h-6 w-6" />
+                        </button>
+
+                        {allImages.length > 1 && (
+                            <>
+                                <button
+                                    type="button"
+                                    aria-label="Xem ảnh trước"
+                                    onClick={() =>
+                                        setSelectedImageIndex((currentIndex) =>
+                                            currentIndex === null
+                                                ? null
+                                                : (currentIndex - 1 + allImages.length) % allImages.length
+                                        )
+                                    }
+                                    className="absolute left-2 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"
+                                >
+                                    <ChevronLeft className="h-7 w-7" />
+                                </button>
+
+                                <button
+                                    type="button"
+                                    aria-label="Xem ảnh tiếp theo"
+                                    onClick={() =>
+                                        setSelectedImageIndex((currentIndex) =>
+                                            currentIndex === null
+                                                ? null
+                                                : (currentIndex + 1) % allImages.length
+                                        )
+                                    }
+                                    className="absolute right-2 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"
+                                >
+                                    <ChevronRight className="h-7 w-7" />
+                                </button>
+                            </>
+                        )}
+
+                        <span className="absolute bottom-2 rounded-full bg-black/60 px-3 py-1 text-sm text-white">
+                            {selectedImageIndex + 1}/{allImages.length}
+                        </span>
+                    </div>
                 </div>
             )}
 
