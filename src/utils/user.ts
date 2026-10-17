@@ -13,3 +13,12 @@ export const getUserDisplayName = (
 
     return fullName || user.user_name || "Người dùng";
 };
+
+export const getNameInitials = (name: string): string => {
+    return name
+        .split(" ")
+        .filter(Boolean)
+        .slice(-2)
+        .map((part) => part.charAt(0).toUpperCase())
+        .join("") || "U";
+};

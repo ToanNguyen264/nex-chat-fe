@@ -1,6 +1,5 @@
 import { BarChart3, Bookmark, Newspaper, Network, TrendingUp } from "lucide-react";
 
-import profileNam from "../../assets/home/profile-nam.png";
 import ProfileCard from "./ProfileCard";
 import type { CurrentUser } from "../../api/user.api";
 import { getUserDisplayName } from "../../utils/user";
@@ -21,7 +20,7 @@ export default function Sidebar({ currentUser }: SidebarProps) {
     return (
         <div className="flex flex-col gap-4">
             <ProfileCard
-                avatar={currentUser?.avatar || profileNam}
+                avatar={currentUser?.avatar}
                 name={displayName}
                 username={currentUser?.user_name ? `@${currentUser.user_name}` : "@user"}
                 postCount={842}

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import type { ReactNode } from "react";
 import CreatePost from "./components/CreatePost";
 import PostList from "./components/PostList";
 import StoryList from "./components/StoryList";
 import type { Post } from "./types";
-import avatarNam from "../../assets/home/profile-nam.png";
 import {
     createPost,
     deletePost,
@@ -15,9 +15,17 @@ import type { CurrentUser } from "../../api/user.api";
 
 type FeedProps = {
     currentUser: CurrentUser | null;
+    showStories?: boolean;
+    onlyUserId?: string;
+    feedHeader?: ReactNode;
 };
 
-export default function Feed({ currentUser }: FeedProps) {
+export default function Feed({
+    currentUser,
+    showStories = true,
+    onlyUserId,
+    feedHeader,
+}: FeedProps) {
     const [posts, setPosts] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -27,7 +35,11 @@ export default function Feed({ currentUser }: FeedProps) {
             try {
                 const postsFromApi = await getPosts(); // nhận mảng dữ liệu bài viết từ API
 
-                const formattedPosts: Post[] = postsFromApi.map((post) => {
+                const visiblePosts = onlyUserId
+                    ? postsFromApi.filter((post) => post.user_id === onlyUserId)
+                    : postsFromApi;
+
+                const formattedPosts: Post[] = visiblePosts.map((post) => {
                     const fullName = [
                         post.users.first_name,
                         post.users.last_name,
@@ -47,7 +59,7 @@ export default function Feed({ currentUser }: FeedProps) {
                         ).toLocaleString("vi-VN"),
                         currentReaction: post.currentReaction,
                         reactionCount: post.reactionCount,
-                        avatar: post.users.avatar || avatarNam,
+                        avatar: post.users.avatar || undefined,
                         images: post.attachments.filter(
                             (attachment) =>
                                 attachment.file_type?.startsWith(
@@ -77,7 +89,7 @@ export default function Feed({ currentUser }: FeedProps) {
         }
 
         void loadPosts();
-    }, []);
+    }, [onlyUserId]);
 
     async function handleReaction(
         postId: number,
@@ -121,7 +133,7 @@ export default function Feed({ currentUser }: FeedProps) {
                 createdAt: "Vừa xong",
                 currentReaction: null,
                 reactionCount: 0,
-                avatar: createdPost.users.avatar || avatarNam,
+                avatar: createdPost.users.avatar || undefined,
                 images: createdPost.attachments.filter(
                     (attachment) =>
                         attachment.file_type?.startsWith("image/")
@@ -159,12 +171,14 @@ export default function Feed({ currentUser }: FeedProps) {
 
     return (
         <div className="flex flex-col gap-4">
-            <StoryList />
+            {showStories && <StoryList />}
 
             <CreatePost
                 currentUser={currentUser}
                 onCreatePost={handleCreatePost}
             />
+
+            {feedHeader}
 
             {isLoading ? (
                 <p className="rounded-2xl bg-white p-5 text-center text-sm text-slate-500">

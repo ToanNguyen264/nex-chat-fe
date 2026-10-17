@@ -1,5 +1,7 @@
+import { Link } from "react-router";
+
 type ProfileCardProps = {
-    avatar: string;
+    avatar?: string | null;
     name: string;
     username: string;
     postCount: number;
@@ -15,11 +17,24 @@ export default function ProfileCard({
     followerCount,
     followingCount,
 }: ProfileCardProps) {
+    const initials = name
+        .split(" ")
+        .filter(Boolean)
+        .slice(-2)
+        .map((part) => part.charAt(0).toUpperCase())
+        .join("") || "U";
+
     return (
         <section className="rounded-2xl bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
+            <Link to="/profile" className="flex items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4648d4]/30">
                 <div className="relative">
-                    <img src={avatar} alt={name} className="h-12 w-12 rounded-full object-cover" />
+                    {avatar ? (
+                        <img src={avatar} alt={name} className="h-12 w-12 rounded-full object-cover" />
+                    ) : (
+                        <span className="grid h-12 w-12 place-items-center rounded-full bg-[#e8e9ff] text-sm font-bold text-[#4648d4]">
+                            {initials}
+                        </span>
+                    )}
 
                     <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-cyan-400" />
                 </div>
@@ -33,7 +48,7 @@ export default function ProfileCard({
                         {username}
                     </p>
                 </div>
-            </div>
+            </Link>
 
             <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-[#f2f3ff]/70 px-3 pb-3 pt-4 text-center">
                 <div>

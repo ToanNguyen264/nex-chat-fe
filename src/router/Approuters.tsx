@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router";
 import LoginPage from "../page/Login";
 import RegisterPage from "../page/Register";
 import HomePage from "../page/Home";
+import ProfilePage from "../page/Profile";
 import ProtectedRoute from "./ProtectedRoute";
 export default function AppRouters() {
     return (
@@ -13,6 +14,14 @@ export default function AppRouters() {
                 element={
                     <ProtectedRoute>
                         <HomePage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/profile"
+                element={
+                    <ProtectedRoute>
+                        <ProfilePage />
                     </ProtectedRoute>
                 }
             />
