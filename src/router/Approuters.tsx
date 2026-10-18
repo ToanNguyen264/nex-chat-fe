@@ -25,6 +25,14 @@ export default function AppRouters() {
                     </ProtectedRoute>
                 }
             />
+            <Route
+                path="/profile/:userId"
+                element={
+                    <ProtectedRoute>
+                        <ProfilePage />
+                    </ProtectedRoute>
+                }
+            />
         </Routes>
     )
 }

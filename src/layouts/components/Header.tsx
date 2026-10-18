@@ -4,6 +4,8 @@ import { Link } from "react-router";
 import pulseLogo from "../../assets/home/pulse-logo.png";
 import type { CurrentUser } from "../../api/user.api";
 import { getNameInitials, getUserDisplayName } from "../../utils/user";
+import { useNotificationStore } from "../../features/notifications/notification.store";
+
 
 const navItems = ["Bảng tin", "Khám phá", "Video", "Nhóm"];
 
@@ -14,6 +16,8 @@ type HeaderProps = {
 export default function Header({ currentUser }: HeaderProps) {
     const displayName = getUserDisplayName(currentUser);
     const initials = getNameInitials(displayName);
+
+    const unreadCount = useNotificationStore((state) => state.unreadCount); //lấy uneadCount từ store
 
     return (
         <header className="sticky top-0 z-40 h-16 border-b border-[#eef0ff] bg-white/95 shadow-[0_1px_2px_rgba(0,0,0,0.03)] backdrop-blur">
@@ -63,7 +67,11 @@ export default function Header({ currentUser }: HeaderProps) {
 
                     <button type="button" aria-label="Thông báo" className="relative rounded-full p-2 text-[#464554] hover:bg-[#f2f3ff]">
                         <Bell className="h-[18px] w-[18px]" />
-                        <span className="absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#b90538] px-1 text-[9px] font-bold text-white">3</span>
+                        {unreadCount > 0 && (
+                            <span className="absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#b90538] px-1 text-[9px] font-bold text-white">
+                                {unreadCount > 99 ? "+99" : unreadCount}
+                            </span>
+                        )}
                     </button>
 
                     <Link to="/profile" className="ml-1 flex items-center gap-1" aria-label="Mở trang cá nhân">

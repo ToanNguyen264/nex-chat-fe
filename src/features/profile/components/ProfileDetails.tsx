@@ -15,10 +15,11 @@ function CardTitle({ children, action, onAction }: { children: ReactNode; action
 
 type ProfileDetailsProps = {
     profile: UserProfile | null;
+    isOwnProfile: boolean;
     onEditProfile: () => void;
 };
 
-export default function ProfileDetails({ profile, onEditProfile }: ProfileDetailsProps) {
+export default function ProfileDetails({ profile, isOwnProfile, onEditProfile }: ProfileDetailsProps) {
     const details = [
         { icon: BriefcaseBusiness, text: profile?.workplace ? <>Làm việc tại <strong>{profile.workplace}</strong></> : <>Chưa cập nhật nơi làm việc</> },
         { icon: GraduationCap, text: profile?.education ? <>Từng học tại <strong>{profile.education}</strong></> : <>Chưa cập nhật học vấn</> },
@@ -30,7 +31,12 @@ export default function ProfileDetails({ profile, onEditProfile }: ProfileDetail
     return (
         <aside className="flex flex-col gap-5">
             <section className="rounded-2xl bg-white p-6 shadow-sm">
-                <CardTitle action="Chỉnh sửa" onAction={onEditProfile}>Giới thiệu</CardTitle>
+                <CardTitle
+                    action={isOwnProfile ? "Chỉnh sửa" : undefined}
+                    onAction={isOwnProfile ? onEditProfile : undefined}
+                >
+                    Giới thiệu
+                </CardTitle>
                 <ul className="space-y-3">
                     {details.map(({ icon: Icon, text }, index) => (
                         <li key={index} className="flex items-center gap-3 text-xs leading-5 text-[#464554]">
@@ -41,9 +47,11 @@ export default function ProfileDetails({ profile, onEditProfile }: ProfileDetail
                         </li>
                     ))}
                 </ul>
-                <button type="button" onClick={onEditProfile} className="mt-5 w-full rounded-xl bg-[#f2f3ff] py-3 text-xs font-semibold text-[#464554] hover:bg-[#e8e9fb]">
-                    Chỉnh sửa chi tiết công khai
-                </button>
+                {isOwnProfile && (
+                    <button type="button" onClick={onEditProfile} className="mt-5 w-full rounded-xl bg-[#f2f3ff] py-3 text-xs font-semibold text-[#464554] hover:bg-[#e8e9fb]">
+                        Chỉnh sửa chi tiết công khai
+                    </button>
+                )}
             </section>
 
             <section className="rounded-2xl bg-white p-6 shadow-sm">

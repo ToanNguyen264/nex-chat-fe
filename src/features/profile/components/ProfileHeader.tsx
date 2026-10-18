@@ -7,15 +7,26 @@ import {
     Info,
     LayoutGrid,
     MessageCircle,
+    UserCheck,
+    UserPlus,
     Users,
 } from "lucide-react";
 
 import type { CurrentUser, UserProfile } from "../../../api/user.api";
+import type { Friendship } from "../../../api/friend.api";
 import { getNameInitials, getUserDisplayName } from "../../../utils/user";
 
 type ProfileHeaderProps = {
     currentUser: CurrentUser | null;
     profile: UserProfile | null;
+    isOwnProfile: boolean;
+    relationship: Friendship | null;
+    isRelationshipLoading: boolean;
+    onSendFriendRequest: () => Promise<void>;
+    onAcceptFriendRequest: () => Promise<void>;
+    onRejectFriendRequest: () => Promise<void>;
+    onCancelFriendRequest: () => Promise<void>;
+    onRemoveFriend: () => Promise<void>;
     onEditProfile: () => void;
     onUploadAvatar: (file: File) => Promise<void>;
     onUploadCover: (file: File) => Promise<void>;
@@ -46,6 +57,14 @@ const tabs = [
 export default function ProfileHeader({
     currentUser,
     profile,
+    isOwnProfile,
+    relationship,
+    isRelationshipLoading,
+    onSendFriendRequest,
+    onAcceptFriendRequest,
+    onRejectFriendRequest,
+    onCancelFriendRequest,
+    onRemoveFriend,
     onEditProfile,
     onUploadAvatar,
     onUploadCover,
@@ -56,9 +75,22 @@ export default function ProfileHeader({
     onTabChange,
 }: ProfileHeaderProps) {
     const displayName = profile?.display_name || getUserDisplayName(currentUser);
-    const username = currentUser?.user_name || "user";
+    const username =
+        profile?.user_name ||
+        currentUser?.user_name ||
+        "user";
     const avatarUrl = profile?.avatar || currentUser?.avatar;
     const initials = getNameInitials(displayName);
+    const isIncomingRequest =
+        relationship?.status === "pending" &&
+        relationship.addressee_id === currentUser?.id;
+    const isOutgoingRequest =
+        relationship?.status === "pending" &&
+        relationship.requester_id === currentUser?.id;
+    const isAcceptedFriend =
+        relationship?.status === "accepted";
+    const isBlocked =
+        relationship?.status === "blocked";
 
     return (
         <section className="overflow-hidden rounded-3xl bg-white shadow-sm">
@@ -73,23 +105,25 @@ export default function ProfileHeader({
                     <div className="h-full w-full bg-gradient-to-br from-[#3537ad] via-[#5f62e9] to-[#57dffe]" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#131b2e]/60 via-transparent to-black/10" />
-                <label
-                    className={`absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-[#131b2e] shadow-md backdrop-blur-md transition hover:bg-white sm:bottom-6 sm:right-6 ${isUploadingCover ? "pointer-events-none opacity-70" : "cursor-pointer"}`}
-                >
-                    <Camera className="h-4 w-4" />
-                    {isUploadingCover ? "Đang tải ảnh bìa..." : "Chỉnh sửa ảnh bìa"}
-                    <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif"
-                        className="hidden"
-                        disabled={isUploadingCover}
-                        onChange={(event) => {
-                            const file = event.target.files?.[0];
-                            if (file) void onUploadCover(file);
-                            event.target.value = "";
-                        }}
-                    />
-                </label>
+                {isOwnProfile && (
+                    <label
+                        className={`absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-[#131b2e] shadow-md backdrop-blur-md transition hover:bg-white sm:bottom-6 sm:right-6 ${isUploadingCover ? "pointer-events-none opacity-70" : "cursor-pointer"}`}
+                    >
+                        <Camera className="h-4 w-4" />
+                        {isUploadingCover ? "Đang tải ảnh bìa..." : "Chỉnh sửa ảnh bìa"}
+                        <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            className="hidden"
+                            disabled={isUploadingCover}
+                            onChange={(event) => {
+                                const file = event.target.files?.[0];
+                                if (file) void onUploadCover(file);
+                                event.target.value = "";
+                            }}
+                        />
+                    </label>
+                )}
             </div>
 
             <div className="relative px-5 pb-4 sm:px-10">
@@ -107,23 +141,25 @@ export default function ProfileHeader({
                                     {initials}
                                 </div>
                             )}
-                            <label
-                                aria-label="Thay đổi ảnh đại diện"
-                                className={`absolute bottom-1 left-1 grid h-10 w-10 place-items-center rounded-full border-4 border-white bg-[#4648d4] text-white shadow-md sm:bottom-2 ${isUploadingAvatar ? "pointer-events-none opacity-70" : "cursor-pointer hover:bg-[#3d3fc2]"}`}
-                            >
-                                <Camera className="h-4 w-4" />
-                                <input
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp,image/gif"
-                                    className="hidden"
-                                    disabled={isUploadingAvatar}
-                                    onChange={(event) => {
-                                        const file = event.target.files?.[0];
-                                        if (file) void onUploadAvatar(file);
-                                        event.target.value = "";
-                                    }}
-                                />
-                            </label>
+                            {isOwnProfile && (
+                                <label
+                                    aria-label="Thay đổi ảnh đại diện"
+                                    className={`absolute bottom-1 left-1 grid h-10 w-10 place-items-center rounded-full border-4 border-white bg-[#4648d4] text-white shadow-md sm:bottom-2 ${isUploadingAvatar ? "pointer-events-none opacity-70" : "cursor-pointer hover:bg-[#3d3fc2]"}`}
+                                >
+                                    <Camera className="h-4 w-4" />
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp,image/gif"
+                                        className="hidden"
+                                        disabled={isUploadingAvatar}
+                                        onChange={(event) => {
+                                            const file = event.target.files?.[0];
+                                            if (file) void onUploadAvatar(file);
+                                            event.target.value = "";
+                                        }}
+                                    />
+                                </label>
+                            )}
                             <span className="absolute bottom-3 right-3 h-5 w-5 rounded-full border-4 border-white bg-[#57dffe]" />
                         </div>
 
@@ -140,26 +176,100 @@ export default function ProfileHeader({
                     </div>
 
                     <div className="flex flex-wrap gap-2 lg:pb-1">
-                        <button className="flex items-center gap-2 rounded-xl bg-[#4648d4] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3d3fc2]">
-                            <Edit3 className="h-4 w-4" />
-                            Đăng bài mới
-                        </button>
-                        <button
-                            type="button"
-                            onClick={onEditProfile}
-                            disabled={!profile}
-                            className="flex items-center gap-2 rounded-xl bg-[#f2f3ff] px-5 py-3 text-sm font-semibold text-[#464554] transition hover:bg-[#e8e9fb] disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            <Edit3 className="h-4 w-4" />
-                            Chỉnh sửa hồ sơ
-                        </button>
+                        {isOwnProfile && (
+                            <>
+                                <button className="flex items-center gap-2 rounded-xl bg-[#4648d4] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3d3fc2]">
+                                    <Edit3 className="h-4 w-4" />
+                                    Đăng bài mới
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onEditProfile}
+                                    disabled={!profile}
+                                    className="flex items-center gap-2 rounded-xl bg-[#f2f3ff] px-5 py-3 text-sm font-semibold text-[#464554] transition hover:bg-[#e8e9fb] disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <Edit3 className="h-4 w-4" />
+                                    Chỉnh sửa hồ sơ
+                                </button>
+                            </>
+                        )}
+                        {!isOwnProfile && profile && (
+                            <>
+                                {isIncomingRequest ? (
+                                    <>
+                                        <button
+                                            type="button"
+                                            disabled={isRelationshipLoading}
+                                            onClick={() => void onAcceptFriendRequest()}
+                                            className="rounded-xl bg-[#4648d4] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3d3fc2] disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            {isRelationshipLoading
+                                                ? "Đang xử lý..."
+                                                : "Chấp nhận"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            disabled={isRelationshipLoading}
+                                            onClick={() => void onRejectFriendRequest()}
+                                            className="rounded-xl bg-[#f2f3ff] px-5 py-3 text-sm font-semibold text-[#464554] transition hover:bg-[#e8e9fb] disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            Từ chối
+                                        </button>
+                                    </>
+                                ) : isOutgoingRequest ? (
+                                    <button
+                                        type="button"
+                                        disabled={isRelationshipLoading}
+                                        onClick={() => void onCancelFriendRequest()}
+                                        className="rounded-xl bg-[#f2f3ff] px-5 py-3 text-sm font-semibold text-[#464554] transition hover:bg-[#e8e9fb] disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        {isRelationshipLoading
+                                            ? "Đang xử lý..."
+                                            : "Hủy lời mời"}
+                                    </button>
+                                ) : isAcceptedFriend ? (
+                                    <button
+                                        type="button"
+                                        disabled={isRelationshipLoading}
+                                        onClick={() => void onRemoveFriend()}
+                                        className="flex items-center gap-2 rounded-xl bg-[#f2f3ff] px-5 py-3 text-sm font-semibold text-[#464554] transition hover:bg-[#e8e9fb] disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        <UserCheck className="h-4 w-4" />
+                                        {isRelationshipLoading
+                                            ? "Đang xử lý..."
+                                            : "Bạn bè"}
+                                    </button>
+                                ) : isBlocked ? (
+                                    <button
+                                        type="button"
+                                        disabled
+                                        className="flex items-center gap-2 rounded-xl bg-[#e8e9fb] px-5 py-3 text-sm font-semibold text-[#767586] disabled:cursor-not-allowed"
+                                    >
+                                        <UserPlus className="h-4 w-4" />
+                                        Không thể kết bạn
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => void onSendFriendRequest()}
+                                        disabled={isRelationshipLoading}
+                                        className="flex items-center gap-2 rounded-xl bg-[#4648d4] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3d3fc2] disabled:cursor-not-allowed disabled:bg-[#e8e9fb] disabled:text-[#767586]"
+                                    >
+                                        <UserPlus className="h-4 w-4" />
+                                        {isRelationshipLoading
+                                            ? "Đang gửi..."
+                                            : "Kết bạn"}
+                                    </button>
+                                )}
+                            </>
+                        )}
                         <button aria-label="Tùy chọn khác" className="grid h-11 w-11 place-items-center rounded-xl bg-[#f2f3ff] text-[#464554] hover:bg-[#e8e9fb]">
                             <Ellipsis className="h-5 w-5" />
                         </button>
                     </div>
                 </div>
 
-                {uploadError && (
+                {isOwnProfile && uploadError && (
                     <p className="mb-4 rounded-xl bg-rose-50 px-4 py-3 text-xs font-medium text-rose-600">
                         {uploadError}
                     </p>
