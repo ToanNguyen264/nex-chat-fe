@@ -3,6 +3,7 @@ import LoginPage from "../page/Login";
 import RegisterPage from "../page/Register";
 import HomePage from "../page/Home";
 import ProfilePage from "../page/Profile";
+import FriendsPage from "../page/Friends";
 import ProtectedRoute from "./ProtectedRoute";
 export default function AppRouters() {
     return (
@@ -30,6 +31,14 @@ export default function AppRouters() {
                 element={
                     <ProtectedRoute>
                         <ProfilePage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/friends"
+                element={
+                    <ProtectedRoute>
+                        <FriendsPage />
                     </ProtectedRoute>
                 }
             />

@@ -8,17 +8,39 @@ import {
 import type { AppNotification } from "../features/notifications/types";
 
 import { useNotificationStore } from "../features/notifications/notification.store";
+import { usePresenceStore } from "../features/presence/presence.store";
+
+type PresenceSnapshotPayload = {
+    userIds: string[];
+};
+
+type PresenceUserPayload = {
+    userId: string;
+};
 
 export default function SocketManager() {
     const location = useLocation(); // Lấy thông tin đường dẫn hiện tại.
 
     const increaseUnread = useNotificationStore((state) => state.increaseUnread); //lấy action từ store
+    const setOnlineUsers = usePresenceStore(
+        (state) => state.setOnlineUsers
+    );
+    const setUserOnline = usePresenceStore(
+        (state) => state.setUserOnline
+    );
+    const setUserOffline = usePresenceStore(
+        (state) => state.setUserOffline
+    );
+    const resetPresence = usePresenceStore(
+        (state) => state.resetPresence
+    );
 
     useEffect(() => {
         const accessToken = localStorage.getItem("accessToken");
 
         if (!accessToken) {
             disconnectSocket();
+            resetPresence();
             return;
         }
 
@@ -42,6 +64,36 @@ export default function SocketManager() {
             reason: string
         ) => {
             console.log("Socket disconnected:",reason);
+            resetPresence();
+        };
+
+        const handlePresenceSnapshot = (
+            payload: PresenceSnapshotPayload
+        ) => {
+            if (!payload || !Array.isArray(payload.userIds)) return;
+
+            setOnlineUsers(
+                payload.userIds.filter(
+                    (userId): userId is string =>
+                        typeof userId === "string"
+                )
+            );
+        };
+
+        const handlePresenceOnline = (
+            payload: PresenceUserPayload
+        ) => {
+            if (!payload || typeof payload.userId !== "string") return;
+
+            setUserOnline(payload.userId);
+        };
+
+        const handlePresenceOffline = (
+            payload: PresenceUserPayload
+        ) => {
+            if (!payload || typeof payload.userId !== "string") return;
+
+            setUserOffline(payload.userId);
         };
 
         const handleNewNotification = (
@@ -67,6 +119,18 @@ export default function SocketManager() {
             "notification:new",
             handleNewNotification
         );
+        socket.on(
+            "presence:snapshot",
+            handlePresenceSnapshot
+        );
+        socket.on(
+            "presence:online",
+            handlePresenceOnline
+        );
+        socket.on(
+            "presence:offline",
+            handlePresenceOffline
+        );
 
         connectSocket();
 
@@ -84,8 +148,27 @@ export default function SocketManager() {
                 "notification:new",
                 handleNewNotification
             );
+            socket.off(
+                "presence:snapshot",
+                handlePresenceSnapshot
+            );
+            socket.off(
+                "presence:online",
+                handlePresenceOnline
+            );
+            socket.off(
+                "presence:offline",
+                handlePresenceOffline
+            );
         };
-    }, [location.pathname, increaseUnread]);
+    }, [
+        location.pathname,
+        increaseUnread,
+        resetPresence,
+        setOnlineUsers,
+        setUserOffline,
+        setUserOnline,
+    ]);
 
     return null;
 }

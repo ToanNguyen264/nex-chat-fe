@@ -1,15 +1,18 @@
 import { Link } from "react-router";
+import { usePresenceStore } from "../../features/presence/presence.store";
 
 type ProfileCardProps = {
+    userId?: string;
     avatar?: string | null;
     name: string;
     username: string;
     postCount: number;
-    followerCount: string;
+    followerCount: number;
     followingCount: number;
 };
 
 export default function ProfileCard({
+    userId,
     avatar,
     name,
     username,
@@ -17,6 +20,9 @@ export default function ProfileCard({
     followerCount,
     followingCount,
 }: ProfileCardProps) {
+    const isOnline = usePresenceStore((state) =>
+        userId ? state.onlineUserIds.has(userId) : false
+    );
     const initials = name
         .split(" ")
         .filter(Boolean)
@@ -36,7 +42,9 @@ export default function ProfileCard({
                         </span>
                     )}
 
-                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-cyan-400" />
+                    {isOnline && (
+                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-[#57dffe]" />
+                    )}
                 </div>
 
                 <div>

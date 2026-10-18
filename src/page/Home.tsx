@@ -3,7 +3,6 @@ import MainLayout from "../layouts/MainLayout";
 import Sidebar from "../layouts/components/Sidebar";
 import Feed from "../features/feed/Feed";
 import RightSidebar from "../features/friends/RightSidebar";
-import ChatPopup from "../features/chat/ChatPopup";
 import { getCurrentUser } from "../api/user.api";
 import type { CurrentUser } from "../api/user.api";
 
@@ -38,7 +37,6 @@ export default function HomePage() {
                     <RightSidebar />
                 </aside>
             </div>
-            <ChatPopup />
         </MainLayout>
     );
 }
