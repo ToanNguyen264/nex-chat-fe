@@ -31,6 +31,33 @@ export type FriendListItem = {
     friend: FriendUser;
 };
 
+export type IncomingFriendRequest = {
+    id: string;
+    requester_id: string;
+    addressee_id: string;
+    status: "pending";
+    created_at: string;
+    requester: FriendUser;
+};
+
+export type FriendSuggestion = {
+    id: string;
+    user_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    avatar: string | null;
+    profiles: {
+        display_name: string;
+        avatar_url: string | null;
+        workplace: string | null;
+        education: string | null;
+        location: string | null;
+    } | null;
+    matchScore: number;
+    matchReasons: string[];
+    mutualFriendCount: number;
+};
+
 type GetRelationshipResponse = {
     success: boolean;
     data: Friendship | null;
@@ -50,6 +77,16 @@ type FriendActionResponse = {
 type FriendListResponse = {
     success: boolean;
     data: FriendListItem[];
+};
+
+type FriendSuggestionsResponse = {
+    success: boolean;
+    data: FriendSuggestion[];
+};
+
+type IncomingFriendRequestsResponse = {
+    success: boolean;
+    data: IncomingFriendRequest[];
 };
 
 export const getRelationshipWithUser = async (
@@ -118,6 +155,33 @@ export const getFriends = async (): Promise<
     const response =
         await api.get<FriendListResponse>(
             "/friends"
+        );
+
+    return response.data.data;
+};
+
+export const getFriendSuggestions = async (
+    limit = 20
+): Promise<FriendSuggestion[]> => {
+    const response =
+        await api.get<FriendSuggestionsResponse>(
+            "/friends/suggestions",
+            {
+                params: {
+                    limit,
+                },
+            }
+        );
+
+    return response.data.data;
+};
+
+export const getIncomingFriendRequests = async (): Promise<
+    IncomingFriendRequest[]
+> => {
+    const response =
+        await api.get<IncomingFriendRequestsResponse>(
+            "/friends/requests/incoming"
         );
 
     return response.data.data;

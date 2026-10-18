@@ -8,9 +8,9 @@ export type NotificationType =
 
 export type NotificationActor = {
     id: string;
-    user_name: string;
-    first_name: string;
-    last_name: string;
+    user_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
     avatar: string | null;
 };
 

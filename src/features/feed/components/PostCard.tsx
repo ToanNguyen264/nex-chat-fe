@@ -19,6 +19,7 @@ import {
 import type { Post } from "../types";
 import type { ReactionType } from "../../../api/post.api";
 import CommentSection from "./CommentSection";
+import { usePresenceStore } from "../../presence/presence.store";
 
 const reactionOptions: Array<{
     type: ReactionType;
@@ -70,6 +71,9 @@ export default function PostCard({
         (reaction) => reaction.type === post.currentReaction
     );
     const reactionCount = post.reactionCount ?? 0;
+    const isAuthorOnline = usePresenceStore((state) =>
+        state.onlineUserIds.has(post.userId)
+    );
 
     useEffect(() => {
         if (!isMenuOpen) {
@@ -163,14 +167,18 @@ export default function PostCard({
         <article className="rounded-2xl bg-white p-5 shadow-[0_1px_1px_rgba(0,0,0,0.05)]">
             <header className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                    {post.avatar ? (
-                        <span className="relative shrink-0">
+                    <span className="relative shrink-0">
+                        {post.avatar ? (
                             <img src={post.avatar} alt={post.author} className="h-11 w-11 rounded-full object-cover" />
-                            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-[#57dffe]" />
-                        </span>
-                    ) : (
-                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-600">{post.author.charAt(0)}</div>
-                    )}
+                        ) : (
+                            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-600">
+                                {post.author.charAt(0)}
+                            </div>
+                        )}
+                        <span
+                            className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${isAuthorOnline ? "bg-[#57dffe]" : "bg-[#c7c4d7]"}`}
+                        />
+                    </span>
 
                     <div>
                         <h2 className="flex items-center gap-1 text-lg font-bold tracking-[-0.18px] text-[#131b2e]">

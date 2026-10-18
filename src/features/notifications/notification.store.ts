@@ -6,6 +6,8 @@ type NotificationState = {
 
 type NotificationActions = {
     increaseUnread: () => void;
+    decreaseUnread: () => void;
+    setUnreadCount: (count: number) => void;
     resetUnread: () => void;
 };
 
@@ -20,6 +22,18 @@ export const useNotificationStore =
                 unreadCount:
                     state.unreadCount + 1,
             }));
+        },
+
+        decreaseUnread: () => {
+            set((state) => ({
+                unreadCount: Math.max(0, state.unreadCount - 1),
+            }));
+        },
+
+        setUnreadCount: (count) => {
+            set({
+                unreadCount: Math.max(0, count),
+            });
         },
 
         resetUnread: () => {

@@ -3,6 +3,7 @@ import type { ReactionType } from "../../api/post.api";
 /* cấu trúc dữ liệu cho một bài viết */
 export type Post = {
     id: number;
+    userId: string;
     author: string;
     content: string;
     createdAt: string;

@@ -11,6 +11,7 @@ import type {
 import {
     getNameInitials,
 } from "../../../utils/user";
+import { usePresenceStore } from "../../presence/presence.store";
 
 const getFriendName = (
     friend: FriendListItem["friend"]
@@ -30,6 +31,9 @@ const getFriendName = (
 };
 
 export default function FriendsTab() {
+    const onlineUserIds = usePresenceStore(
+        (state) => state.onlineUserIds
+    );
     const [friends, setFriends] = useState<
         FriendListItem[]
     >([]);
@@ -127,17 +131,22 @@ export default function FriendsTab() {
                                 to={`/profile/${item.friend.id}`}
                                 className="flex items-center gap-4 rounded-2xl border border-[#eef0ff] p-4 transition hover:border-[#d9dcff] hover:bg-[#fafaff]"
                             >
-                                {item.friend.avatar ? (
-                                    <img
-                                        src={item.friend.avatar}
-                                        alt={name}
-                                        className="h-14 w-14 shrink-0 rounded-full object-cover"
+                                <div className="relative shrink-0">
+                                    {item.friend.avatar ? (
+                                        <img
+                                            src={item.friend.avatar}
+                                            alt={name}
+                                            className="h-14 w-14 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="grid h-14 w-14 place-items-center rounded-full bg-[#e8e9fb] font-bold text-[#4648d4]">
+                                            {getNameInitials(name)}
+                                        </div>
+                                    )}
+                                    <span
+                                        className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white ${onlineUserIds.has(item.friend.id) ? "bg-[#57dffe]" : "bg-[#c7c4d7]"}`}
                                     />
-                                ) : (
-                                    <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#e8e9fb] font-bold text-[#4648d4]">
-                                        {getNameInitials(name)}
-                                    </div>
-                                )}
+                                </div>
 
                                 <div className="min-w-0">
                                     <p className="truncate font-semibold text-[#131b2e]">

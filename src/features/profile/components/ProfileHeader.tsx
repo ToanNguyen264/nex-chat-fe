@@ -15,6 +15,7 @@ import {
 import type { CurrentUser, UserProfile } from "../../../api/user.api";
 import type { Friendship } from "../../../api/friend.api";
 import { getNameInitials, getUserDisplayName } from "../../../utils/user";
+import { usePresenceStore } from "../../presence/presence.store";
 
 type ProfileHeaderProps = {
     currentUser: CurrentUser | null;
@@ -81,6 +82,10 @@ export default function ProfileHeader({
         "user";
     const avatarUrl = profile?.avatar || currentUser?.avatar;
     const initials = getNameInitials(displayName);
+    const profileUserId = profile?.id ?? (isOwnProfile ? currentUser?.id : null);
+    const isProfileOnline = usePresenceStore((state) =>
+        profileUserId ? state.onlineUserIds.has(profileUserId) : false
+    );
     const isIncomingRequest =
         relationship?.status === "pending" &&
         relationship.addressee_id === currentUser?.id;
@@ -160,7 +165,9 @@ export default function ProfileHeader({
                                     />
                                 </label>
                             )}
-                            <span className="absolute bottom-3 right-3 h-5 w-5 rounded-full border-4 border-white bg-[#57dffe]" />
+                            <span
+                                className={`absolute bottom-3 right-3 h-5 w-5 rounded-full border-4 border-white ${isProfileOnline ? "bg-[#57dffe]" : "bg-[#c7c4d7]"}`}
+                            />
                         </div>
 
                         <div className="pb-1">

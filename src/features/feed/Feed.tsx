@@ -49,6 +49,7 @@ export default function Feed({
 
                     return {
                         id: Number(post.id),
+                        userId: post.user_id,
                         author:
                             fullName ||
                             post.users.user_name ||
@@ -128,6 +129,7 @@ export default function Feed({
 
             const newPost: Post = {
                 id: Number(createdPost.id),
+                userId: createdPost.user_id,
                 author: fullName || createdPost.users.user_name || "Người dùng",
                 content: createdPost.content,
                 createdAt: "Vừa xong",
