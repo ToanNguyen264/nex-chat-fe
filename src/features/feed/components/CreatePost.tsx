@@ -12,9 +12,8 @@ import {
     X,
 } from "lucide-react";
 
-import avatarCreatePost from "../../../assets/home/avatar-create-post.png";
 import type { CurrentUser } from "../../../api/user.api";
-import { getUserDisplayName } from "../../../utils/user";
+import { getNameInitials, getUserDisplayName } from "../../../utils/user";
 
 
 type CreatePostProps = {
@@ -25,6 +24,35 @@ type CreatePostProps = {
     ) => Promise<void>;
 };
 
+type MediaPreviewProps = {
+    file: File;
+};
+
+function MediaPreview({ file }: MediaPreviewProps) {
+    const [previewUrl] = useState(() => URL.createObjectURL(file));
+
+    useEffect(() => {
+        return () => URL.revokeObjectURL(previewUrl);
+    }, [previewUrl]);
+
+    if (file.type.startsWith("image/")) {
+        return (
+            <img
+                src={previewUrl}
+                alt={`Xem trước ${file.name}`}
+                className="h-32 w-full object-cover"
+            />
+        );
+    }
+
+    return (
+        <video
+            src={previewUrl}
+            className="h-32 w-full object-cover"
+        />
+    );
+}
+
 
 export default function CreatePost({
     currentUser,
@@ -33,30 +61,12 @@ export default function CreatePost({
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const emojiPickerRef = useRef<HTMLDivElement>(null);
     const displayName = getUserDisplayName(currentUser);
+    const initials = getNameInitials(displayName);
     const firstName = currentUser?.first_name || displayName;
     const canSubmit = Boolean(content.trim() || selectedFiles.length > 0);
-
-    useEffect(() => {
-        if (selectedFiles.length === 0) {
-            setPreviewUrls([]);
-            return;
-        }
-
-        const objectUrls = selectedFiles.map((file) =>
-            URL.createObjectURL(file)
-        );
-        setPreviewUrls(objectUrls);
-
-        return () => {
-            objectUrls.forEach((objectUrl) =>
-                URL.revokeObjectURL(objectUrl)
-            );
-        };
-    }, [selectedFiles]);
 
     useEffect(() => {
         if (!isEmojiPickerOpen) {
@@ -127,11 +137,17 @@ export default function CreatePost({
             className="rounded-2xl bg-white p-4 shadow-[0_1px_1px_rgba(0,0,0,0.05)]"
         >
             <div className="flex items-center gap-3">
-                <img
-                    src={currentUser?.avatar || avatarCreatePost}
-                    alt={displayName}
-                    className="h-10 w-10 shrink-0 rounded-full object-cover"
-                />
+                {currentUser?.avatar ? (
+                    <img
+                        src={currentUser.avatar}
+                        alt={displayName}
+                        className="h-10 w-10 shrink-0 rounded-full object-cover"
+                    />
+                ) : (
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e8e9ff] text-xs font-bold text-[#4648d4]">
+                        {initials}
+                    </span>
+                )}
 
                 <input
                     id="create-post-content"
@@ -156,18 +172,7 @@ export default function CreatePost({
                                 key={`${file.name}-${file.lastModified}-${index}`}
                                 className="relative overflow-hidden rounded-xl bg-slate-100"
                             >
-                                {file.type.startsWith("image/") ? (
-                                    <img
-                                        src={previewUrls[index]}
-                                        alt={`Xem trước ${file.name}`}
-                                        className="h-32 w-full object-cover"
-                                    />
-                                ) : (
-                                    <video
-                                        src={previewUrls[index]}
-                                        className="h-32 w-full object-cover"
-                                    />
-                                )}
+                                <MediaPreview file={file} />
 
                                 <button
                                     type="button"
