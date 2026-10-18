@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import type {
     ChatConversation,
+    MessageReactionUpdate,
     RealtimeChatMessage,
 } from "./types";
 
@@ -35,6 +36,9 @@ type ChatActions = {
         conversationId: string | null
     ) => void;
     receiveMessage: (message: RealtimeChatMessage) => void;
+    updateMessageReaction: (
+        update: MessageReactionUpdate
+    ) => void;
     setConversationMessages: (
         conversationId: string,
         messages: RealtimeChatMessage[]
@@ -81,6 +85,30 @@ const sortConversations = (
             new Date(secondConversation.updated_at).getTime() -
             new Date(firstConversation.updated_at).getTime()
     );
+
+const applyReactionToMessage = (
+    message: RealtimeChatMessage,
+    update: MessageReactionUpdate
+) => {
+    if (message.id !== update.messageId) return message;
+
+    const hasCurrentReaction = Object.prototype.hasOwnProperty.call(
+        update,
+        "currentReaction"
+    );
+
+    return {
+        ...message,
+        reactionSummary: update.reactionSummary,
+        reactionCount: update.reactionCount,
+        ...(hasCurrentReaction
+            ? {
+                  currentReaction:
+                      update.currentReaction ?? null,
+              }
+            : {}),
+    };
+};
 
 export const useChatStore = create<ChatStore>()(
     (set) => ({
@@ -196,6 +224,59 @@ export const useChatStore = create<ChatStore>()(
                         ...state.latestMessageByConversation,
                         [conversationId]: message,
                     },
+                };
+            });
+        },
+
+        updateMessageReaction: (update) => {
+            set((state) => {
+                const currentMessages =
+                    state.messagesByConversation[
+                        update.conversationId
+                    ] ?? [];
+                const latestMessage =
+                    state.latestMessageByConversation[
+                        update.conversationId
+                    ];
+
+                return {
+                    messagesByConversation: {
+                        ...state.messagesByConversation,
+                        [update.conversationId]:
+                            currentMessages.map((message) =>
+                                applyReactionToMessage(
+                                    message,
+                                    update
+                                )
+                            ),
+                    },
+                    latestMessageByConversation: latestMessage
+                        ? {
+                              ...state.latestMessageByConversation,
+                              [update.conversationId]:
+                                  applyReactionToMessage(
+                                      latestMessage,
+                                      update
+                                  ),
+                          }
+                        : state.latestMessageByConversation,
+                    conversations: state.conversations.map(
+                        (conversation) =>
+                            conversation.id ===
+                            update.conversationId
+                                ? {
+                                      ...conversation,
+                                      messages:
+                                          conversation.messages.map(
+                                              (message) =>
+                                                  applyReactionToMessage(
+                                                      message,
+                                                      update
+                                                  )
+                                          ),
+                                  }
+                                : conversation
+                    ),
                 };
             });
         },

@@ -2,11 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 
 import type { CurrentUser } from "../../api/user.api";
-import type { CursorPagination } from "./types";
+import type {
+    CursorPagination,
+    MessageReactionType,
+    RealtimeChatMessage,
+} from "./types";
 import { getConversations } from "../../api/conversation.api";
 import {
     getConversationMessages,
+    sendMediaMessage,
     sendTextMessage,
+    setMessageReaction,
 } from "../../api/message.api";
 import { useChatStore } from "./chat.store";
 import {
@@ -36,6 +42,23 @@ const formatConversationTime = (value: string) =>
         day: "2-digit",
         month: "2-digit",
     }).format(new Date(value));
+
+const getMessagePreview = (
+    message: RealtimeChatMessage | undefined
+) => {
+    if (!message) return "Chưa có tin nhắn";
+    if (message.content) return message.content;
+    if (message.message_type === "image") return "Đã gửi một ảnh";
+    if (
+        message.attachments?.some((attachment) =>
+            attachment.file_type?.startsWith("audio/")
+        )
+    ) {
+        return "Đã gửi một tin nhắn thoại";
+    }
+
+    return "Đã gửi một tệp";
+};
 
 export default function ChatPopup({
     currentUser,
@@ -79,6 +102,9 @@ export default function ChatPopup({
     const receiveMessage = useChatStore(
         (state) => state.receiveMessage
     );
+    const updateMessageReaction = useChatStore(
+        (state) => state.updateMessageReaction
+    );
     const onlineUserIds = usePresenceStore(
         (state) => state.onlineUserIds
     );
@@ -92,6 +118,10 @@ export default function ChatPopup({
     const [isLoadingMore, setIsLoadingMore] =
         useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [replyingTo, setReplyingTo] =
+        useState<RealtimeChatMessage | null>(null);
+    const [reactingMessageId, setReactingMessageId] =
+        useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [paginationByConversation, setPaginationByConversation] =
         useState<Record<string, CursorPagination>>({});
@@ -151,9 +181,11 @@ export default function ChatPopup({
         conversationId: string,
         cursor?: string
     ) => {
-        cursor
-            ? setIsLoadingMore(true)
-            : setIsLoadingMessages(true);
+        if (cursor) {
+            setIsLoadingMore(true);
+        } else {
+            setIsLoadingMessages(true);
+        }
         setError(null);
 
         try {
@@ -207,6 +239,7 @@ export default function ChatPopup({
         conversationId: string
     ) => {
         openConversation(conversationId);
+        setReplyingTo(null);
         setIsMinimized(false);
     };
 
@@ -233,17 +266,81 @@ export default function ChatPopup({
         try {
             const message = await sendTextMessage(
                 activeConversationId,
-                content
+                content,
+                replyingTo?.id
             );
 
             // Socket cũng trả về message này; store chống trùng bằng id.
             receiveMessage(message);
+            setReplyingTo(null);
         } catch (sendError) {
             console.error("Không thể gửi tin nhắn:", sendError);
             setError("Không thể gửi tin nhắn. Hãy thử lại.");
             throw sendError;
         } finally {
             setIsSending(false);
+        }
+    };
+
+    const handleSendMedia = async (
+        file: File,
+        content?: string
+    ) => {
+        if (!activeConversationId) return;
+
+        setIsSending(true);
+        setError(null);
+
+        try {
+            const message = await sendMediaMessage(
+                activeConversationId,
+                file,
+                content,
+                replyingTo?.id
+            );
+
+            receiveMessage(message);
+            setReplyingTo(null);
+        } catch (sendError) {
+            console.error(
+                "Không thể gửi ảnh hoặc âm thanh:",
+                sendError
+            );
+            setError(
+                "Không thể gửi ảnh hoặc âm thanh. Hãy thử lại."
+            );
+            throw sendError;
+        } finally {
+            setIsSending(false);
+        }
+    };
+
+    const handleMessageReaction = async (
+        messageId: string,
+        reactionType: MessageReactionType
+    ) => {
+        if (!activeConversationId) return;
+
+        setReactingMessageId(messageId);
+        setError(null);
+
+        try {
+            const update = await setMessageReaction(
+                activeConversationId,
+                messageId,
+                reactionType
+            );
+            updateMessageReaction(update);
+        } catch (reactionError) {
+            console.error(
+                "Không thể cập nhật cảm xúc tin nhắn:",
+                reactionError
+            );
+            setError(
+                "Không thể cập nhật cảm xúc. Hãy thử lại."
+            );
+        } finally {
+            setReactingMessageId(null);
         }
     };
 
@@ -372,8 +469,9 @@ export default function ChatPopup({
                                                 )}
                                             </div>
                                             <p className="truncate text-xs text-slate-400">
-                                                {latestMessage?.content ??
-                                                    "Chưa có tin nhắn"}
+                                                {getMessagePreview(
+                                                    latestMessage
+                                                )}
                                             </p>
                                         </div>
                                     </button>
@@ -389,7 +487,10 @@ export default function ChatPopup({
                         currentUserId={currentUser.id}
                         isMinimized={isMinimized}
                         onBack={() =>
-                            showConversationListView()
+                            {
+                                setReplyingTo(null);
+                                showConversationListView();
+                            }
                         }
                         onToggleMinimize={() =>
                             setIsMinimized((current) => !current)
@@ -415,9 +516,17 @@ export default function ChatPopup({
                                 onLoadMore={() =>
                                     void handleLoadMore()
                                 }
+                                onReply={setReplyingTo}
+                                onReact={handleMessageReaction}
+                                reactingMessageId={reactingMessageId}
                             />
                             <MessageInput
-                                onSend={handleSend}
+                                onSendText={handleSend}
+                                onSendMedia={handleSendMedia}
+                                replyTo={replyingTo}
+                                onCancelReply={() =>
+                                    setReplyingTo(null)
+                                }
                                 isSending={isSending}
                             />
                         </>

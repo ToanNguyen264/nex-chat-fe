@@ -6,7 +6,10 @@ import {
     socket,
 } from "./socket";
 import type { AppNotification } from "../features/notifications/types";
-import type { RealtimeChatMessage } from "../features/chat/types";
+import type {
+    RealtimeChatMessage,
+    RealtimeMessageReactionUpdate,
+} from "../features/chat/types";
 
 import { useChatStore } from "../features/chat/chat.store";
 import { useNotificationStore } from "../features/notifications/notification.store";
@@ -41,6 +44,9 @@ export default function SocketManager() {
     );
     const resetChat = useChatStore(
         (state) => state.resetChat
+    );
+    const updateMessageReaction = useChatStore(
+        (state) => state.updateMessageReaction
     );
 
     useEffect(() => {
@@ -129,6 +135,28 @@ export default function SocketManager() {
             receiveMessage(message);
         };
 
+        const handleMessageReaction = (
+            update: RealtimeMessageReactionUpdate
+        ) => {
+            if (
+                !update ||
+                typeof update.conversationId !== "string" ||
+                typeof update.messageId !== "string" ||
+                !Array.isArray(update.reactionSummary)
+            ) {
+                return;
+            }
+
+            // Event realtime chỉ cập nhật tổng hợp. Reaction của chính
+            // người dùng được cập nhật từ REST response.
+            updateMessageReaction({
+                conversationId: update.conversationId,
+                messageId: update.messageId,
+                reactionSummary: update.reactionSummary,
+                reactionCount: update.reactionCount,
+            });
+        };
+
         socket.on("connect", handleConnect);
         socket.on(
             "connect_error",
@@ -143,6 +171,10 @@ export default function SocketManager() {
             handleNewNotification
         );
         socket.on("message:new", handleNewMessage);
+        socket.on(
+            "message:reaction-updated",
+            handleMessageReaction
+        );
         socket.on(
             "presence:snapshot",
             handlePresenceSnapshot
@@ -174,6 +206,10 @@ export default function SocketManager() {
             );
             socket.off("message:new", handleNewMessage);
             socket.off(
+                "message:reaction-updated",
+                handleMessageReaction
+            );
+            socket.off(
                 "presence:snapshot",
                 handlePresenceSnapshot
             );
@@ -195,6 +231,7 @@ export default function SocketManager() {
         setOnlineUsers,
         setUserOffline,
         setUserOnline,
+        updateMessageReaction,
     ]);
 
     return null;
