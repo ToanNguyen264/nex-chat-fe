@@ -6,7 +6,9 @@ import {
     socket,
 } from "./socket";
 import type { AppNotification } from "../features/notifications/types";
+import type { RealtimeChatMessage } from "../features/chat/types";
 
+import { useChatStore } from "../features/chat/chat.store";
 import { useNotificationStore } from "../features/notifications/notification.store";
 import { usePresenceStore } from "../features/presence/presence.store";
 
@@ -34,6 +36,12 @@ export default function SocketManager() {
     const resetPresence = usePresenceStore(
         (state) => state.resetPresence
     );
+    const receiveMessage = useChatStore(
+        (state) => state.receiveMessage
+    );
+    const resetChat = useChatStore(
+        (state) => state.resetChat
+    );
 
     useEffect(() => {
         const accessToken = localStorage.getItem("accessToken");
@@ -41,6 +49,7 @@ export default function SocketManager() {
         if (!accessToken) {
             disconnectSocket();
             resetPresence();
+            resetChat();
             return;
         }
 
@@ -106,6 +115,20 @@ export default function SocketManager() {
             increaseUnread(); // Gọi action để tăng số lượng thông báo chưa đọc
         };
 
+        const handleNewMessage = (
+            message: RealtimeChatMessage
+        ) => {
+            if (
+                !message ||
+                typeof message.id !== "string" ||
+                typeof message.conversation_id !== "string"
+            ) {
+                return;
+            }
+
+            receiveMessage(message);
+        };
+
         socket.on("connect", handleConnect);
         socket.on(
             "connect_error",
@@ -119,6 +142,7 @@ export default function SocketManager() {
             "notification:new",
             handleNewNotification
         );
+        socket.on("message:new", handleNewMessage);
         socket.on(
             "presence:snapshot",
             handlePresenceSnapshot
@@ -148,6 +172,7 @@ export default function SocketManager() {
                 "notification:new",
                 handleNewNotification
             );
+            socket.off("message:new", handleNewMessage);
             socket.off(
                 "presence:snapshot",
                 handlePresenceSnapshot
@@ -164,6 +189,8 @@ export default function SocketManager() {
     }, [
         location.pathname,
         increaseUnread,
+        receiveMessage,
+        resetChat,
         resetPresence,
         setOnlineUsers,
         setUserOffline,

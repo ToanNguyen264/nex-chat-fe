@@ -3,7 +3,6 @@ import {
     Bell,
     ChevronDown,
     LogOut,
-    MessageSquare,
     Search,
     UserRound,
 } from "lucide-react";
@@ -175,11 +174,6 @@ export default function Header({ currentUser }: HeaderProps) {
                 </nav>
 
                 <div className="ml-auto flex shrink-0 items-center gap-1">
-                    <button type="button" aria-label="Tin nhắn" className="relative rounded-full p-2 text-[#464554] hover:bg-[#f2f3ff]">
-                        <MessageSquare className="h-[18px] w-[18px]" />
-                        <span className="absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#b90538] px-1 text-[9px] font-bold text-white">2</span>
-                    </button>
-
                     <div ref={notificationRef} className="relative">
                         <button
                             type="button"

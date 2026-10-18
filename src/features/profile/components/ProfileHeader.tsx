@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
     Camera,
     Edit3,
@@ -7,6 +8,7 @@ import {
     Info,
     LayoutGrid,
     MessageCircle,
+    MessageSquareText,
     UserCheck,
     UserPlus,
     Users,
@@ -16,6 +18,8 @@ import type { CurrentUser, UserProfile } from "../../../api/user.api";
 import type { Friendship } from "../../../api/friend.api";
 import { getNameInitials, getUserDisplayName } from "../../../utils/user";
 import { usePresenceStore } from "../../presence/presence.store";
+import { getOrCreateDirectConversation } from "../../../api/conversation.api";
+import { useChatStore } from "../../chat/chat.store";
 
 type ProfileHeaderProps = {
     currentUser: CurrentUser | null;
@@ -75,6 +79,14 @@ export default function ProfileHeader({
     activeTab,
     onTabChange,
 }: ProfileHeaderProps) {
+    const [isOpeningChat, setIsOpeningChat] =
+        useState(false);
+    const upsertConversation = useChatStore(
+        (state) => state.upsertConversation
+    );
+    const openConversation = useChatStore(
+        (state) => state.openConversation
+    );
     const displayName = profile?.display_name || getUserDisplayName(currentUser);
     const username =
         profile?.user_name ||
@@ -96,6 +108,29 @@ export default function ProfileHeader({
         relationship?.status === "accepted";
     const isBlocked =
         relationship?.status === "blocked";
+
+    const handleOpenChat = async () => {
+        if (!profile || !isAcceptedFriend) return;
+
+        setIsOpeningChat(true);
+
+        try {
+            const conversation =
+                await getOrCreateDirectConversation(
+                    profile.id
+                );
+
+            upsertConversation(conversation);
+            openConversation(conversation.id);
+        } catch (error) {
+            console.error(
+                "Không thể mở cuộc trò chuyện:",
+                error
+            );
+        } finally {
+            setIsOpeningChat(false);
+        }
+    };
 
     return (
         <section className="overflow-hidden rounded-3xl bg-white shadow-sm">
@@ -266,6 +301,21 @@ export default function ProfileHeader({
                                         {isRelationshipLoading
                                             ? "Đang gửi..."
                                             : "Kết bạn"}
+                                    </button>
+                                )}
+                                {isAcceptedFriend && (
+                                    <button
+                                        type="button"
+                                        disabled={isOpeningChat}
+                                        onClick={() =>
+                                            void handleOpenChat()
+                                        }
+                                        className="flex items-center gap-2 rounded-xl bg-[#4648d4] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3d3fc2] disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        <MessageSquareText className="h-4 w-4" />
+                                        {isOpeningChat
+                                            ? "Đang mở..."
+                                            : "Nhắn tin"}
                                     </button>
                                 )}
                             </>

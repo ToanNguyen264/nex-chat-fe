@@ -420,7 +420,7 @@ export default function PostCard({
                     onMouseLeave={() => setIsReactionPickerOpen(false)}
                 >
                     {isReactionPickerOpen && (
-                        <div className="absolute bottom-[calc(100%-2px)] left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-indigo-100 bg-white/95 px-2.5 py-2 shadow-[0_12px_35px_rgba(40,48,68,0.2)] backdrop-blur-md">
+                        <div className="absolute bottom-[calc(100%-2px)] left-0 z-[100] flex items-center gap-1.5 rounded-full border border-indigo-100 bg-white/95 px-2.5 py-2 shadow-[0_12px_35px_rgba(40,48,68,0.2)] backdrop-blur-md">
                             {reactionOptions.map((reaction) => (
                                 <button
                                     key={reaction.type}
