@@ -11,10 +11,14 @@ import RemoteParticipantMedia from "./RemoteParticipantMedia";
 
 import {
     LoaderCircle,
+    Mic,
+    MicOff,
     Phone,
     PhoneIncoming,
     PhoneOff,
     Video,
+    VideoOff,
+    Volume2,
     X,
 } from "lucide-react";
 import { Track, RoomEvent } from "livekit-client";
@@ -24,6 +28,12 @@ import { useCallStore } from "./call.store";
 export default function CallOverlay() {
     const status = useCallStore(
         (state) => state.status
+    );
+    const direction = useCallStore(
+        (state) => state.direction
+    );
+    const callId = useCallStore(
+        (state) => state.callId
     );
     const mode = useCallStore(
         (state) => state.mode
@@ -61,6 +71,89 @@ export default function CallOverlay() {
     const localVideoRef =
         useRef<HTMLVideoElement>(null);
 
+    const [canPlayAudio, setCanPlayAudio] = useState(true);
+    const [isMicrophoneEnabled, setIsMicrophoneEnabled] =
+        useState(true);
+    const [isMicrophoneUpdating, setIsMicrophoneUpdating] =
+        useState(false);
+    const [isCameraEnabled, setIsCameraEnabled] =
+        useState(true);
+    const [isCameraUpdating, setIsCameraUpdating] =
+        useState(false);
+
+    useEffect(() => {
+        if (!incomingCall || incomingCallAction !== null) {
+            return;
+        }
+
+        const ringtone = new Audio(
+            "/audio/call-ringtone.mp3"
+        );
+
+        ringtone.loop = true;
+        ringtone.preload = "auto";
+        ringtone.volume = 0.7;
+
+        void ringtone.play().catch((error) => {
+            console.warn(
+                "PLAY INCOMING CALL RINGTONE ERROR:",
+                error
+            );
+        });
+
+        return () => {
+            ringtone.pause();
+            ringtone.currentTime = 0;
+        };
+    }, [incomingCall, incomingCallAction]);
+
+    useEffect(() => {
+        const isWaitingForRemoteParticipant =
+            direction === "outgoing" &&
+            callId !== null &&
+            (status === "connecting" ||
+                status === "connected") &&
+            remoteParticipants.length === 0;
+
+        if (!isWaitingForRemoteParticipant) {
+            return;
+        }
+
+        const ringback = new Audio(
+            "/audio/call-ringback.mp3"
+        );
+
+        ringback.loop = true;
+        ringback.preload = "auto";
+        ringback.volume = 0.7;
+
+        void ringback.play().catch((error) => {
+            console.warn(
+                "PLAY OUTGOING CALL RINGBACK ERROR:",
+                error
+            );
+        });
+
+        return () => {
+            ringback.pause();
+            ringback.currentTime = 0;
+        };
+    }, [
+        callId,
+        direction,
+        remoteParticipants.length,
+        status,
+    ]);
+
+    useEffect(() => {
+        setIsMicrophoneEnabled(
+            room?.localParticipant.isMicrophoneEnabled ?? true
+        );
+        setIsCameraEnabled(
+            room?.localParticipant.isCameraEnabled ?? true
+        );
+    }, [room]);
+
     useEffect(() => {
         if (
             status !== "connected" ||
@@ -89,7 +182,36 @@ export default function CallOverlay() {
         };
     }, [mode, room, status]);
 
-    /*Theo dõi người vào và rời phòng*/
+
+    /* lắng nghe trạng thái audio từ LiveKit */
+
+    useEffect(() => {
+        if (!room) {
+            setCanPlayAudio(true);
+            return;
+        }
+
+        const synchronizeAudioPlayback = () => {
+            setCanPlayAudio(room.canPlaybackAudio);
+        };
+
+        synchronizeAudioPlayback();
+
+        room.on(
+            RoomEvent.AudioPlaybackStatusChanged,
+            synchronizeAudioPlayback
+        );
+
+        return () => {
+            room.off(
+                RoomEvent.AudioPlaybackStatusChanged,
+                synchronizeAudioPlayback
+            );
+        };
+    }, [room]);
+
+
+
     useEffect(() => {
         if (!room) {
             setRemoteParticipants([]);
@@ -131,6 +253,76 @@ export default function CallOverlay() {
     }, [room]);
 
     const remoteParticipant = remoteParticipants[0] ?? null; /*lấy người tham gia đầu tiên vì đang làm cuộc gọi 1:1 */
+    /* hàm bật âm thanh */
+    const handleStartAudio = async () => {
+        if (!room) {
+            return;
+        }
+
+        try {
+            await room.startAudio();
+            setCanPlayAudio(room.canPlaybackAudio);
+        } catch (error) {
+            console.error(
+                "START AUDIO PLAYBACK ERROR:",
+                error
+            );
+        }
+    };
+
+    const handleToggleMicrophone = async () => {
+        if (!room || isMicrophoneUpdating) {
+            return;
+        }
+
+        const nextMicrophoneState =
+            !room.localParticipant.isMicrophoneEnabled;
+
+        setIsMicrophoneUpdating(true);
+
+        try {
+            await room.localParticipant.setMicrophoneEnabled(
+                nextMicrophoneState
+            );
+            setIsMicrophoneEnabled(
+                room.localParticipant.isMicrophoneEnabled
+            );
+        } catch (error) {
+            console.error(
+                "TOGGLE MICROPHONE ERROR:",
+                error
+            );
+        } finally {
+            setIsMicrophoneUpdating(false);
+        }
+    };
+
+    const handleToggleCamera = async () => {
+        if (!room || isCameraUpdating) {
+            return;
+        }
+
+        const nextCameraState = !room.localParticipant.isCameraEnabled;
+
+        setIsCameraUpdating(true);
+
+        try {
+            await room.localParticipant.setCameraEnabled(
+                nextCameraState
+            );
+            setIsCameraEnabled(
+                room.localParticipant.isCameraEnabled
+            );
+        } catch (error) {
+            console.error(
+                "TOGGLE CAMERA ERROR:",
+                error
+            );
+        } finally {
+            setIsCameraUpdating(false);
+        }
+    };
+
 
     if (incomingCall) {
         const fullName = [
@@ -290,6 +482,19 @@ export default function CallOverlay() {
                 </header>
 
                 <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-slate-950">
+
+                    {status === "connected" &&
+                        room &&
+                        !canPlayAudio && (
+                            <button
+                                type="button"
+                                onClick={() => void handleStartAudio()}
+                                className="absolute left-1/2 top-4 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg"
+                            >
+                                <Volume2 className="h-4 w-4" />
+                                Bật âm thanh
+                            </button>
+                        )}
                     {status === "connected" &&
                         room &&
                         remoteParticipant ? (
@@ -317,7 +522,41 @@ export default function CallOverlay() {
                     )}
                 </div>
 
-                <footer className="flex h-24 items-center justify-center bg-slate-900">
+                <footer className="flex h-24 items-center justify-center gap-5 bg-slate-900">
+                    <button
+                        type="button"
+                        aria-label={
+                            isMicrophoneEnabled
+                                ? "Tắt micro"
+                                : "Bật micro"
+                        }
+                        title={
+                            isMicrophoneEnabled
+                                ? "Tắt micro"
+                                : "Bật micro"
+                        }
+                        disabled={
+                            status !== "connected" ||
+                            isMicrophoneUpdating
+                        }
+                        onClick={() =>
+                            void handleToggleMicrophone()
+                        }
+                        className={`grid h-14 w-14 place-items-center rounded-full text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                            isMicrophoneEnabled
+                                ? "bg-slate-700 hover:bg-slate-600"
+                                : "bg-rose-600 hover:bg-rose-700"
+                        }`}
+                    >
+                        {isMicrophoneUpdating ? (
+                            <LoaderCircle className="h-6 w-6 animate-spin" />
+                        ) : isMicrophoneEnabled ? (
+                            <Mic className="h-6 w-6" />
+                        ) : (
+                            <MicOff className="h-6 w-6" />
+                        )}
+                    </button>
+
                     <button
                         type="button"
                         aria-label="Kết thúc cuộc gọi"
@@ -327,6 +566,42 @@ export default function CallOverlay() {
                     >
                         <PhoneOff className="h-6 w-6" />
                     </button>
+
+                    {mode === "video" && (
+                        <button
+                            type="button"
+                            aria-label={
+                                isCameraEnabled
+                                    ? "Tắt camera"
+                                    : "Bật camera"
+                            }
+                            title={
+                                isCameraEnabled
+                                    ? "Tắt camera"
+                                    : "Bật camera"
+                            }
+                            disabled={
+                                status !== "connected" ||
+                                isCameraUpdating
+                            }
+                            onClick={() =>
+                                void handleToggleCamera()
+                            }
+                            className={`grid h-14 w-14 place-items-center rounded-full text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                                isCameraEnabled
+                                    ? "bg-slate-700 hover:bg-slate-600"
+                                    : "bg-rose-600 hover:bg-rose-700"
+                            }`}
+                        >
+                            {isCameraUpdating ? (
+                                <LoaderCircle className="h-6 w-6 animate-spin" />
+                            ) : isCameraEnabled ? (
+                                <Video className="h-6 w-6" />
+                            ) : (
+                                <VideoOff className="h-6 w-6" />
+                            )}
+                        </button>
+                    )}
                 </footer>
             </section>
         </div>

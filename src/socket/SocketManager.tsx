@@ -221,7 +221,7 @@ export default function SocketManager() {
                 typeof response.callerId !== "string" ||
                 typeof response.calleeId !== "string" ||
                 (response.status !== "cancelled" &&
-                    response.status !== "ended")
+                    response.status !== "ended" && response.status !== "missed")
             ) {
                 return;
             }

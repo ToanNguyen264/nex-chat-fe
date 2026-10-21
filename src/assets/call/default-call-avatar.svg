@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title description">
+  <title id="title">Ảnh đại diện cuộc gọi mặc định</title>
+  <desc id="description">Biểu tượng người dùng màu trắng trên nền tím</desc>
+  <defs>
+    <linearGradient id="background" x1="20" y1="16" x2="142" y2="148" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+  </defs>
+  <circle cx="80" cy="80" r="80" fill="url(#background)"/>
+  <circle cx="80" cy="59" r="25" fill="#ffffff" fill-opacity="0.96"/>
+  <path d="M35 132c4-28 22-43 45-43s41 15 45 43" fill="#ffffff" fill-opacity="0.96"/>
+</svg>

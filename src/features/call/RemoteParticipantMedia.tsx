@@ -11,7 +11,8 @@ import type {
     RemoteParticipant,
     Room,
 } from "livekit-client";
-import { User } from "lucide-react";
+
+import defaultCallAvatar from "../../assets/call/default-call-avatar.svg";
 
 type RemoteParticipantMediaProps = {
     room: Room;
@@ -122,23 +123,38 @@ export default function RemoteParticipantMedia({
         };
     }, [participant, trackVersion]);
 
+    const isRemoteCameraVisible =
+        showVideo && participant.isCameraEnabled;
+
     return (
         <div className="relative h-full w-full overflow-hidden bg-slate-950">
-            {showVideo &&
-            participant.isCameraEnabled ? (
-                <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    className="h-full w-full object-cover"
+            <div
+                className={`absolute inset-0 grid place-items-center transition-opacity duration-200 ${
+                    isRemoteCameraVisible
+                        ? "invisible opacity-0"
+                        : "visible opacity-100"
+                }`}
+            >
+                <img
+                    src={defaultCallAvatar}
+                    alt={
+                        participant.name ||
+                        "Người tham gia"
+                    }
+                    className="h-28 w-28 rounded-full object-cover ring-4 ring-white/10"
                 />
-            ) : (
-                <div className="grid h-full place-items-center">
-                    <div className="grid h-28 w-28 place-items-center rounded-full bg-indigo-600 text-white">
-                        <User className="h-12 w-12" />
-                    </div>
-                </div>
-            )}
+            </div>
+
+            <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ${
+                    isRemoteCameraVisible
+                        ? "visible opacity-100"
+                        : "invisible opacity-0"
+                }`}
+            />
 
             <audio
                 ref={audioRef}

@@ -85,8 +85,8 @@ export default function ChatHeader({
                     {conversation.type === "direct" && (
                         <span
                             className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${isOnline
-                                    ? "bg-cyan-400"
-                                    : "bg-slate-300"
+                                ? "bg-cyan-400"
+                                : "bg-slate-300"
                                 }`}
                         />
                     )}
@@ -99,8 +99,8 @@ export default function ChatHeader({
                     {conversation.type === "direct" && (
                         <p
                             className={`text-[11px] font-semibold ${isOnline
-                                    ? "text-[#0098ad]"
-                                    : "text-slate-400"
+                                ? "text-[#0098ad]"
+                                : "text-slate-400"
                                 }`}
                         >
                             {isOnline
@@ -112,30 +112,6 @@ export default function ChatHeader({
             </div>
 
             <div className="flex items-center">
-                <button
-                    type="button"
-                    aria-label={
-                        isMinimized ? "Mở rộng" : "Thu nhỏ"
-                    }
-                    onClick={onToggleMinimize}
-                    className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
-                >
-                    {isMinimized ? (
-                        <Maximize2 className="h-4 w-4" />
-                    ) : (
-                        <Minus className="h-4 w-4" />
-                    )}
-                </button>
-
-                <button
-                    type="button"
-                    aria-label="Đóng"
-                    onClick={onClose}
-                    className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
-                >
-                    <X className="h-4 w-4" />
-                </button>
-
                 {conversation.type === "direct" && (
                     <>
                         <button
@@ -161,6 +137,29 @@ export default function ChatHeader({
                         </button>
                     </>
                 )}
+                <button
+                    type="button"
+                    aria-label={
+                        isMinimized ? "Mở rộng" : "Thu nhỏ"
+                    }
+                    onClick={onToggleMinimize}
+                    className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
+                >
+                    {isMinimized ? (
+                        <Maximize2 className="h-4 w-4" />
+                    ) : (
+                        <Minus className="h-4 w-4" />
+                    )}
+                </button>
+
+                <button
+                    type="button"
+                    aria-label="Đóng"
+                    onClick={onClose}
+                    className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
+                >
+                    <X className="h-4 w-4" />
+                </button>
 
             </div>
         </header>

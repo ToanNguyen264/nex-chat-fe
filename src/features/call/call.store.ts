@@ -25,6 +25,10 @@ export type CallStatus =
     | "ending"
     | "error";
 
+export type CallDirection =
+    | "outgoing"
+    | "incoming";
+
 
 
 export type IncomingCall = {
@@ -55,18 +59,21 @@ export type CallResponded = {
     endedAt: string | null;
 };
 
-export type CallEnded = {
+export type CallEnded = { /* callended có thể mang 3 trạng thái */
     callId: string;
     conversationId: string;
     callerId: string;
     calleeId: string;
-    status: "cancelled" | "ended";
+    status: | "cancelled"
+    | "missed"
+    | "ended";
     endedAt: string | null;
 };
 
 
 type CallState = {
     status: CallStatus;
+    direction: CallDirection | null;
     callId: string | null;
     conversationId: string | null;
     mode: CallMode | null;
@@ -108,6 +115,7 @@ type CallStore = CallState & CallActions;
 
 const initialState: CallState = {
     status: "idle",
+    direction: null,
     callId: null,
     conversationId: null,
     mode: null,
@@ -139,6 +147,7 @@ export const useCallStore = create<CallStore>()(
 
             set({ /* cập nhật những field được truyền vào; các field còn lại được giữ nguyên */
                 status: "connecting",
+                direction: "outgoing",
                 callId: null,
                 conversationId,
                 mode,
@@ -146,7 +155,7 @@ export const useCallStore = create<CallStore>()(
                 error: null,
             });
 
-            
+
 
             try { /* bắt đầu kết nối với LiveKit */
                 await requestCallMediaPermissions(mode);
@@ -254,6 +263,7 @@ export const useCallStore = create<CallStore>()(
             }
 
             set({
+                direction: "incoming",
                 incomingCall,
                 incomingCallAction: null,
                 error: null,
@@ -350,6 +360,7 @@ export const useCallStore = create<CallStore>()(
 
                 set({
                     status: "connecting",
+                    direction: "incoming",
                     callId: incomingCall.callId,
                     conversationId: incomingCall.conversationId,
                     mode: incomingCall.callType,
@@ -432,6 +443,7 @@ export const useCallStore = create<CallStore>()(
 
         clearIncomingCall: () => {
             set({
+                direction: null,
                 incomingCall: null,
                 incomingCallAction: null,
                 error: null,
