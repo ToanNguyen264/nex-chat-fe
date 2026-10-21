@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Header from "./components/Header";
 import type { CurrentUser } from "../api/user.api";
 import ChatPopup from "../features/chat/ChatPopup";
+import CallOverlay from "../features/call/CallOverlay";
 
 type MainLayoutProps = {
     children: ReactNode;
@@ -49,6 +50,7 @@ export default function MainLayout({
             </footer>
 
             <ChatPopup currentUser={currentUser} />
+            <CallOverlay />
         </div>
     );
 }

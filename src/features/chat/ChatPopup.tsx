@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
-
 import type { CurrentUser } from "../../api/user.api";
 import type {
     CursorPagination,
@@ -25,6 +24,7 @@ import MessageInput from "./components/MessageInput";
 import MessageList from "./components/MessageList";
 import { getNameInitials } from "../../utils/user";
 import { usePresenceStore } from "../presence/presence.store";
+import { useCallStore } from "../call/call.store";
 
 type ChatPopupProps = {
     currentUser: CurrentUser | null;
@@ -63,6 +63,7 @@ const getMessagePreview = (
 export default function ChatPopup({
     currentUser,
 }: ChatPopupProps) {
+    /* lấy các action và trạng thái từ store */
     const conversations = useChatStore(
         (state) => state.conversations
     );
@@ -109,6 +110,14 @@ export default function ChatPopup({
         (state) => state.onlineUserIds
     );
 
+    const callStatus = useCallStore(
+        (state) => state.status
+    );
+
+    const startCall = useCallStore(
+        (state) => state.startCall
+    );
+
     const [isMinimized, setIsMinimized] =
         useState(false);
     const [isLoadingConversations, setIsLoadingConversations] =
@@ -126,6 +135,12 @@ export default function ChatPopup({
     const [paginationByConversation, setPaginationByConversation] =
         useState<Record<string, CursorPagination>>({});
 
+    /* xác định khi nào được bấm tiếp tránh spam */
+    const isCallDisabled =
+        callStatus === "connecting" ||
+        callStatus === "connected" ||
+        callStatus === "ending";
+
     const activeConversation = useMemo(
         () =>
             conversations.find(
@@ -140,7 +155,7 @@ export default function ChatPopup({
         : [];
     const activePagination = activeConversationId
         ? paginationByConversation[activeConversationId] ??
-          emptyPagination
+        emptyPagination
         : emptyPagination;
 
     useEffect(() => {
@@ -410,12 +425,12 @@ export default function ChatPopup({
                                     );
                                 const isOnline = otherUser
                                     ? onlineUserIds.has(
-                                          otherUser.id
-                                      )
+                                        otherUser.id
+                                    )
                                     : false;
                                 const latestMessage =
                                     latestMessages[
-                                        conversation.id
+                                    conversation.id
                                     ] ?? conversation.messages[0];
 
                                 return (
@@ -445,14 +460,13 @@ export default function ChatPopup({
                                             )}
                                             {conversation.type ===
                                                 "direct" && (
-                                                <span
-                                                    className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
-                                                        isOnline
+                                                    <span
+                                                        className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${isOnline
                                                             ? "bg-cyan-400"
                                                             : "bg-slate-300"
-                                                    }`}
-                                                />
-                                            )}
+                                                            }`}
+                                                    />
+                                                )}
                                         </div>
 
                                         <div className="min-w-0 flex-1">
@@ -486,12 +500,23 @@ export default function ChatPopup({
                         conversation={activeConversation}
                         currentUserId={currentUser.id}
                         isMinimized={isMinimized}
-                        onBack={() =>
-                            {
-                                setReplyingTo(null);
-                                showConversationListView();
-                            }
-                        }
+                        isCallDisabled={isCallDisabled}
+                        onBack={() => {
+                            setReplyingTo(null);
+                            showConversationListView();
+                        }}
+                        onStartAudioCall={() => {
+                            void startCall(
+                                activeConversation.id,
+                                "audio"
+                            );
+                        }}
+                        onStartVideoCall={() => {
+                            void startCall(
+                                activeConversation.id,
+                                "video"
+                            );
+                        }}
                         onToggleMinimize={() =>
                             setIsMinimized((current) => !current)
                         }

@@ -2,6 +2,8 @@ import {
     ArrowLeft,
     Maximize2,
     Minus,
+    Phone,
+    Video,
     X,
 } from "lucide-react";
 
@@ -18,7 +20,10 @@ type ChatHeaderProps = {
     conversation: ChatConversation;
     currentUserId: string;
     isMinimized: boolean;
+    isCallDisabled: boolean;
     onBack: () => void;
+    onStartAudioCall: () => void;
+    onStartVideoCall: () => void;
     onToggleMinimize: () => void;
     onClose: () => void;
 };
@@ -27,7 +32,10 @@ export default function ChatHeader({
     conversation,
     currentUserId,
     isMinimized,
+    isCallDisabled,
     onBack,
+    onStartAudioCall,
+    onStartVideoCall,
     onToggleMinimize,
     onClose,
 }: ChatHeaderProps) {
@@ -76,11 +84,10 @@ export default function ChatHeader({
 
                     {conversation.type === "direct" && (
                         <span
-                            className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
-                                isOnline
+                            className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${isOnline
                                     ? "bg-cyan-400"
                                     : "bg-slate-300"
-                            }`}
+                                }`}
                         />
                     )}
                 </div>
@@ -91,11 +98,10 @@ export default function ChatHeader({
                     </h2>
                     {conversation.type === "direct" && (
                         <p
-                            className={`text-[11px] font-semibold ${
-                                isOnline
+                            className={`text-[11px] font-semibold ${isOnline
                                     ? "text-[#0098ad]"
                                     : "text-slate-400"
-                            }`}
+                                }`}
                         >
                             {isOnline
                                 ? "Đang hoạt động"
@@ -129,6 +135,33 @@ export default function ChatHeader({
                 >
                     <X className="h-4 w-4" />
                 </button>
+
+                {conversation.type === "direct" && (
+                    <>
+                        <button
+                            type="button"
+                            aria-label="Gọi thoại"
+                            title="Gọi thoại"
+                            disabled={isCallDisabled}
+                            onClick={onStartAudioCall}
+                            className="rounded-full p-2 text-[#4648d4] transition hover:bg-[#eef0ff] disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            <Phone className="h-4 w-4" />
+                        </button>
+
+                        <button
+                            type="button"
+                            aria-label="Gọi video"
+                            title="Gọi video"
+                            disabled={isCallDisabled}
+                            onClick={onStartVideoCall}
+                            className="rounded-full p-2 text-[#4648d4] transition hover:bg-[#eef0ff] disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            <Video className="h-4 w-4" />
+                        </button>
+                    </>
+                )}
+
             </div>
         </header>
     );
