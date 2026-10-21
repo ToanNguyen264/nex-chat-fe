@@ -1,63 +1,147 @@
 import {
+    ArrowLeft,
     Maximize2,
     Minus,
     Phone,
     Video,
     X,
 } from "lucide-react";
-import avatarChat from "../../../assets/home/avatar-chat.png";
+
+import type { ChatConversation } from "../types";
+import {
+    getConversationAvatar,
+    getConversationName,
+    getOtherConversationUser,
+} from "../chat.utils";
+import { getNameInitials } from "../../../utils/user";
+import { usePresenceStore } from "../../presence/presence.store";
 
 type ChatHeaderProps = {
+    conversation: ChatConversation;
+    currentUserId: string;
     isMinimized: boolean;
+    isCallDisabled: boolean;
+    onBack: () => void;
+    onStartAudioCall: () => void;
+    onStartVideoCall: () => void;
     onToggleMinimize: () => void;
     onClose: () => void;
 };
 
 export default function ChatHeader({
+    conversation,
+    currentUserId,
     isMinimized,
+    isCallDisabled,
+    onBack,
+    onStartAudioCall,
+    onStartVideoCall,
     onToggleMinimize,
     onClose,
 }: ChatHeaderProps) {
-    return (
-        <header className="flex h-16 items-center justify-between border-b border-slate-100 bg-white px-4">
-            <div className="flex items-center gap-3">
-                <div className="relative">
-                    <img src={avatarChat} alt="Nguyễn Thảo My" className="h-10 w-10 rounded-full object-cover ring-2 ring-[#4648d4]/20" />
+    const name = getConversationName(
+        conversation,
+        currentUserId
+    );
+    const avatar = getConversationAvatar(
+        conversation,
+        currentUserId
+    );
+    const otherUser = getOtherConversationUser(
+        conversation,
+        currentUserId
+    );
+    const isOnline = usePresenceStore((state) =>
+        otherUser
+            ? state.onlineUserIds.has(otherUser.id)
+            : false
+    );
 
-                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-cyan-400" />
+    return (
+        <header className="flex h-16 items-center justify-between border-b border-slate-100 bg-white px-3">
+            <div className="flex min-w-0 items-center gap-2">
+                <button
+                    type="button"
+                    aria-label="Danh sách cuộc trò chuyện"
+                    onClick={onBack}
+                    className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                </button>
+
+                <div className="relative shrink-0">
+                    {avatar ? (
+                        <img
+                            src={avatar}
+                            alt={name}
+                            className="h-10 w-10 rounded-full object-cover ring-2 ring-[#4648d4]/20"
+                        />
+                    ) : (
+                        <span className="grid h-10 w-10 place-items-center rounded-full bg-[#e8e9ff] text-xs font-bold text-[#4648d4]">
+                            {getNameInitials(name)}
+                        </span>
+                    )}
+
+                    {conversation.type === "direct" && (
+                        <span
+                            className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${isOnline
+                                ? "bg-cyan-400"
+                                : "bg-slate-300"
+                                }`}
+                        />
+                    )}
                 </div>
 
-                <div>
-                    <h2 className="text-base font-bold tracking-[-0.16px] text-[#131b2e]">
-                        Nguyễn Thảo My
+                <div className="min-w-0">
+                    <h2 className="truncate text-sm font-bold text-[#131b2e]">
+                        {name}
                     </h2>
-
-                    <p className="text-[11px] font-semibold text-[#57dffe]">
-                        Đang hoạt động
-                    </p>
+                    {conversation.type === "direct" && (
+                        <p
+                            className={`text-[11px] font-semibold ${isOnline
+                                ? "text-[#0098ad]"
+                                : "text-slate-400"
+                                }`}
+                        >
+                            {isOnline
+                                ? "Đang hoạt động"
+                                : "Đang offline"}
+                        </p>
+                    )}
                 </div>
             </div>
 
             <div className="flex items-center">
-                <button
-                    type="button"
-                    aria-label="Gọi thoại"
-                    className="rounded-full p-2 text-indigo-600 hover:bg-indigo-50"
-                >
-                    <Phone className="h-4 w-4" />
-                </button>
+                {conversation.type === "direct" && (
+                    <>
+                        <button
+                            type="button"
+                            aria-label="Gọi thoại"
+                            title="Gọi thoại"
+                            disabled={isCallDisabled}
+                            onClick={onStartAudioCall}
+                            className="rounded-full p-2 text-[#4648d4] transition hover:bg-[#eef0ff] disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            <Phone className="h-4 w-4" />
+                        </button>
 
+                        <button
+                            type="button"
+                            aria-label="Gọi video"
+                            title="Gọi video"
+                            disabled={isCallDisabled}
+                            onClick={onStartVideoCall}
+                            className="rounded-full p-2 text-[#4648d4] transition hover:bg-[#eef0ff] disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            <Video className="h-4 w-4" />
+                        </button>
+                    </>
+                )}
                 <button
                     type="button"
-                    aria-label="Gọi video"
-                    className="rounded-full p-2 text-indigo-600 hover:bg-indigo-50"
-                >
-                    <Video className="h-4 w-4" />
-                </button>
-
-                <button
-                    type="button"
-                    aria-label={isMinimized ? "Mở rộng" : "Thu nhỏ"}
+                    aria-label={
+                        isMinimized ? "Mở rộng" : "Thu nhỏ"
+                    }
                     onClick={onToggleMinimize}
                     className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
                 >
@@ -76,6 +160,7 @@ export default function ChatHeader({
                 >
                     <X className="h-4 w-4" />
                 </button>
+
             </div>
         </header>
     );

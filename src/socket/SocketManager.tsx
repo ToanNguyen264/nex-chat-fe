@@ -6,9 +6,20 @@ import {
     socket,
 } from "./socket";
 import type { AppNotification } from "../features/notifications/types";
+import type {
+    RealtimeChatMessage,
+    RealtimeMessageReactionUpdate,
+} from "../features/chat/types";
 
+import { useChatStore } from "../features/chat/chat.store";
 import { useNotificationStore } from "../features/notifications/notification.store";
 import { usePresenceStore } from "../features/presence/presence.store";
+import {
+    useCallStore,
+    type CallEnded,
+    type CallResponded,
+    type IncomingCall,
+} from "../features/call/call.store";
 
 type PresenceSnapshotPayload = {
     userIds: string[];
@@ -34,6 +45,25 @@ export default function SocketManager() {
     const resetPresence = usePresenceStore(
         (state) => state.resetPresence
     );
+    const receiveMessage = useChatStore(
+        (state) => state.receiveMessage
+    );
+    const resetChat = useChatStore(
+        (state) => state.resetChat
+    );
+    const updateMessageReaction = useChatStore(
+        (state) => state.updateMessageReaction
+    );
+
+    const receiveIncomingCall = useCallStore(
+        (state) => state.receiveIncomingCall
+    );
+    const receiveCallResponded = useCallStore(
+        (state) => state.receiveCallResponded
+    );
+    const receiveCallEnded = useCallStore(
+        (state) => state.receiveCallEnded
+    );
 
     useEffect(() => {
         const accessToken = localStorage.getItem("accessToken");
@@ -41,6 +71,7 @@ export default function SocketManager() {
         if (!accessToken) {
             disconnectSocket();
             resetPresence();
+            resetChat();
             return;
         }
 
@@ -63,7 +94,7 @@ export default function SocketManager() {
         const handleDisconnect = (
             reason: string
         ) => {
-            console.log("Socket disconnected:",reason);
+            console.log("Socket disconnected:", reason);
             resetPresence();
         };
 
@@ -106,6 +137,99 @@ export default function SocketManager() {
             increaseUnread(); // Gọi action để tăng số lượng thông báo chưa đọc
         };
 
+        const handleNewMessage = (
+            message: RealtimeChatMessage
+        ) => {
+            if (
+                !message ||
+                typeof message.id !== "string" ||
+                typeof message.conversation_id !== "string"
+            ) {
+                return;
+            }
+
+            receiveMessage(message);
+        };
+
+        const handleMessageReaction = (
+            update: RealtimeMessageReactionUpdate
+        ) => {
+            if (
+                !update ||
+                typeof update.conversationId !== "string" ||
+                typeof update.messageId !== "string" ||
+                !Array.isArray(update.reactionSummary)
+            ) {
+                return;
+            }
+
+            // Event realtime chỉ cập nhật tổng hợp. Reaction của chính
+            // người dùng được cập nhật từ REST response.
+            updateMessageReaction({
+                conversationId: update.conversationId,
+                messageId: update.messageId,
+                reactionSummary: update.reactionSummary,
+                reactionCount: update.reactionCount,
+            });
+        };
+
+        const handleIncomingCall = (
+            incomingCall: IncomingCall
+        ) => {
+            console.log("Incoming call:", incomingCall);
+            if (
+                !incomingCall ||
+                typeof incomingCall.callId !== "string" ||
+                typeof incomingCall.conversationId !== "string" ||
+                typeof incomingCall.callerId !== "string" ||
+                (
+                    incomingCall.callType !== "audio" &&
+                    incomingCall.callType !== "video"
+                )
+            ) {
+                return;
+            }
+
+            receiveIncomingCall(incomingCall);
+        };
+
+        const handleCallResponded = (
+            response: CallResponded
+        ) => {
+            if (
+                !response ||
+                typeof response.callId !== "string" ||
+                typeof response.conversationId !== "string" ||
+                typeof response.callerId !== "string" ||
+                typeof response.calleeId !== "string" ||
+                (response.action !== "accept" &&
+                    response.action !== "reject") ||
+                (response.status !== "ongoing" &&
+                    response.status !== "rejected")
+            ) {
+                return;
+            }
+
+            receiveCallResponded(response);
+        };
+
+        const handleCallEnded = (response: CallEnded) => {
+            if (
+                !response ||
+                typeof response.callId !== "string" ||
+                typeof response.conversationId !== "string" ||
+                typeof response.callerId !== "string" ||
+                typeof response.calleeId !== "string" ||
+                (response.status !== "cancelled" &&
+                    response.status !== "ended" && response.status !== "missed")
+            ) {
+                return;
+            }
+
+            receiveCallEnded(response);
+        };
+
+
         socket.on("connect", handleConnect);
         socket.on(
             "connect_error",
@@ -119,6 +243,20 @@ export default function SocketManager() {
             "notification:new",
             handleNewNotification
         );
+        socket.on("message:new", handleNewMessage);
+        socket.on(
+            "message:reaction-updated",
+            handleMessageReaction
+        );
+        socket.on(
+            "call:incoming",
+            handleIncomingCall
+        );
+        socket.on(
+            "call:responded",
+            handleCallResponded
+        );
+        socket.on("call:ended", handleCallEnded);
         socket.on(
             "presence:snapshot",
             handlePresenceSnapshot
@@ -148,6 +286,11 @@ export default function SocketManager() {
                 "notification:new",
                 handleNewNotification
             );
+            socket.off("message:new", handleNewMessage);
+            socket.off(
+                "message:reaction-updated",
+                handleMessageReaction
+            );
             socket.off(
                 "presence:snapshot",
                 handlePresenceSnapshot
@@ -160,14 +303,29 @@ export default function SocketManager() {
                 "presence:offline",
                 handlePresenceOffline
             );
+            socket.off(
+                "call:incoming",
+                handleIncomingCall
+            );
+            socket.off(
+                "call:responded",
+                handleCallResponded
+            );
+            socket.off("call:ended", handleCallEnded);
         };
     }, [
         location.pathname,
         increaseUnread,
+        receiveMessage,
+        resetChat,
         resetPresence,
         setOnlineUsers,
         setUserOffline,
         setUserOnline,
+        updateMessageReaction,
+        receiveIncomingCall,
+        receiveCallEnded,
+        receiveCallResponded,
     ]);
 
     return null;

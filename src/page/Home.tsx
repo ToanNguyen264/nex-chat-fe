@@ -23,17 +23,17 @@ export default function HomePage() {
     }, []);
 
     return (
-        <MainLayout currentUser={currentUser}>
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 xl:grid-cols-[286px_minmax(0,596px)_286px]">
-                <aside className="hidden lg:col-span-3 lg:block xl:col-auto">
+        <MainLayout currentUser={currentUser} fixedViewport>
+            <div className="grid h-full min-h-0 grid-cols-1 items-start gap-6 lg:grid-cols-12 xl:grid-cols-[286px_minmax(0,596px)_286px]">
+                <aside className="hidden h-full overflow-hidden lg:col-span-3 lg:block xl:col-auto">
                     <Sidebar currentUser={currentUser} />
                 </aside>
 
-                <section className="min-w-0 lg:col-span-9 xl:col-auto">
+                <section className="h-full min-w-0 overflow-y-auto overscroll-contain lg:col-span-9 xl:col-auto">
                     <Feed currentUser={currentUser} />
                 </section>
 
-                <aside className="hidden xl:col-auto xl:block">
+                <aside className="hidden h-full overflow-hidden xl:col-auto xl:block">
                     <RightSidebar />
                 </aside>
             </div>
