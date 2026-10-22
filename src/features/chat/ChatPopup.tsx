@@ -70,6 +70,9 @@ export default function ChatPopup({
     const isOpen = useChatStore(
         (state) => state.isChatOpen
     );
+    const hasUnreadMessage = useChatStore(
+        (state) => state.hasUnreadMessage
+    );
     const showConversationList = useChatStore(
         (state) => state.isConversationListVisible
     );
@@ -367,11 +370,21 @@ export default function ChatPopup({
         return (
             <button
                 type="button"
-                aria-label="Mở tin nhắn"
+                aria-label={
+                    hasUnreadMessage
+                        ? "Mở tin nhắn, có tin nhắn mới"
+                        : "Mở tin nhắn"
+                }
                 onClick={openConversationList}
                 className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-xl transition hover:bg-indigo-700"
             >
                 <MessageCircle className="h-6 w-6" />
+                {hasUnreadMessage && (
+                    <span
+                        aria-hidden="true"
+                        className="absolute right-0 top-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-rose-500"
+                    />
+                )}
             </button>
         );
     }

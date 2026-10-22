@@ -21,7 +21,7 @@ export default function LoginPage() {
         initialValues: {
             email: "",
             password: "",
-            acceptedPolicy: false,
+            acceptedPolicy: true,
         },
         validationSchema: Yup.object({
             email: Yup.string()

@@ -8,6 +8,7 @@ import type {
 
 type ChatState = {
     isChatOpen: boolean;
+    hasUnreadMessage: boolean;
     isConversationListVisible: boolean;
     conversations: ChatConversation[];
     activeConversationId: string | null;
@@ -113,6 +114,7 @@ const applyReactionToMessage = (
 export const useChatStore = create<ChatStore>()(
     (set) => ({
         isChatOpen: false,
+        hasUnreadMessage: false,
         isConversationListVisible: true,
         conversations: [],
         activeConversationId: null,
@@ -122,6 +124,7 @@ export const useChatStore = create<ChatStore>()(
         openConversationList: () => {
             set({
                 isChatOpen: true,
+                hasUnreadMessage: false,
                 isConversationListVisible: true,
             });
         },
@@ -129,6 +132,7 @@ export const useChatStore = create<ChatStore>()(
         openConversation: (conversationId) => {
             set({
                 isChatOpen: true,
+                hasUnreadMessage: false,
                 isConversationListVisible: false,
                 activeConversationId: conversationId,
             });
@@ -214,6 +218,9 @@ export const useChatStore = create<ChatStore>()(
                     );
 
                 return {
+                    hasUnreadMessage:
+                        state.hasUnreadMessage ||
+                        !state.isChatOpen,
                     conversations:
                         sortConversations(conversations),
                     messagesByConversation: {
@@ -316,6 +323,7 @@ export const useChatStore = create<ChatStore>()(
         resetChat: () => {
             set({
                 isChatOpen: false,
+                hasUnreadMessage: false,
                 isConversationListVisible: true,
                 conversations: [],
                 activeConversationId: null,
