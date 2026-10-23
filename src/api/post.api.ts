@@ -8,6 +8,11 @@ export type ReactionType =
     | "sad"
     | "angry";
 
+export type PostPrivacy =
+    | "public"
+    | "friends"
+    | "private";
+
 export type PostAuthorFromApi = {
     first_name: string | null;
     last_name: string | null;
@@ -20,7 +25,7 @@ export type CreatedPost = {
     id: string;
     user_id: string;
     content: string;
-    privacy: "public" | "friends" | "private";
+    privacy: PostPrivacy;
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
@@ -38,7 +43,7 @@ export type PostFromApi = {
     id: string;
     user_id: string;
     content: string | null;
-    privacy: "public" | "friends" | "private";
+    privacy: PostPrivacy;
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
@@ -52,6 +57,13 @@ export type PostFromApi = {
 export type SetPostReactionResult = {
     currentReaction: ReactionType | null;
     reactionCount: number;
+};
+
+export type UpdatedPost = {
+    id: string;
+    content: string | null;
+    privacy: PostPrivacy;
+    updated_at: string;
 };
 
 export type AttachmentFromApi = {
@@ -69,22 +81,72 @@ export type AttachmentFromApi = {
 type GetPostsResponse = {
     success: boolean;
     data: PostFromApi[];
+    pagination: PostPagination;
 };
 
-export const getPosts = async (): Promise<PostFromApi[]> => {
-    const response = await api.get<GetPostsResponse>("/posts");
+export type PostPagination = {
+    nextCursor: string | null;
+    hasNextPage: boolean;
+};
 
-    return response.data.data;
+export type PaginatedPosts = {
+    posts: PostFromApi[];
+    pagination: PostPagination;
+};
+
+type GetPostsOptions = {
+    cursor?: string | null;
+    limit?: number;
+};
+
+const getPostListParams = ({
+    cursor,
+    limit = 10,
+}: GetPostsOptions) => ({
+    ...(cursor ? { cursor } : {}),
+    limit,
+});
+
+export const getPosts = async (
+    options: GetPostsOptions = {}
+): Promise<PaginatedPosts> => {
+    const response = await api.get<GetPostsResponse>("/posts", {
+        params: getPostListParams(options),
+    });
+
+    return {
+        posts: response.data.data,
+        pagination: response.data.pagination,
+    };
+};
+
+export const getUserPosts = async (
+    userId: string,
+    options: GetPostsOptions = {}
+): Promise<PaginatedPosts> => {
+    const response = await api.get<GetPostsResponse>(
+        `/posts/users/${userId}`,
+        {
+            params: getPostListParams(options),
+        }
+    );
+
+    return {
+        posts: response.data.data,
+        pagination: response.data.pagination,
+    };
 };
 
 
 export const createPost = async (
     content: string,
-    media: File[] = []
+    media: File[] = [],
+    privacy: PostPrivacy = "public"
 ): Promise<CreatedPost> => {
     const formData = new FormData();
 
     formData.append("content", content);
+    formData.append("privacy", privacy);
 
     media.forEach((file) => {
         formData.append("media", file);
@@ -100,6 +162,23 @@ export const createPost = async (
 
 export const deletePost = async (postId: number): Promise<void> => {
     await api.delete(`/posts/${postId}`);
+};
+
+export const updatePost = async (
+    postId: number,
+    content: string,
+    privacy: PostPrivacy
+): Promise<UpdatedPost> => {
+    const response = await api.patch<{
+        success: boolean;
+        message: string;
+        data: UpdatedPost;
+    }>(`/posts/${postId}`, {
+        content,
+        privacy,
+    });
+
+    return response.data.data;
 };
 
 export const setPostReaction = async (

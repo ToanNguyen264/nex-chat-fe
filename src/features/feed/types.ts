@@ -1,9 +1,13 @@
-import type { ReactionType } from "../../api/post.api";
+import type {
+    PostPrivacy,
+    ReactionType,
+} from "../../api/post.api";
 
 /* cấu trúc dữ liệu cho một bài viết */
 export type Post = {
     id: number;
     userId: string;
+    privacy: PostPrivacy;
     author: string;
     content: string;
     createdAt: string;

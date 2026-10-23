@@ -1,19 +1,30 @@
 import PostCard from "./PostCard";
 import type { Post } from "../types";
-import type { ReactionType } from "../../../api/post.api";
+import type {
+    PostPrivacy,
+    ReactionType,
+} from "../../../api/post.api";
 
 type PostListProps = {
     posts: Post[];
+    currentUserId: string | null;
     onReact: (
         postId: number,
         reactionType: ReactionType
+    ) => Promise<void>;
+    onEditPost: (
+        postId: number,
+        content: string,
+        privacy: PostPrivacy
     ) => Promise<void>;
     onDeletePost: (postId: number) => Promise<void>;
 };
 
 export default function PostList({
     posts,
+    currentUserId,
     onReact,
+    onEditPost,
     onDeletePost,
 }: PostListProps) {
     if (posts.length === 0) {
@@ -30,7 +41,9 @@ export default function PostList({
                 <PostCard
                     key={post.id}
                     post={post}
+                    currentUserId={currentUserId}
                     onReact={onReact}
+                    onEditPost={onEditPost}
                     onDeletePost={onDeletePost}
                 />
             ))}

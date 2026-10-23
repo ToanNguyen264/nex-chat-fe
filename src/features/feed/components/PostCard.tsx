@@ -5,9 +5,12 @@ import {
     ChevronRight,
     Globe2,
     Heart,
+    Lock,
     MessageCircle,
     MoreHorizontal,
+    Pencil,
     Share2,
+    Users,
     Trash2,
     X,
 } from "lucide-react";
@@ -18,7 +21,9 @@ import {
 
 import type { Post } from "../types";
 import type { ReactionType } from "../../../api/post.api";
+import type { PostPrivacy } from "../../../api/post.api";
 import CommentSection from "./CommentSection";
+import EditPostModal from "./EditPostModal";
 import { usePresenceStore } from "../../presence/presence.store";
 
 const reactionOptions: Array<{
@@ -37,16 +42,24 @@ const reactionOptions: Array<{
 
 type PostCardProps = {
     post: Post;
+    currentUserId: string | null;
     onReact: (
         postId: number,
         reactionType: ReactionType
+    ) => Promise<void>;
+    onEditPost: (
+        postId: number,
+        content: string,
+        privacy: PostPrivacy
     ) => Promise<void>;
     onDeletePost: (postId: number) => Promise<void>;
 };
 
 export default function PostCard({
     post,
+    currentUserId,
     onReact,
+    onEditPost,
     onDeletePost,
 }: PostCardProps) {
     const [isDeleting, setIsDeleting] = useState(false);
@@ -57,6 +70,7 @@ export default function PostCard({
         post.commentCount ?? 0
     );
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
     const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -74,6 +88,7 @@ export default function PostCard({
     const isAuthorOnline = usePresenceStore((state) =>
         state.onlineUserIds.has(post.userId)
     );
+    const isOwner = currentUserId === post.userId;
 
     useEffect(() => {
         if (!isMenuOpen) {
@@ -187,12 +202,28 @@ export default function PostCard({
                         </h2>
 
                         <p className="flex items-center gap-1.5 text-[11px] text-[#767586]">
-                            {post.createdAt} <span>•</span> <Globe2 className="h-3 w-3" /> Công khai
+                            {post.createdAt} <span>•</span>
+                            {post.privacy === "public" ? (
+                                <>
+                                    <Globe2 className="h-3 w-3" />
+                                    Công khai
+                                </>
+                            ) : post.privacy === "friends" ? (
+                                <>
+                                    <Users className="h-3 w-3" />
+                                    Bạn bè
+                                </>
+                            ) : (
+                                <>
+                                    <Lock className="h-3 w-3" />
+                                    Chỉ mình tôi
+                                </>
+                            )}
                         </p>
                     </div>
                 </div>
 
-                <div ref={menuRef} className="relative">
+                {isOwner && <div ref={menuRef} className="relative">
                     <button
                         type="button"
                         aria-label="Tùy chọn bài viết"
@@ -214,6 +245,19 @@ export default function PostCard({
                                 type="button"
                                 role="menuitem"
                                 disabled={isDeleting}
+                                onClick={() => {
+                                    setIsMenuOpen(false);
+                                    setIsEditOpen(true);
+                                }}
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <Pencil className="h-4 w-4" />
+                                Chỉnh sửa bài viết
+                            </button>
+                            <button
+                                type="button"
+                                role="menuitem"
+                                disabled={isDeleting}
                                 onClick={() => void handleDelete()}
                                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
                             >
@@ -222,8 +266,18 @@ export default function PostCard({
                             </button>
                         </div>
                     )}
-                </div>
+                </div>}
             </header>
+
+            {isEditOpen && (
+                <EditPostModal
+                    post={post}
+                    onClose={() => setIsEditOpen(false)}
+                    onSave={(content, privacy) =>
+                        onEditPost(post.id, content, privacy)
+                    }
+                />
+            )}
 
             <p className="emoji-text mt-4 whitespace-pre-wrap text-[15px] leading-[25px] text-[#131b2e]">
                 {post.content}

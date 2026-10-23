@@ -6,13 +6,17 @@ import EmojiPicker, {
 } from "emoji-picker-react";
 import type { EmojiClickData } from "emoji-picker-react";
 import {
+    Globe2,
     Image as ImageIcon,
+    Lock,
     Mic,
     Smile,
+    Users,
     X,
 } from "lucide-react";
 
 import type { CurrentUser } from "../../../api/user.api";
+import type { PostPrivacy } from "../../../api/post.api";
 import { getNameInitials, getUserDisplayName } from "../../../utils/user";
 
 
@@ -20,7 +24,8 @@ type CreatePostProps = {
     currentUser: CurrentUser | null;
     onCreatePost: (
         content: string,
-        media?: File[]
+        media: File[],
+        privacy: PostPrivacy
     ) => Promise<void>;
 };
 
@@ -61,6 +66,8 @@ export default function CreatePost({
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [privacy, setPrivacy] =
+        useState<PostPrivacy>("public");
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const emojiPickerRef = useRef<HTMLDivElement>(null);
     const displayName = getUserDisplayName(currentUser);
@@ -119,10 +126,12 @@ export default function CreatePost({
         try {
             await onCreatePost(
                 newContent,
-                selectedFiles
+                selectedFiles,
+                privacy
             );
             setContent("");
             setSelectedFiles([]);
+            setPrivacy("public");
             setIsEmojiPickerOpen(false);
         } catch (error) {
             console.error("Không thể tạo bài viết:", error);
@@ -159,6 +168,31 @@ export default function CreatePost({
                     className="emoji-text h-[42px] min-w-0 flex-1 rounded-full bg-[#f2f3ff] px-4 text-sm text-[#131b2e] outline-none placeholder:text-[#8b8998] focus:ring-2 focus:ring-[#4648d4]/20"
                 />
             </div>
+
+            <label className="mt-3 inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">
+                {privacy === "public" ? (
+                    <Globe2 className="h-4 w-4" />
+                ) : privacy === "friends" ? (
+                    <Users className="h-4 w-4" />
+                ) : (
+                    <Lock className="h-4 w-4" />
+                )}
+
+                <span>Ai có thể xem:</span>
+                <select
+                    value={privacy}
+                    onChange={(event) =>
+                        setPrivacy(
+                            event.target.value as PostPrivacy
+                        )
+                    }
+                    className="bg-transparent font-semibold text-indigo-600 outline-none"
+                >
+                    <option value="public">Công khai</option>
+                    <option value="friends">Bạn bè</option>
+                    <option value="private">Chỉ mình tôi</option>
+                </select>
+            </label>
 
             {selectedFiles.length > 0 && (
                 <div className="mt-3">
