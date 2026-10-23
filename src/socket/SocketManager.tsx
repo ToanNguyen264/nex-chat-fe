@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "react-router";
 import {
     connectSocket,
@@ -20,6 +20,8 @@ import {
     type CallResponded,
     type IncomingCall,
 } from "../features/call/call.store";
+import { useFeedRealtimeStore } from "../features/feed/feed-realtime.store";
+import { parseFeedChangedPayload } from "../features/feed/feed-realtime";
 
 type PresenceSnapshotPayload = {
     userIds: string[];
@@ -30,6 +32,7 @@ type PresenceUserPayload = {
 };
 
 export default function SocketManager() {
+    const hasConnectedOnce = useRef(false);
     const location = useLocation(); // Lấy thông tin đường dẫn hiện tại.
 
     const increaseUnread = useNotificationStore((state) => state.increaseUnread); //lấy action từ store
@@ -64,6 +67,15 @@ export default function SocketManager() {
     const receiveCallEnded = useCallStore(
         (state) => state.receiveCallEnded
     );
+    const receiveFeedChange = useFeedRealtimeStore(
+        (state) => state.receiveFeedChange
+    );
+    const requestFeedSync = useFeedRealtimeStore(
+        (state) => state.requestFeedSync
+    );
+    const resetFeedRealtime = useFeedRealtimeStore(
+        (state) => state.resetFeedRealtime
+    );
 
     useEffect(() => {
         const accessToken = localStorage.getItem("accessToken");
@@ -72,6 +84,7 @@ export default function SocketManager() {
             disconnectSocket();
             resetPresence();
             resetChat();
+            resetFeedRealtime();
             return;
         }
 
@@ -80,6 +93,12 @@ export default function SocketManager() {
                 "Socket connected:",
                 socket.id
             );
+
+            if (hasConnectedOnce.current) {
+                requestFeedSync();
+            } else {
+                hasConnectedOnce.current = true;
+            }
         };
 
         const handleConnectError = (
@@ -229,6 +248,15 @@ export default function SocketManager() {
             receiveCallEnded(response);
         };
 
+        const handleFeedChanged = (payload: unknown) => {
+            const parsedPayload =
+                parseFeedChangedPayload(payload);
+
+            if (parsedPayload) {
+                receiveFeedChange(parsedPayload);
+            }
+        };
+
 
         socket.on("connect", handleConnect);
         socket.on(
@@ -257,6 +285,7 @@ export default function SocketManager() {
             handleCallResponded
         );
         socket.on("call:ended", handleCallEnded);
+        socket.on("feed:changed", handleFeedChanged);
         socket.on(
             "presence:snapshot",
             handlePresenceSnapshot
@@ -312,6 +341,7 @@ export default function SocketManager() {
                 handleCallResponded
             );
             socket.off("call:ended", handleCallEnded);
+            socket.off("feed:changed", handleFeedChanged);
         };
     }, [
         location.pathname,
@@ -326,6 +356,9 @@ export default function SocketManager() {
         receiveIncomingCall,
         receiveCallEnded,
         receiveCallResponded,
+        receiveFeedChange,
+        requestFeedSync,
+        resetFeedRealtime,
     ]);
 
     return null;

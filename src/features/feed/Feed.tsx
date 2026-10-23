@@ -1,16 +1,21 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import type { ReactNode } from "react";
+import {
+    useInfiniteQuery,
+    useQueryClient,
+    type InfiniteData,
+} from "@tanstack/react-query";
 
 import type { CurrentUser } from "../../api/user.api";
 import {
     createPost,
     deletePost,
-    getPosts,
-    getUserPosts,
     setPostReaction,
     updatePost,
 } from "../../api/post.api";
 import type {
+    CreatedPost,
+    PaginatedPosts,
     PostFromApi,
     PostPrivacy,
     ReactionType,
@@ -19,6 +24,13 @@ import CreatePost from "./components/CreatePost";
 import PostList from "./components/PostList";
 import StoryList from "./components/StoryList";
 import type { Post } from "./types";
+import {
+    createFeedInfiniteQueryOptions,
+    flattenFeedPosts,
+    prependPostToInfiniteFeed,
+    removePostFromInfiniteFeed,
+    updatePostInInfiniteFeed,
+} from "./feed-query";
 
 type FeedProps = {
     currentUser: CurrentUser | null;
@@ -49,6 +61,7 @@ const formatPost = (post: PostFromApi): Post => {
         ),
         currentReaction: post.currentReaction,
         reactionCount: post.reactionCount,
+        reactionSummary: post.reactionSummary,
         avatar: post.users.avatar || undefined,
         images: post.attachments
             .filter((attachment) =>
@@ -65,20 +78,16 @@ const formatPost = (post: PostFromApi): Post => {
     };
 };
 
-const appendUniquePosts = (
-    currentPosts: Post[],
-    incomingPosts: Post[]
-) => {
-    const postsById = new Map(
-        currentPosts.map((post) => [post.id, post])
-    );
-
-    for (const post of incomingPosts) {
-        postsById.set(post.id, post);
-    }
-
-    return Array.from(postsById.values());
-};
+const formatCreatedPost = (
+    post: CreatedPost
+): PostFromApi => ({
+    ...post,
+    content: post.content ?? "",
+    currentReaction: null,
+    reactionCount: 0,
+    reactionSummary: [],
+    commentCount: 0,
+});
 
 export default function Feed({
     currentUser,
@@ -86,98 +95,36 @@ export default function Feed({
     onlyUserId,
     feedHeader,
 }: FeedProps) {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isLoadingMore, setIsLoadingMore] =
-        useState(false);
-    const [nextCursor, setNextCursor] = useState<
-        string | null
-    >(null);
-    const [hasNextPage, setHasNextPage] =
-        useState(false);
+    const queryClient = useQueryClient();
+    const queryOptions = createFeedInfiniteQueryOptions(onlyUserId);
+    const {
+        data,
+        error,
+        fetchNextPage,
+        hasNextPage,
+        isError,
+        isFetchingNextPage,
+        isLoading,
+    } = useInfiniteQuery(queryOptions);
 
+    const posts = useMemo(
+        () => flattenFeedPosts(data).map(formatPost),
+        [data]
+    );
     const canCreatePost =
         !onlyUserId || onlyUserId === currentUser?.id;
 
-    useEffect(() => {
-        let isActive = true;
-
-        async function loadPosts() {
-            setIsLoading(true);
-            setPosts([]);
-            setNextCursor(null);
-            setHasNextPage(false);
-
-            try {
-                const result = onlyUserId
-                    ? await getUserPosts(onlyUserId)
-                    : await getPosts();
-
-                if (!isActive) {
-                    return;
-                }
-
-                setPosts(result.posts.map(formatPost));
-                setNextCursor(
-                    result.pagination.nextCursor
-                );
-                setHasNextPage(
-                    result.pagination.hasNextPage
-                );
-            } catch (error) {
-                console.error(
-                    "Không thể lấy danh sách bài viết:",
-                    error
-                );
-            } finally {
-                if (isActive) {
-                    setIsLoading(false);
-                }
-            }
-        }
-
-        void loadPosts();
-
-        return () => {
-            isActive = false;
-        };
-    }, [onlyUserId]);
-
-    async function handleLoadMore() {
-        if (!nextCursor || isLoadingMore) {
-            return;
-        }
-
-        setIsLoadingMore(true);
-
-        try {
-            const result = onlyUserId
-                ? await getUserPosts(onlyUserId, {
-                      cursor: nextCursor,
-                  })
-                : await getPosts({
-                      cursor: nextCursor,
-                  });
-
-            setPosts((currentPosts) =>
-                appendUniquePosts(
-                    currentPosts,
-                    result.posts.map(formatPost)
-                )
-            );
-            setNextCursor(result.pagination.nextCursor);
-            setHasNextPage(
-                result.pagination.hasNextPage
-            );
-        } catch (error) {
-            console.error(
-                "Không thể tải thêm bài viết:",
-                error
-            );
-        } finally {
-            setIsLoadingMore(false);
-        }
-    }
+    const updateCurrentFeed = (
+        updater: (
+            current: InfiniteData<PaginatedPosts>
+        ) => InfiniteData<PaginatedPosts>
+    ) => {
+        queryClient.setQueryData<
+            InfiniteData<PaginatedPosts>
+        >(queryOptions.queryKey, (current) =>
+            current ? updater(current) : current
+        );
+    };
 
     async function handleReaction(
         postId: number,
@@ -188,18 +135,17 @@ export default function Feed({
             reactionType
         );
 
-        setPosts((currentPosts) =>
-            currentPosts.map((post) => {
-                if (post.id !== postId) {
-                    return post;
-                }
-
-                return {
+        updateCurrentFeed((current) =>
+            updatePostInInfiniteFeed(
+                current,
+                postId.toString(),
+                (post) => ({
                     ...post,
                     currentReaction: result.currentReaction,
                     reactionCount: result.reactionCount,
-                };
-            })
+                    reactionSummary: result.reactionSummary,
+                })
+            )
         );
     }
 
@@ -215,77 +161,36 @@ export default function Feed({
                 privacy
             );
 
-            const fullName = [
-                createdPost.users.first_name,
-                createdPost.users.last_name,
-            ]
-                .filter(Boolean)
-                .join(" ");
-
-            const newPost: Post = {
-                id: Number(createdPost.id),
-                userId: createdPost.user_id,
-                privacy: createdPost.privacy,
-                author:
-                    fullName ||
-                    createdPost.users.user_name ||
-                    "Người dùng",
-                content: createdPost.content,
-                createdAt: "Vừa xong",
-                currentReaction: null,
-                reactionCount: 0,
-                avatar:
-                    createdPost.users.avatar || undefined,
-                images: createdPost.attachments
-                    .filter((attachment) =>
-                        attachment.file_type?.startsWith(
-                            "image/"
-                        )
-                    )
-                    .map(
-                        (attachment) => attachment.file_url
-                    ),
-                videos: createdPost.attachments
-                    .filter((attachment) =>
-                        attachment.file_type?.startsWith(
-                            "video/"
-                        )
-                    )
-                    .map(
-                        (attachment) => attachment.file_url
-                    ),
-                commentCount: 0,
-                shareCount: 0,
-            };
-
-            setPosts((currentPosts) => [
-                newPost,
-                ...currentPosts,
-            ]);
-        } catch (error) {
+            updateCurrentFeed((current) =>
+                prependPostToInfiniteFeed(
+                    current,
+                    formatCreatedPost(createdPost)
+                )
+            );
+        } catch (createError) {
             console.error(
                 "Không thể tạo bài viết:",
-                error
+                createError
             );
-            throw error;
+            throw createError;
         }
     }
 
     async function handleDeletePost(postId: number) {
         try {
             await deletePost(postId);
-
-            setPosts((currentPosts) =>
-                currentPosts.filter(
-                    (post) => post.id !== postId
+            updateCurrentFeed((current) =>
+                removePostFromInfiniteFeed(
+                    current,
+                    postId.toString()
                 )
             );
-        } catch (error) {
+        } catch (deleteError) {
             console.error(
                 "Không thể xóa bài viết:",
-                error
+                deleteError
             );
-            throw error;
+            throw deleteError;
         }
     }
 
@@ -300,15 +205,16 @@ export default function Feed({
             privacy
         );
 
-        setPosts((currentPosts) =>
-            currentPosts.map((post) =>
-                post.id === postId
-                    ? {
-                          ...post,
-                          content: updatedPost.content ?? "",
-                          privacy: updatedPost.privacy,
-                      }
-                    : post
+        updateCurrentFeed((current) =>
+            updatePostInInfiniteFeed(
+                current,
+                postId.toString(),
+                (post) => ({
+                    ...post,
+                    content: updatedPost.content,
+                    privacy: updatedPost.privacy,
+                    updated_at: updatedPost.updated_at,
+                })
             )
         );
     }
@@ -330,6 +236,21 @@ export default function Feed({
                 <p className="rounded-2xl bg-white p-5 text-center text-sm text-slate-500">
                     Đang tải bài viết...
                 </p>
+            ) : isError ? (
+                <button
+                    type="button"
+                    onClick={() =>
+                        void queryClient.invalidateQueries({
+                            queryKey: queryOptions.queryKey,
+                        })
+                    }
+                    className="rounded-2xl bg-white p-5 text-center text-sm font-semibold text-rose-600"
+                >
+                    Không thể tải Feed. Nhấn để thử lại.
+                    {error instanceof Error
+                        ? ` (${error.message})`
+                        : ""}
+                </button>
             ) : (
                 <>
                     <PostList
@@ -340,16 +261,14 @@ export default function Feed({
                         onDeletePost={handleDeletePost}
                     />
 
-                    {hasNextPage && nextCursor && (
+                    {hasNextPage && (
                         <button
                             type="button"
-                            disabled={isLoadingMore}
-                            onClick={() =>
-                                void handleLoadMore()
-                            }
+                            disabled={isFetchingNextPage}
+                            onClick={() => void fetchNextPage()}
                             className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-indigo-600 shadow-sm transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            {isLoadingMore
+                            {isFetchingNextPage
                                 ? "Đang tải thêm..."
                                 : "Xem thêm"}
                         </button>

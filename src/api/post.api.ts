@@ -8,6 +8,11 @@ export type ReactionType =
     | "sad"
     | "angry";
 
+export type ReactionSummaryItem = {
+    reactionType: ReactionType;
+    count: number;
+};
+
 export type PostPrivacy =
     | "public"
     | "friends"
@@ -51,12 +56,14 @@ export type PostFromApi = {
     attachments: AttachmentFromApi[];
     currentReaction: ReactionType | null;
     reactionCount: number;
+    reactionSummary: ReactionSummaryItem[];
     commentCount: number;
 };
 
 export type SetPostReactionResult = {
     currentReaction: ReactionType | null;
     reactionCount: number;
+    reactionSummary: ReactionSummaryItem[];
 };
 
 export type UpdatedPost = {
