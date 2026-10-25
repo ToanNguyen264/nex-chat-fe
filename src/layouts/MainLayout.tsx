@@ -17,10 +17,10 @@ export default function MainLayout({
 }: MainLayoutProps) {
     return (
         <div
-            className={`relative bg-[#faf8ff] ${
+            className={`relative flex flex-col bg-[#faf8ff] ${
                 fixedViewport
                     ? "h-screen overflow-hidden"
-                    : "min-h-screen overflow-x-hidden"
+                    : "min-h-screen overflow-x-clip"
             }`}
         >
             <Header currentUser={currentUser} />
@@ -29,23 +29,26 @@ export default function MainLayout({
             <div className="pointer-events-none absolute right-10 top-96 h-80 w-80 rounded-full bg-[#57dffe]/10 blur-3xl" />
 
             <main
-                className={`relative mx-auto max-w-[1280px] px-4 py-5 sm:px-6 lg:px-8 lg:py-6 ${
+                className={`relative mx-auto w-full max-w-[1280px] flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-6 ${
                     fixedViewport
-                        ? "h-[calc(100vh-64px)] min-h-0 overflow-hidden"
-                        : "min-h-[calc(100vh-64px)]"
+                        ? "min-h-0 overflow-hidden"
+                        : ""
                 }`}
             >
                 {children}
             </main>
 
-            <footer
-                className={`relative border-t border-[#eef0ff] bg-white px-6 py-6 text-[11px] text-[#767586] lg:px-8 ${
-                    fixedViewport ? "hidden" : ""
-                }`}
-            >
-                <div className="mx-auto max-w-[1216px]">
-                    <span className="font-semibold text-[#4648d4]">Pulse</span>
-                    <span> © 2026 Pulse Social Network. Bản quyền được bảo lưu.</span>
+            <footer className="relative shrink-0 border-t border-[#eef0ff] bg-white px-6 py-4 text-[11px] text-[#767586] lg:px-8">
+                <div className="mx-auto flex max-w-[1216px] flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <span className="font-semibold text-[#4648d4]">Nex</span>
+                        <span> © 2026 Nex Social Network. Bản quyền được bảo lưu.</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <a href="/terms" className="transition hover:text-[#4648d4]">Điều khoản</a>
+                        <a href="/privacy" className="transition hover:text-[#4648d4]">Bảo mật</a>
+                        <a href="/help" className="transition hover:text-[#4648d4]">Trợ giúp</a>
+                    </div>
                 </div>
             </footer>
 

@@ -7,8 +7,6 @@ import api from "../api/axios";
 import axios from "axios";
 import { showError, showSuccess } from "../utils/swal";
 
-import appleIcon from "../_metronic/assets/images/apple_icon.svg";
-import googleIcon from "../_metronic/assets/images/google_icon.svg";
 import { KTIcon } from "../_metronic/helpers/components/KTIcon";
 import Button from "../component/UI/Button/Button";
 import Input from "../component/UI/Input/Input";
@@ -102,15 +100,16 @@ export default function RegisterPage() {
     const userNameHasValidFormat = /^[a-zA-Z0-9._]{3,30}$/.test(formik.values.userName);
 
     return (
-        <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#e0e7ff,_#f8fafc_45%,_#ecfeff)] p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto grid min-h-[calc(100vh-2rem)] max-w-6xl overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_32px_90px_rgba(30,41,59,0.18)] sm:min-h-[calc(100vh-3rem)] md:grid-cols-[0.82fr_1.18fr]">
+        <main className="flex min-h-screen flex-col justify-between bg-[radial-gradient(circle_at_top_left,_#e0e7ff,_#f8fafc_45%,_#ecfeff)]">
+            <div className="flex flex-1 items-center justify-center p-4 sm:p-6 lg:p-8">
+            <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_32px_90px_rgba(30,41,59,0.18)] md:grid-cols-[0.82fr_1.18fr]">
                 <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#3f46c8] via-[#565bdc] to-[#087386] p-7 text-white md:flex md:flex-col lg:p-10">
                     <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
                     <div className="absolute -bottom-24 -right-20 h-80 w-80 rounded-full bg-indigo-950/30 blur-3xl" />
 
                     <div className="relative z-10 flex items-center gap-3">
-                        <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-xl font-black text-indigo-600 shadow-lg shadow-indigo-950/20">
-                            N
+                        <div className="grid h-11 w-11 place-items-center rounded-2xl border border-white/20 bg-slate-950/30 p-1 shadow-lg shadow-indigo-950/25 backdrop-blur-md">
+                            <img src="/logo.svg" alt="Nex" className="h-full w-full scale-125 object-contain" />
                         </div>
                         <span className="text-2xl font-bold tracking-tight">Nex</span>
                     </div>
@@ -183,8 +182,8 @@ export default function RegisterPage() {
                 <section className="flex items-center px-6 py-10 sm:px-8 lg:px-12">
                     <div className="mx-auto w-full max-w-2xl">
                         <div className="mb-8 flex items-center gap-3 md:hidden">
-                            <div className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 font-black text-white shadow-lg shadow-indigo-200">
-                                N
+                            <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-900 p-1 shadow-md">
+                                <img src="/logo.svg" alt="Nex" className="h-full w-full scale-125 object-contain" />
                             </div>
                             <span className="text-xl font-bold text-slate-900">Nex</span>
                         </div>
@@ -201,11 +200,11 @@ export default function RegisterPage() {
 
                         <div className="mt-6 grid grid-cols-2 gap-3">
                             <Button className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
-                                <img src={googleIcon} alt="" className="h-5 w-5" />
+                                <img src="/google_logo.svg" alt="" className="h-5 w-5 object-contain" />
                                 Google
                             </Button>
                             <Button className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
-                                <img src={appleIcon} alt="" className="h-5 w-5" />
+                                <img src="/apple_logo.svg" alt="" className="h-5 w-5 object-contain" />
                                 Apple ID
                             </Button>
                         </div>
@@ -381,7 +380,17 @@ export default function RegisterPage() {
                                         onBlur={formik.handleBlur}
                                         className="mt-0.5 h-4 w-4 cursor-pointer accent-indigo-600"
                                     />
-                                    <span>Tôi đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của Nex.</span>
+                                    <span>
+                                        Tôi đồng ý với{" "}
+                                        <a href="/terms" className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+                                            Điều khoản dịch vụ
+                                        </a>{" "}
+                                        và{" "}
+                                        <a href="/privacy" className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+                                            Chính sách bảo mật
+                                        </a>{" "}
+                                        của Nex.
+                                    </span>
                                 </label>
                                 {formik.touched.acceptedPolicy && formik.errors.acceptedPolicy && (
                                     <p className="mt-1.5 text-xs text-red-500">{formik.errors.acceptedPolicy}</p>
@@ -416,6 +425,21 @@ export default function RegisterPage() {
                     </div>
                 </section>
             </div>
+            </div>
+
+            <footer className="border-t border-[#eef0ff] bg-white/80 px-6 py-4 text-[11px] text-[#767586] backdrop-blur lg:px-8">
+                <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <span className="font-semibold text-[#4648d4]">Nex</span>
+                        <span> © 2026 Nex Social Network. Bản quyền được bảo lưu.</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <a href="/terms" className="transition hover:text-[#4648d4]">Điều khoản</a>
+                        <a href="/privacy" className="transition hover:text-[#4648d4]">Bảo mật</a>
+                        <a href="/help" className="transition hover:text-[#4648d4]">Trợ giúp</a>
+                    </div>
+                </div>
+            </footer>
         </main>
     );
 }

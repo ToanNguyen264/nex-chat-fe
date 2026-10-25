@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Gradient chính từ Xanh Cyan sang Tím và Hồng Neon -->
+    <linearGradient id="nexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe" />
+      <stop offset="45%" stop-color="#4facfe" />
+      <stop offset="75%" stop-color="#a155ff" />
+      <stop offset="100%" stop-color="#ff08d0" />
+    </linearGradient>
+
+    <!-- Gradient phụ tạo khối 3D cho chữ N -->
+    <linearGradient id="nDepthGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1b5cff" />
+      <stop offset="50%" stop-color="#7c4dff" />
+      <stop offset="100%" stop-color="#f500bd" />
+    </linearGradient>
+
+    <!-- Gradient ánh sáng viền trên chữ N -->
+    <linearGradient id="nHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9efffe" />
+      <stop offset="35%" stop-color="#4facfe" />
+      <stop offset="70%" stop-color="#b459ff" />
+      <stop offset="100%" stop-color="#ff5ce3" />
+    </linearGradient>
+
+    <!-- Bộ lọc tạo hiệu ứng phát sáng (Neon Glow) trong suốt -->
+    <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur1" />
+      <feGaussianBlur stdDeviation="18" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur2" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Đổ bóng nhẹ tạo chiều sâu cho lớp chữ N -->
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#090d26" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <!-- NHÓM TỔNG THỂ CÓ HIỆU ỨNG NEON -->
+  <g filter="url(#neonGlow)">
+
+    <!-- 1. VÒNG CUNG MẠNG LƯỚI BÊN NGOÀI (Outer Tech Arcs) -->
+    <!-- Cung trên -->
+    <path d="M 185 110 A 155 155 0 0 1 325 115" fill="none" stroke="url(#nexGrad)" stroke-width="4" stroke-linecap="round" opacity="0.85" />
+    <!-- Cung trái -->
+    <path d="M 102 285 A 155 155 0 0 1 135 150" fill="none" stroke="#00f2fe" stroke-width="4" stroke-linecap="round" opacity="0.8" />
+    <!-- Cung dưới -->
+    <path d="M 315 395 A 155 155 0 0 1 195 395" fill="none" stroke="url(#nexGrad)" stroke-width="4" stroke-linecap="round" opacity="0.85" />
+    <!-- Cung phải -->
+    <path d="M 398 205 A 155 155 0 0 1 392 295" fill="none" stroke="#ff08d0" stroke-width="4" stroke-linecap="round" opacity="0.8" />
+
+    <!-- 2. KHUNG BONG BÓNG CHAT CHÍNH (Chat Bubble Ring) -->
+    <!-- Lớp viền dày bên trong -->
+    <path d="M 358 315 
+             A 125 125 0 1 0 320 355 
+             L 368 380 
+             L 358 315 Z" fill="none" stroke="url(#nexGrad)" stroke-width="14" stroke-linejoin="round" stroke-linecap="round" />
+
+    <!-- Đường viền mảnh song song bên trong bong bóng -->
+    <path d="M 155 290 A 103 103 0 0 1 305 158" fill="none" stroke="#00f2fe" stroke-width="3.5" stroke-linecap="round" opacity="0.6" />
+
+    <!-- 3. QUỸ ĐẠO KẾT NỐI CHÉO (Orbit Swooshes & Tech Lines) -->
+    <!-- Vòng quỹ đạo elip nghiêng -->
+    <path d="M 145 358 C 95 335, 165 215, 255 160 C 345 105, 415 110, 385 178 C 370 212, 340 245, 315 268" fill="none" stroke="url(#nexGrad)" stroke-width="5" stroke-linecap="round" />
+
+    <!-- Đường tín hiệu chéo dưới -->
+    <path d="M 120 342 C 155 375, 210 345, 255 315" fill="none" stroke="url(#nexGrad)" stroke-width="4.5" stroke-linecap="round" />
+
+    <!-- Các đoạn mạch kết nối đứt nét (Tech nodes) -->
+    <line x1="168" y1="242" x2="182" y2="228" stroke="#00f2fe" stroke-width="4.5" stroke-linecap="round" />
+    <line x1="272" y1="158" x2="288" y2="146" stroke="#7c4dff" stroke-width="4.5" stroke-linecap="round" />
+
+    <!-- 4. CÁC ĐIỂM NÚT MẠNG XÃ HỘI (Network Dots) -->
+    <circle cx="165" cy="135" r="8" fill="#00f2fe" />
+    <circle cx="145" cy="358" r="8" fill="#00e1ff" />
+    <circle cx="255" cy="315" r="7.5" fill="#6875ff" />
+    <circle cx="182" cy="382" r="6" fill="#4facfe" />
+    <circle cx="358" cy="122" r="9" fill="#ff08d0" />
+    <circle cx="315" cy="268" r="7.5" fill="#e100ff" />
+    <circle cx="380" cy="312" r="6.5" fill="#ff08d0" />
+    <circle cx="156" cy="255" r="4.5" fill="#00f2fe" />
+    <circle cx="260" cy="168" r="4.5" fill="#4facfe" />
+
+    <!-- 5. BIỂU TƯỢNG CHỮ "N" CÁCH ĐIỆU 3D Ở TRUNG TÂM -->
+    <g filter="url(#dropShadow)">
+      <!-- Lớp đế tạo khối 3D cho chữ N -->
+      <path d="M 142 308 
+               C 178 338, 226 312, 226 262 
+               L 226 225 
+               C 226 212, 236 212, 244 225 
+               L 278 282 
+               C 298 315, 336 305, 336 258 
+               L 336 212 
+               C 336 178, 362 162, 386 184 
+               C 380 144, 342 132, 314 156 
+               C 296 172, 292 196, 292 222 
+               L 292 242 
+               L 246 176 
+               C 224 146, 184 158, 184 204 
+               L 184 256 
+               C 184 286, 164 304, 142 308 Z" fill="url(#nDepthGrad)" />
+
+      <!-- Lớp bề mặt sáng 3D của chữ N -->
+      <path d="M 142 308 
+               C 172 326, 214 304, 214 256 
+               L 214 214 
+               C 214 198, 228 198, 238 214 
+               L 280 278 
+               C 298 306, 328 296, 328 252 
+               L 328 206 
+               C 328 172, 358 154, 386 184 
+               C 376 148, 342 138, 316 162 
+               C 300 176, 298 198, 298 226 
+               L 298 250 
+               L 244 174 
+               C 224 148, 188 160, 188 202 
+               L 188 254 
+               C 188 282, 166 302, 142 308 Z" fill="url(#nHighlight)" />
+    </g>
+
+  </g>
+</svg>

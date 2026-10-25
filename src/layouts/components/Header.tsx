@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
 
-import pulseLogo from "../../assets/home/pulse-logo.png";
+
 import { logout } from "../../api/auth.api";
 import { getUnreadNotificationCount } from "../../api/notification.api";
 import type { CurrentUser } from "../../api/user.api";
@@ -142,8 +142,8 @@ export default function Header({ currentUser }: HeaderProps) {
         <header className="sticky top-0 z-40 h-16 border-b border-[#eef0ff] bg-white/95 shadow-[0_1px_2px_rgba(0,0,0,0.03)] backdrop-blur">
             <div className="mx-auto flex h-full max-w-[1280px] items-center gap-6 px-4 sm:px-6 lg:px-8">
                 <Link to="/home" className="flex shrink-0 items-center gap-2">
-                    <img src={pulseLogo} alt="Pulse" className="h-8 w-8 rounded-sm" />
-                    <span className="text-xl font-bold tracking-[-0.4px] text-[#4648d4]">Pulse</span>
+                    <img src="/logo.svg" alt="Nex Chat" className="h-8 w-8 rounded-sm" />
+                    <span className="text-xl font-bold tracking-[-0.4px] text-[#4648d4]">Nex Chat</span>
                 </Link>
 
                 <label className="hidden h-[34px] w-[323px] items-center gap-2 rounded-full bg-[#f2f3ff] px-4 md:flex">

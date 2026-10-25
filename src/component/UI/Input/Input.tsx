@@ -32,17 +32,17 @@ export default function Input({
 }: inputProps) {
     if (type === "checkbox") {
         return (
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex cursor-pointer items-center gap-2.5 select-none">
                 <input
                     name={name}
                     type="checkbox"
                     checked={checked}
                     onChange={onChange}
                     onBlur={onBlur}
-                    className="cursor-pointer"
+                    className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-indigo-600"
                 />
 
-                <span className="fs-14">
+                <span className="text-sm font-semibold text-slate-700">
                     {label}
                 </span>
             </label>
@@ -50,9 +50,9 @@ export default function Input({
     }
     return (
         <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-1.5 flex items-center justify-between">
                 {label && (
-                    <label className="text-sm">
+                    <label className="text-sm font-medium text-slate-700">
                         {label}
                     </label>
                 )}
@@ -64,7 +64,7 @@ export default function Input({
                 {icon && (
                     <KTIcon
                         iconName={icon}
-                        className="absolute left-4 top-1/2 -translate-y-1/2"
+                        className="fs-18 pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                     />
                 )}
                 <input
@@ -74,11 +74,11 @@ export default function Input({
                     value={value}
                     onChange={onChange}
                     onBlur={onBlur}
-                    className="w-full border rounded-lg p-4 pl-10 bg-input"
+                    className="bg-input w-full rounded-xl border border-slate-200 py-3.5 pr-11 pl-11 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
                 />
 
                 {rightIcon && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         {rightIcon}
                     </div>
                 )}
