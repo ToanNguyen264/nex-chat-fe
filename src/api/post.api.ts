@@ -190,7 +190,7 @@ export const updatePost = async (
 
 export const setPostReaction = async (
     postId: number,
-    reactionType: ReactionType
+    reactionType: ReactionType | null
 ): Promise<SetPostReactionResult> => {
     const response = await api.post<{
         success: boolean;
