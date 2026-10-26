@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Reply, SmilePlus } from "lucide-react";
+import {
+    PhoneCall,
+    PhoneMissed,
+    Reply,
+    SmilePlus,
+    Video,
+    VideoOff,
+} from "lucide-react";
 
 import type {
     MessageReactionType,
@@ -126,6 +133,99 @@ const MessageContent = ({
             >
                 {attachment.file_name || "Tải tệp đính kèm"}
             </a>
+        );
+    }
+
+    if (message.message_type === "system") {
+        const rawContent = message.content || "Cuộc gọi";
+        const isVideoCall = rawContent.toLowerCase().includes("video");
+        const isMissed = rawContent.includes("nhỡ");
+        const isRejected = rawContent.includes("từ chối");
+        const isCancelled = rawContent.includes("huỷ");
+        const isUnsuccessful = isMissed || isRejected || isCancelled;
+
+        let title = rawContent;
+        let subtitle = "";
+
+        if (rawContent.includes(" • ")) {
+            const [head, tail] = rawContent.split(" • ");
+            title = head;
+            subtitle = tail;
+        } else if (isMissed) {
+            title = isMyMessage
+                ? rawContent.replace(" bị nhỡ", "")
+                : "Cuộc gọi nhỡ";
+            subtitle = isMyMessage
+                ? "Không trả lời"
+                : isVideoCall
+                  ? "Cuộc gọi video"
+                  : "Cuộc gọi thoại";
+        } else if (isRejected) {
+            title = rawContent.replace(" bị từ chối", "");
+            subtitle = "Đã từ chối";
+        } else if (isCancelled) {
+            title = isMyMessage
+                ? rawContent.replace(" đã huỷ", "")
+                : "Cuộc gọi nhỡ";
+            subtitle = isMyMessage
+                ? "Đã huỷ"
+                : isVideoCall
+                  ? "Cuộc gọi video"
+                  : "Cuộc gọi thoại";
+        }
+
+        const IconComponent = isUnsuccessful
+            ? isVideoCall
+                ? VideoOff
+                : PhoneMissed
+            : isVideoCall
+              ? Video
+              : PhoneCall;
+
+        return (
+            <div
+                className={`flex min-w-[185px] items-center gap-3 rounded-2xl border px-3.5 py-2.5 shadow-sm ${
+                    isMyMessage
+                        ? "rounded-br-sm border-indigo-500/20 bg-indigo-600 text-white"
+                        : "rounded-bl-sm border-slate-100 bg-white text-[#131b2e]"
+                }`}
+            >
+                <span
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${
+                        isUnsuccessful
+                            ? isMyMessage
+                                ? "bg-white/20 text-rose-100"
+                                : "bg-rose-50 text-rose-600"
+                            : isMyMessage
+                              ? "bg-white/20 text-white"
+                              : "bg-indigo-50 text-indigo-600"
+                    }`}
+                >
+                    <IconComponent className="h-4 w-4" />
+                </span>
+                <div className="min-w-0">
+                    <p
+                        className={`truncate text-sm font-semibold leading-tight ${
+                            !isMyMessage && isUnsuccessful
+                                ? "text-rose-600"
+                                : ""
+                        }`}
+                    >
+                        {title}
+                    </p>
+                    {subtitle && (
+                        <p
+                            className={`mt-0.5 text-xs ${
+                                isMyMessage
+                                    ? "text-indigo-100"
+                                    : "text-slate-500"
+                            }`}
+                        >
+                            {subtitle}
+                        </p>
+                    )}
+                </div>
+            </div>
         );
     }
 

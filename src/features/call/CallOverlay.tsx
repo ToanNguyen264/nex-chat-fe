@@ -3,16 +3,20 @@ import {
     useRef,
     useState,
 } from "react";
+import Draggable from "react-draggable";
 import type {
     RemoteParticipant,
 } from "livekit-client";
 
 import RemoteParticipantMedia from "./RemoteParticipantMedia";
+import LocalParticipantMedia from "./LocalParticipantMedia";
 
 import {
     LoaderCircle,
+    Maximize2,
     Mic,
     MicOff,
+    Minimize2,
     Phone,
     PhoneIncoming,
     PhoneOff,
@@ -21,9 +25,10 @@ import {
     Volume2,
     X,
 } from "lucide-react";
-import { Track, RoomEvent } from "livekit-client";
+import { RoomEvent } from "livekit-client";
 
 import { useCallStore } from "./call.store";
+
 
 export default function CallOverlay() {
     const status = useCallStore(
@@ -68,9 +73,6 @@ export default function CallOverlay() {
         setRemoteParticipants,
     ] = useState<RemoteParticipant[]>([]); /* tạo mảng chứa các participant từ xa */
 
-    const localVideoRef =
-        useRef<HTMLVideoElement>(null);
-
     const [canPlayAudio, setCanPlayAudio] = useState(true);
     const [isMicrophoneEnabled, setIsMicrophoneEnabled] =
         useState(true);
@@ -80,6 +82,31 @@ export default function CallOverlay() {
         useState(true);
     const [isCameraUpdating, setIsCameraUpdating] =
         useState(false);
+
+    // Quản lý thu nhỏ popup, phóng to video cá nhân và tọa độ cho react-draggable
+    const [isCallMinimized, setIsCallMinimized] =
+        useState(false);
+    const [isLocalVideoExpanded, setIsLocalVideoExpanded] =
+        useState(false);
+    const [localVideoOffset, setLocalVideoOffset] =
+        useState({ x: 0, y: 0 });
+    const [minimizedOffset, setMinimizedOffset] =
+        useState({ x: 0, y: 0 });
+
+    const minimizedPopupRef = useRef<HTMLDivElement | null>(null);
+    const localVideoRef = useRef<HTMLDivElement | null>(null);
+    const didDragMoveRef = useRef(false);
+
+    // Reset lại toàn bộ vị trí và kích thước khi bắt đầu/kết thúc cuộc gọi
+    useEffect(() => {
+        if (status === "idle") {
+            setIsCallMinimized(false);
+            setIsLocalVideoExpanded(false);
+            setLocalVideoOffset({ x: 0, y: 0 });
+            setMinimizedOffset({ x: 0, y: 0 });
+            didDragMoveRef.current = false;
+        }
+    }, [status]);
 
     useEffect(() => {
         if (!incomingCall || incomingCallAction !== null) {
@@ -153,35 +180,6 @@ export default function CallOverlay() {
             room?.localParticipant.isCameraEnabled ?? true
         );
     }, [room]);
-
-    useEffect(() => {
-        if (
-            status !== "connected" ||
-            mode !== "video" ||
-            !room ||
-            !localVideoRef.current
-        ) {
-            return;
-        }
-
-        const videoElement = localVideoRef.current;
-
-        const cameraTrack =
-            room.localParticipant
-                .getTrackPublication(Track.Source.Camera)
-                ?.videoTrack;
-
-        if (!cameraTrack) {
-            return;
-        }
-
-        cameraTrack.attach(videoElement);
-
-        return () => {
-            cameraTrack.detach(videoElement);
-        };
-    }, [mode, room, status]);
-
 
     /* lắng nghe trạng thái audio từ LiveKit */
 
@@ -323,6 +321,36 @@ export default function CallOverlay() {
         }
     };
 
+    // Click vào khung video cá nhân để phóng to / thu nhỏ
+    const handleLocalVideoClick = () => {
+        // Nếu vừa kéo di chuyển bằng react-draggable thì bỏ qua click
+        if (didDragMoveRef.current) {
+            didDragMoveRef.current = false;
+            return;
+        }
+
+        setIsLocalVideoExpanded((prev) => {
+            const nextExpanded = !prev;
+            // Đưa về góc mặc định khi phóng to / thu nhỏ để không tràn mép
+            setLocalVideoOffset({ x: 0, y: 0 });
+            return nextExpanded;
+        });
+    };
+
+    // Khi bấm nút Thu nhỏ / Mở rộng toàn bộ popup cuộc gọi
+    const handleToggleMinimizeCall = () => {
+        setIsCallMinimized((prev) => {
+            const nextState = !prev;
+            if (nextState) {
+                setIsLocalVideoExpanded(false);
+            }
+            setLocalVideoOffset({ x: 0, y: 0 });
+            return nextState;
+        });
+    };
+
+
+
 
     if (incomingCall) {
         const fullName = [
@@ -454,156 +482,290 @@ export default function CallOverlay() {
     }
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 p-4">
-            <section className="flex h-[min(680px,calc(100vh-2rem))] w-full max-w-4xl flex-col overflow-hidden rounded-3xl bg-slate-900 shadow-2xl">
-                <header className="flex items-center justify-between px-6 py-4 text-white">
-                    <div>
-                        <h2 className="font-bold">
-                            {mode === "video"
-                                ? "Cuộc gọi video"
-                                : "Cuộc gọi thoại"}
-                        </h2>
+        <Draggable
+            nodeRef={minimizedPopupRef}
+            disabled={!isCallMinimized}
+            handle=".call-drag-handle"
+            cancel="button"
+            bounds="body"
+            position={
+                isCallMinimized
+                    ? minimizedOffset
+                    : { x: 0, y: 0 }
+            }
+            onDrag={(_, data) => {
+                setMinimizedOffset({
+                    x: data.x,
+                    y: data.y,
+                });
+            }}
+        >
+            <div
+                ref={minimizedPopupRef}
+                className={
+                    isCallMinimized
+                        ? "fixed bottom-5 right-5 z-[100]"
+                        : "fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 p-4"
+                }
+            >
+                <section
+                    className={`flex flex-col overflow-hidden bg-slate-900 shadow-2xl transition-[width,height,border-radius] duration-200 ${isCallMinimized
+                        ? "h-64 w-80 rounded-2xl border border-white/15 ring-1 ring-black/40 sm:h-72 sm:w-96"
+                        : "h-[min(680px,calc(100vh-2rem))] w-full max-w-4xl rounded-3xl"
+                        }`}
+                >
+                    <header
+                        className={`call-drag-handle flex items-center justify-between text-white ${isCallMinimized
+                            ? "cursor-grab px-4 py-2.5 select-none touch-none active:cursor-grabbing"
+                            : "px-6 py-4"
+                            }`}
+                    >
+                        <div>
+                            <h2
+                                className={`font-bold ${isCallMinimized
+                                    ? "text-sm"
+                                    : "text-base"
+                                    }`}
+                            >
+                                {mode === "video"
+                                    ? "Cuộc gọi video"
+                                    : "Cuộc gọi thoại"}
+                            </h2>
 
-                        <p className="text-xs text-slate-400">
-                            {status === "connecting" &&
-                                "Đang kết nối..."}
+                            <p className="text-xs text-slate-400">
+                                {status === "connecting" &&
+                                    "Đang kết nối..."}
 
-                            {status === "connected" &&
-                                "Đã kết nối"}
+                                {status === "connected" &&
+                                    "Đã kết nối"}
 
-                            {status === "ending" &&
-                                "Đang kết thúc..."}
-                        </p>
-                    </div>
+                                {status === "ending" &&
+                                    "Đang kết thúc..."}
+                            </p>
+                        </div>
 
-                    {status === "connecting" && (
-                        <LoaderCircle className="h-5 w-5 animate-spin text-indigo-400" />
-                    )}
-                </header>
+                        <div className="flex items-center gap-2">
+                            {status === "connecting" && (
+                                <LoaderCircle className="h-5 w-5 animate-spin text-indigo-400" />
+                            )}
 
-                <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-slate-950">
-
-                    {status === "connected" &&
-                        room &&
-                        !canPlayAudio && (
                             <button
                                 type="button"
-                                onClick={() => void handleStartAudio()}
-                                className="absolute left-1/2 top-4 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg"
+                                onClick={
+                                    handleToggleMinimizeCall
+                                }
+                                aria-label={
+                                    isCallMinimized
+                                        ? "Phóng to cửa sổ cuộc gọi"
+                                        : "Thu nhỏ cửa sổ cuộc gọi"
+                                }
+                                title={
+                                    isCallMinimized
+                                        ? "Mở rộng toàn màn hình"
+                                        : "Thu nhỏ để lướt bảng tin / nhắn tin"
+                                }
+                                className="grid h-9 w-9 place-items-center rounded-full bg-slate-800 text-slate-200 transition hover:bg-slate-700 hover:text-white"
                             >
-                                <Volume2 className="h-4 w-4" />
-                                Bật âm thanh
-                            </button>
-                        )}
-                    {status === "connected" &&
-                        room &&
-                        remoteParticipant ? (
-                        <RemoteParticipantMedia
-                            room={room}
-                            participant={remoteParticipant}
-                            showVideo={mode === "video"}
-                        />
-                    ) : (
-                        <div className="grid place-items-center text-center">
-                            <div className="grid h-28 w-28 place-items-center rounded-full bg-indigo-600 text-white">
-                                {mode === "video" ? (
-                                    <Video className="h-12 w-12" />
+                                {isCallMinimized ? (
+                                    <Maximize2 className="h-4 w-4" />
                                 ) : (
-                                    <Phone className="h-12 w-12" />
+                                    <Minimize2 className="h-4 w-4" />
+                                )}
+                            </button>
+                        </div>
+                    </header>
+
+                    <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-slate-950">
+
+                        {status === "connected" &&
+                            room &&
+                            !canPlayAudio && (
+                                <button
+                                    type="button"
+                                    onClick={() => void handleStartAudio()}
+                                    className="absolute left-1/2 top-4 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg"
+                                >
+                                    <Volume2 className="h-4 w-4" />
+                                    Bật âm thanh
+                                </button>
+                            )}
+                        {status === "connected" &&
+                            room &&
+                            remoteParticipant ? (
+                            <RemoteParticipantMedia
+                                room={room}
+                                participant={remoteParticipant}
+                                showVideo={mode === "video"}
+                            />
+                        ) : (
+                            <div className="grid place-items-center text-center">
+                                <div className="grid h-28 w-28 place-items-center rounded-full bg-indigo-600 text-white">
+                                    {mode === "video" ? (
+                                        <Video className="h-12 w-12" />
+                                    ) : (
+                                        <Phone className="h-12 w-12" />
+                                    )}
+                                </div>
+
+                                {status === "connected" && (
+                                    <p className="mt-4 text-sm text-slate-400">
+                                        Đang chờ người kia tham gia...
+                                    </p>
                                 )}
                             </div>
-
-                            {status === "connected" && (
-                                <p className="mt-4 text-sm text-slate-400">
-                                    Đang chờ người kia tham gia...
-                                </p>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                <footer className="flex h-24 items-center justify-center gap-5 bg-slate-900">
-                    <button
-                        type="button"
-                        aria-label={
-                            isMicrophoneEnabled
-                                ? "Tắt micro"
-                                : "Bật micro"
-                        }
-                        title={
-                            isMicrophoneEnabled
-                                ? "Tắt micro"
-                                : "Bật micro"
-                        }
-                        disabled={
-                            status !== "connected" ||
-                            isMicrophoneUpdating
-                        }
-                        onClick={() =>
-                            void handleToggleMicrophone()
-                        }
-                        className={`grid h-14 w-14 place-items-center rounded-full text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
-                            isMicrophoneEnabled
-                                ? "bg-slate-700 hover:bg-slate-600"
-                                : "bg-rose-600 hover:bg-rose-700"
-                        }`}
-                    >
-                        {isMicrophoneUpdating ? (
-                            <LoaderCircle className="h-6 w-6 animate-spin" />
-                        ) : isMicrophoneEnabled ? (
-                            <Mic className="h-6 w-6" />
-                        ) : (
-                            <MicOff className="h-6 w-6" />
                         )}
-                    </button>
+                        {status === "connected" &&
+                            mode === "video" &&
+                            room && (
+                                <Draggable
+                                    nodeRef={localVideoRef}
+                                    bounds="parent"
+                                    position={localVideoOffset}
+                                    onStart={() => {
+                                        didDragMoveRef.current =
+                                            false;
+                                    }}
+                                    onDrag={(_, data) => {
+                                        didDragMoveRef.current =
+                                            true;
+                                        setLocalVideoOffset({
+                                            x: data.x,
+                                            y: data.y,
+                                        });
+                                    }}
+                                >
+                                    <div
+                                        ref={localVideoRef}
+                                        onClick={
+                                            handleLocalVideoClick
+                                        }
+                                        title={
+                                            isLocalVideoExpanded
+                                                ? "Click để thu nhỏ video của bạn (Kéo để di chuyển)"
+                                                : "Click để phóng to video của bạn (Kéo để di chuyển)"
+                                        }
+                                        className={`group absolute right-3 top-3 z-20 aspect-video cursor-grab overflow-hidden rounded-xl border-2 border-white/80 bg-slate-900 shadow-2xl transition-[width,height,box-shadow] duration-200 active:cursor-grabbing select-none touch-none ${isCallMinimized
+                                            ? "w-24 sm:w-28"
+                                            : isLocalVideoExpanded
+                                                ? "w-72 sm:w-96 ring-2 ring-indigo-500/70"
+                                                : "w-40 sm:w-48"
+                                            }`}
+                                    >
+                                        <LocalParticipantMedia
+                                            room={room}
+                                            isCameraEnabled={
+                                                isCameraEnabled
+                                            }
+                                        />
 
-                    <button
-                        type="button"
-                        aria-label="Kết thúc cuộc gọi"
-                        disabled={status !== "connected"}
-                        onClick={() => void endCall()}
-                        className="grid h-14 w-14 place-items-center rounded-full bg-rose-600 text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        <PhoneOff className="h-6 w-6" />
-                    </button>
+                                        {!isCallMinimized && (
+                                            <span className="pointer-events-none absolute bottom-2 right-2 rounded-md bg-slate-950/70 p-1 text-white/90 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+                                                {isLocalVideoExpanded ? (
+                                                    <Minimize2 className="h-3.5 w-3.5" />
+                                                ) : (
+                                                    <Maximize2 className="h-3.5 w-3.5" />
+                                                )}
+                                            </span>
+                                        )}
+                                    </div>
+                                </Draggable>
+                            )
+                        }
+                    </div>
 
-                    {mode === "video" && (
+                    <footer className={`flex items-center justify-center bg-slate-900 ${isCallMinimized
+                        ? "h-14 gap-3"
+                        : "h-24 gap-5"
+                        }`}>
                         <button
                             type="button"
                             aria-label={
-                                isCameraEnabled
-                                    ? "Tắt camera"
-                                    : "Bật camera"
+                                isMicrophoneEnabled
+                                    ? "Tắt micro"
+                                    : "Bật micro"
                             }
                             title={
-                                isCameraEnabled
-                                    ? "Tắt camera"
-                                    : "Bật camera"
+                                isMicrophoneEnabled
+                                    ? "Tắt micro"
+                                    : "Bật micro"
                             }
                             disabled={
                                 status !== "connected" ||
-                                isCameraUpdating
+                                isMicrophoneUpdating
                             }
                             onClick={() =>
-                                void handleToggleCamera()
+                                void handleToggleMicrophone()
                             }
-                            className={`grid h-14 w-14 place-items-center rounded-full text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
-                                isCameraEnabled
+                            className={`grid place-items-center rounded-full text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${isCallMinimized
+                                ? "h-10 w-10"
+                                : "h-14 w-14"
+                                } ${isMicrophoneEnabled
                                     ? "bg-slate-700 hover:bg-slate-600"
                                     : "bg-rose-600 hover:bg-rose-700"
-                            }`}
+                                }`}
                         >
-                            {isCameraUpdating ? (
-                                <LoaderCircle className="h-6 w-6 animate-spin" />
-                            ) : isCameraEnabled ? (
-                                <Video className="h-6 w-6" />
+                            {isMicrophoneUpdating ? (
+                                <LoaderCircle className="h-5 w-5 animate-spin" />
+                            ) : isMicrophoneEnabled ? (
+                                <Mic className={isCallMinimized ? "h-5 w-5" : "h-6 w-6"} />
                             ) : (
-                                <VideoOff className="h-6 w-6" />
+                                <MicOff className={isCallMinimized ? "h-5 w-5" : "h-6 w-6"} />
                             )}
                         </button>
-                    )}
-                </footer>
-            </section>
-        </div>
+
+                        <button
+                            type="button"
+                            aria-label="Kết thúc cuộc gọi"
+                            disabled={status !== "connected"}
+                            onClick={() => void endCall()}
+                            className={`grid place-items-center rounded-full bg-rose-600 text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50 ${isCallMinimized
+                                ? "h-10 w-10"
+                                : "h-14 w-14"
+                                }`}
+                        >
+                            <PhoneOff className={isCallMinimized ? "h-5 w-5" : "h-6 w-6"} />
+                        </button>
+
+                        {mode === "video" && (
+                            <button
+                                type="button"
+                                aria-label={
+                                    isCameraEnabled
+                                        ? "Tắt camera"
+                                        : "Bật camera"
+                                }
+                                title={
+                                    isCameraEnabled
+                                        ? "Tắt camera"
+                                        : "Bật camera"
+                                }
+                                disabled={
+                                    status !== "connected" ||
+                                    isCameraUpdating
+                                }
+                                onClick={() =>
+                                    void handleToggleCamera()
+                                }
+                                className={`grid place-items-center rounded-full text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${isCallMinimized
+                                    ? "h-10 w-10"
+                                    : "h-14 w-14"
+                                    } ${isCameraEnabled
+                                        ? "bg-slate-700 hover:bg-slate-600"
+                                        : "bg-rose-600 hover:bg-rose-700"
+                                    }`}
+                            >
+                                {isCameraUpdating ? (
+                                    <LoaderCircle className="h-5 w-5 animate-spin" />
+                                ) : isCameraEnabled ? (
+                                    <Video className={isCallMinimized ? "h-5 w-5" : "h-6 w-6"} />
+                                ) : (
+                                    <VideoOff className={isCallMinimized ? "h-5 w-5" : "h-6 w-6"} />
+                                )}
+                            </button>
+                        )}
+                    </footer>
+                </section>
+            </div>
+        </Draggable>
     );
 }
