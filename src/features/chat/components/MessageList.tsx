@@ -12,7 +12,7 @@ import type {
     MessageReactionType,
     RealtimeChatMessage,
 } from "../types";
-import { getNameInitials } from "../../../utils/user";
+import defaultAvatar from "../../../assets/default-avatar.png";
 import { getChatUserName } from "../chat.utils";
 
 type MessageListProps = {
@@ -297,18 +297,16 @@ export default function MessageList({
                                 isMyMessage ? "justify-end" : "justify-start"
                             }`}
                         >
-                            {!isMyMessage &&
-                                (message.users?.avatar ? (
-                                    <img
-                                        src={message.users.avatar}
-                                        alt={senderName}
-                                        className="mb-5 h-6 w-6 rounded-full object-cover"
-                                    />
-                                ) : (
-                                    <span className="mb-5 grid h-6 w-6 place-items-center rounded-full bg-[#e8e9ff] text-[8px] font-bold text-[#4648d4]">
-                                        {getNameInitials(senderName)}
-                                    </span>
-                                ))}
+                            {!isMyMessage && (
+                                <img
+                                    src={message.users?.avatar || defaultAvatar}
+                                    alt={senderName}
+                                    className="mb-5 h-6 w-6 rounded-full object-cover bg-slate-100"
+                                    onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                                    }}
+                                />
+                            )}
 
                             <div
                                 className={`relative flex max-w-[80%] flex-col ${

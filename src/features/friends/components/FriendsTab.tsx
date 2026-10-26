@@ -8,9 +8,7 @@ import {
 import type {
     FriendListItem,
 } from "../../../api/friend.api";
-import {
-    getNameInitials,
-} from "../../../utils/user";
+import defaultAvatar from "../../../assets/default-avatar.png";
 import {
     formatPresenceStatus,
     usePresenceStore,
@@ -156,17 +154,14 @@ export default function FriendsTab() {
                                 className="flex items-center gap-4 rounded-2xl border border-[#eef0ff] p-4 transition hover:border-[#d9dcff] hover:bg-[#fafaff]"
                             >
                                 <div className="relative shrink-0">
-                                    {item.friend.avatar ? (
-                                        <img
-                                            src={item.friend.avatar}
-                                            alt={name}
-                                            className="h-14 w-14 rounded-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="grid h-14 w-14 place-items-center rounded-full bg-[#e8e9fb] font-bold text-[#4648d4]">
-                                            {getNameInitials(name)}
-                                        </div>
-                                    )}
+                                    <img
+                                        src={item.friend.avatar || defaultAvatar}
+                                        alt={name}
+                                        className="h-14 w-14 rounded-full object-cover bg-slate-100"
+                                        onError={(e) => {
+                                            (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                                        }}
+                                    />
                                     <span
                                         className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white ${isOnline ? "bg-[#57dffe]" : "bg-[#c7c4d7]"}`}
                                     />

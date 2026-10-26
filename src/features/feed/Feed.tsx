@@ -290,7 +290,7 @@ export default function Feed({
 
     return (
         <div className="flex flex-col gap-4">
-            {showStories && <StoryList />}
+            {showStories && <StoryList currentUser={currentUser} />}
 
             {canCreatePost && (
                 <CreatePost

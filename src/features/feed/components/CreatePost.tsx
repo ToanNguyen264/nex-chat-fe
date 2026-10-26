@@ -17,7 +17,8 @@ import {
 
 import type { CurrentUser } from "../../../api/user.api";
 import type { PostPrivacy } from "../../../api/post.api";
-import { getNameInitials, getUserDisplayName } from "../../../utils/user";
+import { getUserDisplayName } from "../../../utils/user";
+import defaultAvatar from "../../../assets/default-avatar.png";
 
 
 type CreatePostProps = {
@@ -71,7 +72,6 @@ export default function CreatePost({
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const emojiPickerRef = useRef<HTMLDivElement>(null);
     const displayName = getUserDisplayName(currentUser);
-    const initials = getNameInitials(displayName);
     const firstName = currentUser?.first_name || displayName;
     const canSubmit = Boolean(content.trim() || selectedFiles.length > 0);
 
@@ -146,17 +146,14 @@ export default function CreatePost({
             className="rounded-2xl bg-white p-4 shadow-[0_1px_1px_rgba(0,0,0,0.05)]"
         >
             <div className="flex items-center gap-3">
-                {currentUser?.avatar ? (
-                    <img
-                        src={currentUser.avatar}
-                        alt={displayName}
-                        className="h-10 w-10 shrink-0 rounded-full object-cover"
-                    />
-                ) : (
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e8e9ff] text-xs font-bold text-[#4648d4]">
-                        {initials}
-                    </span>
-                )}
+                <img
+                    src={currentUser?.avatar || defaultAvatar}
+                    alt={displayName}
+                    className="h-10 w-10 shrink-0 rounded-full object-cover bg-slate-100"
+                    onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                    }}
+                />
 
                 <input
                     id="create-post-content"

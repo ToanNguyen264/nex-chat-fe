@@ -12,7 +12,8 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { logout } from "../../api/auth.api";
 import { getUnreadNotificationCount } from "../../api/notification.api";
 import type { CurrentUser } from "../../api/user.api";
-import { getNameInitials, getUserDisplayName } from "../../utils/user";
+import { getUserDisplayName } from "../../utils/user";
+import defaultAvatar from "../../assets/default-avatar.png";
 import NotificationPopover from "../../features/notifications/components/NotificationPopover";
 import { useNotificationStore } from "../../features/notifications/notification.store";
 import { usePresenceStore } from "../../features/presence/presence.store";
@@ -37,7 +38,6 @@ export default function Header({ currentUser }: HeaderProps) {
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const displayName = getUserDisplayName(currentUser);
-    const initials = getNameInitials(displayName);
     const isCurrentUserOnline = usePresenceStore((state) =>
         currentUser ? state.onlineUserIds.has(currentUser.id) : false
     );
@@ -214,17 +214,14 @@ export default function Header({ currentUser }: HeaderProps) {
                             className="flex items-center gap-1 rounded-full p-1 transition hover:bg-[#f2f3ff] focus:outline-none focus:ring-2 focus:ring-[#4648d4]/30"
                         >
                             <span className="relative">
-                                {currentUser?.avatar ? (
-                                    <img
-                                        src={currentUser.avatar}
-                                        alt={displayName}
-                                        className="h-8 w-8 rounded-full object-cover"
-                                    />
-                                ) : (
-                                    <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e8e9ff] text-[10px] font-bold text-[#4648d4]">
-                                        {initials}
-                                    </span>
-                                )}
+                                <img
+                                    src={currentUser?.avatar || defaultAvatar}
+                                    alt={displayName}
+                                    className="h-8 w-8 rounded-full object-cover bg-slate-100"
+                                    onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                                    }}
+                                />
                                 {isCurrentUserOnline && (
                                     <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#57dffe]" />
                                 )}
