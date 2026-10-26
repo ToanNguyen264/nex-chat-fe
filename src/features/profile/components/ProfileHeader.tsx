@@ -16,7 +16,8 @@ import {
 
 import type { CurrentUser, UserProfile } from "../../../api/user.api";
 import type { Friendship } from "../../../api/friend.api";
-import { getNameInitials, getUserDisplayName } from "../../../utils/user";
+import { getUserDisplayName } from "../../../utils/user";
+import defaultAvatar from "../../../assets/default-avatar.png";
 import { usePresenceStore } from "../../presence/presence.store";
 import { getOrCreateDirectConversation } from "../../../api/conversation.api";
 import { useChatStore } from "../../chat/chat.store";
@@ -93,7 +94,6 @@ export default function ProfileHeader({
         currentUser?.user_name ||
         "user";
     const avatarUrl = profile?.avatar || currentUser?.avatar;
-    const initials = getNameInitials(displayName);
     const profileUserId = profile?.id ?? (isOwnProfile ? currentUser?.id : null);
     const isProfileOnline = usePresenceStore((state) =>
         profileUserId ? state.onlineUserIds.has(profileUserId) : false
@@ -170,17 +170,14 @@ export default function ProfileHeader({
                 <div className="flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
                         <div className="relative -mt-16 h-32 w-32 shrink-0 rounded-full bg-white p-1 sm:-mt-20 sm:h-40 sm:w-40">
-                            {avatarUrl ? (
-                                <img
-                                    src={avatarUrl}
-                                    alt={displayName}
-                                    className="h-full w-full rounded-full object-cover ring-4 ring-[#eef0ff]"
-                                />
-                            ) : (
-                                <div className="grid h-full w-full place-items-center rounded-full bg-[#e8e9ff] text-3xl font-bold text-[#4648d4] ring-4 ring-[#eef0ff]">
-                                    {initials}
-                                </div>
-                            )}
+                            <img
+                                src={avatarUrl || defaultAvatar}
+                                alt={displayName}
+                                className="h-full w-full rounded-full object-cover ring-4 ring-[#eef0ff] bg-slate-100"
+                                onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                                }}
+                            />
                             {isOwnProfile && (
                                 <label
                                     aria-label="Thay đổi ảnh đại diện"

@@ -23,6 +23,7 @@ import type { Post } from "../types";
 import type { ReactionType } from "../../../api/post.api";
 import type { PostPrivacy } from "../../../api/post.api";
 import CommentSection from "./CommentSection";
+import defaultAvatar from "../../../assets/default-avatar.png";
 import EditPostModal from "./EditPostModal";
 import { usePresenceStore } from "../../presence/presence.store";
 
@@ -186,13 +187,14 @@ export default function PostCard({
             <header className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                     <span className="relative shrink-0">
-                        {post.avatar ? (
-                            <img src={post.avatar} alt={post.author} className="h-11 w-11 rounded-full object-cover" />
-                        ) : (
-                            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-600">
-                                {post.author.charAt(0)}
-                            </div>
-                        )}
+                        <img
+                            src={post.avatar || defaultAvatar}
+                            alt={post.author}
+                            className="h-11 w-11 rounded-full object-cover bg-slate-100"
+                            onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                            }}
+                        />
                         <span
                             className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${isAuthorOnline ? "bg-[#57dffe]" : "bg-[#c7c4d7]"}`}
                         />

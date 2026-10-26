@@ -22,7 +22,7 @@ import {
 import ChatHeader from "./components/ChatHeader";
 import MessageInput from "./components/MessageInput";
 import MessageList from "./components/MessageList";
-import { getNameInitials } from "../../utils/user";
+import defaultAvatar from "../../assets/default-avatar.png";
 import { usePresenceStore } from "../presence/presence.store";
 import { useCallStore } from "../call/call.store";
 
@@ -458,19 +458,14 @@ export default function ChatPopup({
                                         className="flex w-full items-center gap-3 rounded-xl p-3 text-left transition hover:bg-white"
                                     >
                                         <div className="relative shrink-0">
-                                            {avatar ? (
-                                                <img
-                                                    src={avatar}
-                                                    alt={name}
-                                                    className="h-11 w-11 rounded-full object-cover"
-                                                />
-                                            ) : (
-                                                <span className="grid h-11 w-11 place-items-center rounded-full bg-[#e8e9ff] text-xs font-bold text-[#4648d4]">
-                                                    {getNameInitials(
-                                                        name
-                                                    )}
-                                                </span>
-                                            )}
+                                            <img
+                                                src={avatar || defaultAvatar}
+                                                alt={name}
+                                                className="h-11 w-11 rounded-full object-cover bg-slate-100"
+                                                onError={(e) => {
+                                                    (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                                                }}
+                                            />
                                             {conversation.type ===
                                                 "direct" && (
                                                     <span

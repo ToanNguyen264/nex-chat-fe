@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { usePresenceStore } from "../../features/presence/presence.store";
+import defaultAvatar from "../../assets/default-avatar.png";
 
 type ProfileCardProps = {
     userId?: string;
@@ -23,24 +24,19 @@ export default function ProfileCard({
     const isOnline = usePresenceStore((state) =>
         userId ? state.onlineUserIds.has(userId) : false
     );
-    const initials = name
-        .split(" ")
-        .filter(Boolean)
-        .slice(-2)
-        .map((part) => part.charAt(0).toUpperCase())
-        .join("") || "U";
 
     return (
         <section className="rounded-2xl bg-white p-5 shadow-sm">
             <Link to="/profile" className="flex items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4648d4]/30">
                 <div className="relative">
-                    {avatar ? (
-                        <img src={avatar} alt={name} className="h-12 w-12 rounded-full object-cover" />
-                    ) : (
-                        <span className="grid h-12 w-12 place-items-center rounded-full bg-[#e8e9ff] text-sm font-bold text-[#4648d4]">
-                            {initials}
-                        </span>
-                    )}
+                    <img
+                        src={avatar || defaultAvatar}
+                        alt={name}
+                        className="h-12 w-12 rounded-full object-cover bg-slate-100"
+                        onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                        }}
+                    />
 
                     {isOnline && (
                         <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-[#57dffe]" />

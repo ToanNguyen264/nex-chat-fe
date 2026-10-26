@@ -7,7 +7,7 @@ import {
     formatPresenceStatus,
     usePresenceStore,
 } from "../../presence/presence.store";
-import { getNameInitials } from "../../../utils/user";
+import defaultAvatar from "../../../assets/default-avatar.png";
 
 const getFriendName = (friend: FriendListItem["friend"]) => {
     const fullName = [friend.first_name, friend.last_name]
@@ -131,17 +131,14 @@ export default function OnlineFriends() {
                                 className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-[#f2f3ff]"
                             >
                                 <div className="relative shrink-0">
-                                    {item.friend.avatar ? (
-                                        <img
-                                            src={item.friend.avatar}
-                                            alt={name}
-                                            className="h-10 w-10 rounded-full object-cover"
-                                        />
-                                    ) : (
-                                        <span className="grid h-10 w-10 place-items-center rounded-full bg-[#e8e9ff] text-xs font-bold text-[#4648d4]">
-                                            {getNameInitials(name)}
-                                        </span>
-                                    )}
+                                    <img
+                                        src={item.friend.avatar || defaultAvatar}
+                                        alt={name}
+                                        className="h-10 w-10 rounded-full object-cover bg-slate-100"
+                                        onError={(e) => {
+                                            (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                                        }}
+                                    />
                                     <span
                                         className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
                                             isOnline

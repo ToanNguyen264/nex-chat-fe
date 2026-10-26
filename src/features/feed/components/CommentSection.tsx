@@ -7,6 +7,7 @@ import {
     getPostComments,
 } from "../../../api/comment.api";
 import type { CommentFromApi } from "../../../api/comment.api";
+import defaultAvatar from "../../../assets/default-avatar.png";
 
 type CommentSectionProps = {
     postId: number;
@@ -169,17 +170,14 @@ export default function CommentSection({
                                 key={comment.id}
                                 className="flex items-start gap-2.5"
                             >
-                                {comment.users.avatar ? (
-                                    <img
-                                        src={comment.users.avatar}
-                                        alt={authorName}
-                                        className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-white"
-                                    />
-                                ) : (
-                                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-600 ring-2 ring-white">
-                                        {authorName.charAt(0).toUpperCase()}
-                                    </span>
-                                )}
+                                <img
+                                    src={comment.users.avatar || defaultAvatar}
+                                    alt={authorName}
+                                    className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-white bg-slate-100"
+                                    onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                                    }}
+                                />
 
                                 <div className="min-w-0 max-w-[85%]">
                                     <div className="rounded-2xl rounded-tl-md bg-[#f2f3ff] px-3.5 py-2.5">

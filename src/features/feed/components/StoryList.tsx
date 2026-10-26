@@ -1,70 +1,104 @@
-import { Plus } from "lucide-react";
-
-import storyThaoMy from "../../../assets/home/story-thao-my.png";
-import storyHoangLong from "../../../assets/home/story-hoang-long.png";
-import storyMinhAnh from "../../../assets/home/story-minh-anh.png";
-import storyDucKien from "../../../assets/home/story-duc-kien.png";
-import avatarThaoMy from "../../../assets/home/story-avatar-thao-my.png";
-import avatarHoangLong from "../../../assets/home/story-avatar-hoang-long.png";
-import avatarMinhAnh from "../../../assets/home/story-avatar-minh-anh.png";
-import avatarDucKien from "../../../assets/home/story-avatar-duc-kien.png";
+import { useState } from "react";
+import { Plus, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { CurrentUser } from "../../../api/user.api";
+import { getFeedStories } from "../../../api/story.api";
+import defaultAvatar from "../../../assets/default-avatar.png";
 import StoryCard from "./StoryCard";
+import CreateStoryModal from "./CreateStoryModal";
+import StoryViewerModal from "./StoryViewerModal";
 
-const stories = [
-    {
-        id: 1,
-        name: "Thảo My",
-        cover: storyThaoMy,
-        avatar: avatarThaoMy,
-        accent: "#4648d4",
-    },
-    {
-        id: 2,
-        name: "Hoàng Long",
-        cover: storyHoangLong,
-        avatar: avatarHoangLong,
-        accent: "#57dffe",
-    },
-    {
-        id: 3,
-        name: "Minh Anh",
-        cover: storyMinhAnh,
-        avatar: avatarMinhAnh,
-        accent: "#4648d4",
-    },
-    {
-        id: 4,
-        name: "Đức Kiên",
-        cover: storyDucKien,
-        avatar: avatarDucKien,
-        accent: "#c7c4d7",
-    },
-];
+type StoryListProps = {
+    currentUser?: CurrentUser | null;
+};
 
-export default function StoryList() {
+export default function StoryList({ currentUser = null }: StoryListProps) {
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [viewerGroupIndex, setViewerGroupIndex] = useState<number | null>(null);
+
+    // Gọi API lấy danh sách story của bạn bè và chính mình
+    const {
+        data: storyGroups = [],
+        isLoading,
+        refetch,
+    } = useQuery({
+        queryKey: ["feed-stories"],
+        queryFn: getFeedStories,
+    });
+
+
     return (
         <section className="rounded-2xl bg-white p-4 shadow-[0_1px_1px_rgba(0,0,0,0.05)]">
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            <button type="button" className="flex h-36 w-24 shrink-0 flex-col items-center justify-end gap-1 rounded-xl bg-[#f2f3ff] pb-3 text-[#131b2e]">
-                <span className="mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#4648d4] text-white shadow-sm">
-                    <Plus className="h-4 w-4" />
-                </span>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+                {/* 1. Nút Tạo tin mới (theo kiểu Facebook: Avatar ở trên, dấu + ở giữa, chữ ở dưới) */}
+                <button
+                    type="button"
+                    onClick={() => setIsCreateOpen(true)}
+                    className="group relative flex h-36 w-24 shrink-0 flex-col items-center justify-between overflow-hidden rounded-xl border border-slate-200 bg-slate-50 text-[#131b2e] shadow-sm transition hover:shadow-md cursor-pointer"
+                >
+                    {/* Nửa trên là ảnh avatar của người dùng */}
+                    <div className="relative h-24 w-full overflow-hidden bg-slate-100">
+                        <img
+                            src={currentUser?.avatar || defaultAvatar}
+                            alt="Tạo tin"
+                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                            onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                            }}
+                        />
+                    </div>
 
-                <span className="text-[11px] font-medium">
-                    Tạo tin mới
-                </span>
-            </button>
+                    {/* Dấu + tròn ở giữa ranh giới */}
+                    <div className="absolute top-[82px] left-1/2 -translate-x-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-white ring-4 ring-white shadow">
+                        <Plus className="h-4 w-4" />
+                    </div>
 
-            {stories.map((story) => (
-                <StoryCard
-                    key={story.id}
-                    name={story.name}
-                    cover={story.cover}
-                    avatar={story.avatar}
-                    accent={story.accent}
+                    {/* Dòng chữ Tạo tin */}
+                    <span className="pb-2 text-[11px] font-semibold text-slate-800">
+                        Tạo tin
+                    </span>
+                </button>
+
+                {/* 2. Loading trạng thái khi đang tải danh sách tin */}
+                {isLoading && (
+                    <div className="flex h-36 items-center justify-center px-6 text-slate-400">
+                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                        <span className="text-xs">Đang tải tin...</span>
+                    </div>
+                )}
+
+                {/* 3. Danh sách thẻ Story thật từ API */}
+                {!isLoading &&
+                    storyGroups.map((group, index) => (
+                        <StoryCard
+                            key={group.userId}
+                            group={group}
+                            onClick={() => setViewerGroupIndex(index)}
+                        />
+                    ))}
+            </div>
+
+            {/* Modal tạo tin mới */}
+            {isCreateOpen && (
+                <CreateStoryModal
+                    onClose={() => setIsCreateOpen(false)}
+                    onStoryCreated={() => {
+                        void refetch();
+                    }}
                 />
-            ))}
-          </div>
+            )}
+
+            {/* Modal xem tin */}
+            {viewerGroupIndex !== null && (
+                <StoryViewerModal
+                    groups={storyGroups}
+                    initialGroupIndex={viewerGroupIndex}
+                    onClose={() => setViewerGroupIndex(null)}
+                    onStoryDeleted={() => {
+                        void refetch();
+                    }}
+                />
+            )}
         </section>
     );
 }

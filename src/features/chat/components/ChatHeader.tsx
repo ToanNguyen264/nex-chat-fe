@@ -14,7 +14,7 @@ import {
     getConversationName,
     getOtherConversationUser,
 } from "../chat.utils";
-import { getNameInitials } from "../../../utils/user";
+import defaultAvatar from "../../../assets/default-avatar.png";
 import {
     formatPresenceStatus,
     usePresenceStore,
@@ -98,17 +98,14 @@ export default function ChatHeader({
                 </button>
 
                 <div className="relative shrink-0">
-                    {avatar ? (
-                        <img
-                            src={avatar}
-                            alt={name}
-                            className="h-10 w-10 rounded-full object-cover ring-2 ring-[#4648d4]/20"
-                        />
-                    ) : (
-                        <span className="grid h-10 w-10 place-items-center rounded-full bg-[#e8e9ff] text-xs font-bold text-[#4648d4]">
-                            {getNameInitials(name)}
-                        </span>
-                    )}
+                    <img
+                        src={avatar || defaultAvatar}
+                        alt={name}
+                        className="h-10 w-10 rounded-full object-cover ring-2 ring-[#4648d4]/20 bg-slate-100"
+                        onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                        }}
+                    />
 
                     {conversation.type === "direct" && (
                         <span
