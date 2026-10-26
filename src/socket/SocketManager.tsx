@@ -20,7 +20,10 @@ import {
     type CallResponded,
     type IncomingCall,
 } from "../features/call/call.store";
-import { useFeedRealtimeStore } from "../features/feed/feed-realtime.store";
+import {
+    useFeedRealtimeStore,
+    type RealtimePostReactionUpdate,
+} from "../features/feed/feed-realtime.store";
 import { parseFeedChangedPayload } from "../features/feed/feed-realtime";
 
 type PresenceSnapshotPayload = {
@@ -29,6 +32,7 @@ type PresenceSnapshotPayload = {
 
 type PresenceUserPayload = {
     userId: string;
+    lastSeenAt?: string | null;
 };
 
 export default function SocketManager() {
@@ -69,6 +73,9 @@ export default function SocketManager() {
     );
     const receiveFeedChange = useFeedRealtimeStore(
         (state) => state.receiveFeedChange
+    );
+    const receivePostReaction = useFeedRealtimeStore(
+        (state) => state.receivePostReaction
     );
     const requestFeedSync = useFeedRealtimeStore(
         (state) => state.requestFeedSync
@@ -143,7 +150,12 @@ export default function SocketManager() {
         ) => {
             if (!payload || typeof payload.userId !== "string") return;
 
-            setUserOffline(payload.userId);
+            setUserOffline(
+                payload.userId,
+                typeof payload.lastSeenAt === "string"
+                    ? payload.lastSeenAt
+                    : null
+            );
         };
 
         const handleNewNotification = (
@@ -189,6 +201,27 @@ export default function SocketManager() {
                 messageId: update.messageId,
                 reactionSummary: update.reactionSummary,
                 reactionCount: update.reactionCount,
+            });
+        };
+
+        const handlePostReaction = (
+            update: RealtimePostReactionUpdate
+        ) => {
+            if (
+                !update ||
+                typeof update.postId !== "string" ||
+                typeof update.reactionCount !== "number" ||
+                !Array.isArray(update.reactionSummary)
+            ) {
+                return;
+            }
+
+            // Event realtime chỉ cập nhật tổng hợp. Reaction của chính
+            // người dùng được cập nhật từ REST response.
+            receivePostReaction({
+                postId: update.postId,
+                reactionCount: update.reactionCount,
+                reactionSummary: update.reactionSummary,
             });
         };
 
@@ -277,6 +310,10 @@ export default function SocketManager() {
             handleMessageReaction
         );
         socket.on(
+            "post:reaction-updated",
+            handlePostReaction
+        );
+        socket.on(
             "call:incoming",
             handleIncomingCall
         );
@@ -321,6 +358,10 @@ export default function SocketManager() {
                 handleMessageReaction
             );
             socket.off(
+                "post:reaction-updated",
+                handlePostReaction
+            );
+            socket.off(
                 "presence:snapshot",
                 handlePresenceSnapshot
             );
@@ -357,6 +398,7 @@ export default function SocketManager() {
         receiveCallEnded,
         receiveCallResponded,
         receiveFeedChange,
+        receivePostReaction,
         requestFeedSync,
         resetFeedRealtime,
     ]);

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
     ArrowLeft,
     Maximize2,
@@ -14,7 +15,10 @@ import {
     getOtherConversationUser,
 } from "../chat.utils";
 import { getNameInitials } from "../../../utils/user";
-import { usePresenceStore } from "../../presence/presence.store";
+import {
+    formatPresenceStatus,
+    usePresenceStore,
+} from "../../presence/presence.store";
 
 type ChatHeaderProps = {
     conversation: ChatConversation;
@@ -55,6 +59,30 @@ export default function ChatHeader({
         otherUser
             ? state.onlineUserIds.has(otherUser.id)
             : false
+    );
+    const realtimeLastSeen = usePresenceStore((state) =>
+        otherUser
+            ? state.lastSeenByUserId[otherUser.id]
+            : undefined
+    );
+    const [nowMs, setNowMs] = useState(() => Date.now());
+
+    useEffect(() => {
+        if (isOnline) {
+            return;
+        }
+
+        const timer = window.setInterval(() => {
+            setNowMs(Date.now());
+        }, 60_000);
+
+        return () => window.clearInterval(timer);
+    }, [isOnline]);
+
+    const presenceText = formatPresenceStatus(
+        isOnline,
+        realtimeLastSeen ?? otherUser?.last_seen_at,
+        nowMs
     );
 
     return (
@@ -103,9 +131,7 @@ export default function ChatHeader({
                                 : "text-slate-400"
                                 }`}
                         >
-                            {isOnline
-                                ? "Đang hoạt động"
-                                : "Đang offline"}
+                            {presenceText}
                         </p>
                     )}
                 </div>

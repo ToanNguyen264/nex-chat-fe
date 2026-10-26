@@ -4,6 +4,7 @@ export type ChatUser = {
     first_name: string | null;
     last_name: string | null;
     avatar: string | null;
+    last_seen_at?: string | null;
 };
 
 export type ChatAttachment = {

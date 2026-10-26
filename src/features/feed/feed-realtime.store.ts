@@ -1,9 +1,16 @@
 import { create } from "zustand";
 
+import type { ReactionSummaryItem } from "../../api/post.api";
 import {
     applyFeedChange,
     type FeedChangedPayload,
 } from "./feed-realtime";
+
+export type RealtimePostReactionUpdate = {
+    postId: string;
+    reactionCount: number;
+    reactionSummary: ReactionSummaryItem[];
+};
 
 type FeedRealtimeState = {
     revision: number;
@@ -11,7 +18,11 @@ type FeedRealtimeState = {
     recentEventIds: string[];
     ownerRevisions: Record<string, number>;
     lastChange: FeedChangedPayload | null;
+    lastReactionUpdate: RealtimePostReactionUpdate | null;
     receiveFeedChange: (payload: FeedChangedPayload) => void;
+    receivePostReaction: (
+        update: RealtimePostReactionUpdate
+    ) => void;
     requestFeedSync: () => void;
     resetFeedRealtime: () => void;
 };
@@ -23,8 +34,14 @@ export const useFeedRealtimeStore =
         recentEventIds: [],
         ownerRevisions: {},
         lastChange: null,
+        lastReactionUpdate: null,
         receiveFeedChange: (payload) => {
             set((state) => applyFeedChange(state, payload));
+        },
+        receivePostReaction: (update) => {
+            set({
+                lastReactionUpdate: update,
+            });
         },
         requestFeedSync: () => {
             set((state) => ({
@@ -39,6 +56,7 @@ export const useFeedRealtimeStore =
                 recentEventIds: [],
                 ownerRevisions: {},
                 lastChange: null,
+                lastReactionUpdate: null,
             });
         },
     }));
