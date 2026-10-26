@@ -11,7 +11,10 @@ import type {
 import {
     getNameInitials,
 } from "../../../utils/user";
-import { usePresenceStore } from "../../presence/presence.store";
+import {
+    formatPresenceStatus,
+    usePresenceStore,
+} from "../../presence/presence.store";
 
 const getFriendName = (
     friend: FriendListItem["friend"]
@@ -34,12 +37,24 @@ export default function FriendsTab() {
     const onlineUserIds = usePresenceStore(
         (state) => state.onlineUserIds
     );
+    const lastSeenByUserId = usePresenceStore(
+        (state) => state.lastSeenByUserId
+    );
     const [friends, setFriends] = useState<
         FriendListItem[]
     >([]);
     const [isLoading, setIsLoading] =
         useState(true);
     const [error, setError] = useState("");
+    const [nowMs, setNowMs] = useState(() => Date.now());
+
+    useEffect(() => {
+        const timer = window.setInterval(() => {
+            setNowMs(Date.now());
+        }, 60_000);
+
+        return () => window.clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -124,6 +139,15 @@ export default function FriendsTab() {
                         const name = getFriendName(
                             item.friend
                         );
+                        const isOnline = onlineUserIds.has(
+                            item.friend.id
+                        );
+                        const statusText = formatPresenceStatus(
+                            isOnline,
+                            lastSeenByUserId[item.friend.id] ??
+                                item.friend.last_seen_at,
+                            nowMs
+                        );
 
                         return (
                             <Link
@@ -144,7 +168,7 @@ export default function FriendsTab() {
                                         </div>
                                     )}
                                     <span
-                                        className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white ${onlineUserIds.has(item.friend.id) ? "bg-[#57dffe]" : "bg-[#c7c4d7]"}`}
+                                        className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white ${isOnline ? "bg-[#57dffe]" : "bg-[#c7c4d7]"}`}
                                     />
                                 </div>
 
@@ -154,6 +178,15 @@ export default function FriendsTab() {
                                     </p>
                                     <p className="truncate text-xs text-[#767586]">
                                         @{item.friend.user_name || "user"}
+                                    </p>
+                                    <p
+                                        className={`mt-0.5 truncate text-[11px] font-medium ${
+                                            isOnline
+                                                ? "text-[#007c92]"
+                                                : "text-[#767586]"
+                                        }`}
+                                    >
+                                        {statusText}
                                     </p>
                                 </div>
                             </Link>

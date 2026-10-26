@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import {
     useInfiniteQuery,
@@ -25,12 +25,14 @@ import PostList from "./components/PostList";
 import StoryList from "./components/StoryList";
 import type { Post } from "./types";
 import {
+    applyOptimisticPostReaction,
     createFeedInfiniteQueryOptions,
     flattenFeedPosts,
     prependPostToInfiniteFeed,
     removePostFromInfiniteFeed,
     updatePostInInfiniteFeed,
 } from "./feed-query";
+import { useFeedRealtimeStore } from "./feed-realtime.store";
 
 type FeedProps = {
     currentUser: CurrentUser | null;
@@ -126,27 +128,66 @@ export default function Feed({
         );
     };
 
+    const updatePostInCache = (
+        postId: number,
+        updater: (post: PostFromApi) => PostFromApi
+    ) => {
+        updateCurrentFeed((current) => /* mở ram để lấy data */
+            updatePostInInfiniteFeed(
+                current,
+                postId.toString(),
+                updater
+            )
+        );
+    };
+
+    const lastReactionUpdate = useFeedRealtimeStore(
+        (state) => state.lastReactionUpdate
+    );
+
+    useEffect(() => {
+        if (!lastReactionUpdate) return;
+
+        updatePostInCache(
+            Number(lastReactionUpdate.postId),
+            (post) => ({
+                ...post,
+                reactionCount: lastReactionUpdate.reactionCount,
+                reactionSummary: lastReactionUpdate.reactionSummary,
+            })
+        );
+    }, [lastReactionUpdate]);
+
     async function handleReaction(
         postId: number,
         reactionType: ReactionType
     ) {
-        const result = await setPostReaction(
-            postId,
-            reactionType
+        const previousFeed = data; // Lưu lại Feed cũ để khôi phục nếu gọi API lỗi
+
+        // 1. Cập nhật ngay bài viết trong RAM để đổi giao diện tức thì
+        updatePostInCache(postId, (post) =>
+            applyOptimisticPostReaction(post, reactionType)
         );
 
-        updateCurrentFeed((current) =>
-            updatePostInInfiniteFeed(
-                current,
-                postId.toString(),
-                (post) => ({
-                    ...post,
-                    currentReaction: result.currentReaction,
-                    reactionCount: result.reactionCount,
-                    reactionSummary: result.reactionSummary,
-                })
-            )
-        );
+        try {
+            // 2. Gửi API chạy ngầm lên Server
+            const result = await setPostReaction(postId, reactionType);
+
+            // Đồng bộ lại kết quả chuẩn từ Server vào bài viết trong RAM
+            updatePostInCache(postId, (post) => ({
+                ...post,
+                currentReaction: result.currentReaction,
+                reactionCount: result.reactionCount,
+                reactionSummary: result.reactionSummary,
+            }));
+        } catch (reactionError) {
+            // 3. Nếu lỗi mạng thì trả lại Feed cũ
+            if (previousFeed) {
+                queryClient.setQueryData(queryOptions.queryKey, previousFeed);
+            }
+            console.error("Không thể cập nhật cảm xúc:", reactionError);
+            window.alert("Không thể cập nhật cảm xúc.");
+        }
     }
 
     async function handleCreatePost(

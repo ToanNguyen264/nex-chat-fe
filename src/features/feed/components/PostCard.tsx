@@ -63,7 +63,6 @@ export default function PostCard({
     onDeletePost,
 }: PostCardProps) {
     const [isDeleting, setIsDeleting] = useState(false);
-    const [isReactionToggling, setIsReactionToggling] = useState(false);
     const [isReactionPickerOpen, setIsReactionPickerOpen] = useState(false);
     const [isCommentsOpen, setIsCommentsOpen] = useState(false);
     const [commentCount, setCommentCount] = useState(
@@ -85,6 +84,22 @@ export default function PostCard({
         (reaction) => reaction.type === post.currentReaction
     );
     const reactionCount = post.reactionCount ?? 0;
+    const summaryReactions: typeof reactionOptions = [];
+
+    for (const item of post.reactionSummary ?? []) {
+        if (item.count > 0) {
+            const matched = reactionOptions.find(
+                (reaction) => reaction.type === item.reactionType
+            );
+            if (matched) {
+                summaryReactions.push(matched);
+            }
+        }
+    }
+    const displayedReactions =
+        summaryReactions.length > 0
+            ? summaryReactions
+            : [selectedReaction ?? reactionOptions[0]];
     const isAuthorOnline = usePresenceStore((state) =>
         state.onlineUserIds.has(post.userId)
     );
@@ -161,21 +176,9 @@ export default function PostCard({
         }
     }
 
-    async function handleReaction(reactionType: ReactionType) {
-        if (isReactionToggling) {
-            return;
-        }
-
-        setIsReactionToggling(true);
-
-        try {
-            await onReact(post.id, reactionType);
-            setIsReactionPickerOpen(false);
-        } catch {
-            window.alert("Không thể cập nhật cảm xúc.");
-        } finally {
-            setIsReactionToggling(false);
-        }
+    function handleReaction(reactionType: ReactionType) {
+        setIsReactionPickerOpen(false);
+        void onReact(post.id, reactionType);
     }
 
     return (
@@ -446,13 +449,20 @@ export default function PostCard({
             <div className="mt-4 flex items-center justify-between text-[11px] text-[#767586]">
                 {reactionCount > 0 ? (
                     <div className="flex items-center gap-2">
-                        <span className="grid h-5 w-5 place-items-center">
-                            <Emoji
-                                unified={selectedReaction?.unified ?? "1f44d"}
-                                size={18}
-                                emojiStyle={EmojiStyle.FACEBOOK}
-                            />
-                        </span>
+                        <div className="flex items-center gap-1">
+                            {displayedReactions.map((reaction) => (
+                                <span
+                                    key={reaction.type}
+                                    className="grid h-5 w-5 place-items-center"
+                                >
+                                    <Emoji
+                                        unified={reaction.unified}
+                                        size={18}
+                                        emojiStyle={EmojiStyle.FACEBOOK}
+                                    />
+                                </span>
+                            ))}
+                        </div>
                         <span>
                             {post.currentReaction && reactionCount === 1
                                 ? "Bạn đã bày tỏ cảm xúc"
@@ -480,11 +490,10 @@ export default function PostCard({
                                     key={reaction.type}
                                     type="button"
                                     aria-label={reaction.label}
-                                    disabled={isReactionToggling}
                                     onClick={() =>
-                                        void handleReaction(reaction.type)
+                                        handleReaction(reaction.type)
                                     }
-                                    className="group relative grid h-10 w-10 shrink-0 place-items-center rounded-full transition duration-150 hover:-translate-y-1 hover:scale-125 hover:bg-indigo-50 disabled:opacity-50"
+                                    className="group relative grid h-10 w-10 shrink-0 place-items-center rounded-full transition duration-150 hover:-translate-y-1 hover:scale-125 hover:bg-indigo-50"
                                 >
                                     <Emoji
                                         unified={reaction.unified}
@@ -502,16 +511,15 @@ export default function PostCard({
                     <button
                         type="button"
                         onClick={() =>
-                            void handleReaction(
+                            handleReaction(
                                 post.currentReaction ?? "like"
                             )
                         }
-                        disabled={isReactionToggling}
                         className={`flex w-full items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold hover:bg-white ${
                             selectedReaction
                                 ? selectedReaction.textClass
                                 : "text-slate-600"
-                        } disabled:cursor-wait disabled:opacity-60`}
+                        }`}
                     >
                         {selectedReaction ? (
                             <span className="grid h-5 w-5 place-items-center">
