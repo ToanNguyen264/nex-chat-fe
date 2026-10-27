@@ -7,9 +7,9 @@ import EmojiPicker, {
 import type { EmojiClickData } from "emoji-picker-react";
 import {
     Globe2,
+    Hash,
     Image as ImageIcon,
     Lock,
-    Mic,
     Smile,
     Users,
     X,
@@ -17,6 +17,7 @@ import {
 
 import type { CurrentUser } from "../../../api/user.api";
 import type { PostPrivacy } from "../../../api/post.api";
+import { getTagSuggestions, type TagSuggestion } from "../../../api/tag.api";
 import { getUserDisplayName } from "../../../utils/user";
 import defaultAvatar from "../../../assets/default-avatar.png";
 
@@ -71,12 +72,75 @@ export default function CreatePost({
         useState<PostPrivacy>("public");
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+    // State cho gợi ý hashtag
+    const [suggestions, setSuggestions] = useState<TagSuggestion[]>([]);
+    const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+    const [activeTagPrefix, setActiveTagPrefix] = useState("");
+    const inputRef = useRef<HTMLInputElement>(null);
+    const suggestionsRef = useRef<HTMLDivElement>(null);
+
     const displayName = getUserDisplayName(currentUser);
     const firstName = currentUser?.first_name || displayName;
     const canSubmit = Boolean(content.trim() || selectedFiles.length > 0);
 
+    // Bắt sự kiện khi gõ vào ô nhập để phát hiện ký tự #
+    function handleContentChange(event: React.ChangeEvent<HTMLInputElement>) {
+        const val = event.target.value;
+        setContent(val);
+
+        const cursor = event.target.selectionStart ?? val.length;
+        const textBeforeCursor = val.slice(0, cursor);
+        const match = textBeforeCursor.match(/#([\p{L}\p{N}_]*)$/u);
+
+        if (match) {
+            setActiveTagPrefix(match[1] || "");
+            setIsSuggestionsOpen(true);
+        } else {
+            setIsSuggestionsOpen(false);
+            setSuggestions([]);
+        }
+    }
+
+    // Debounce 200ms gọi API gợi ý hashtag
     useEffect(() => {
-        if (!isEmojiPickerOpen) {
+        if (!isSuggestionsOpen) return;
+
+        const timer = setTimeout(async () => {
+            try {
+                const results = await getTagSuggestions(activeTagPrefix);
+                setSuggestions(results);
+            } catch (err) {
+                console.error("Lỗi lấy gợi ý tag:", err);
+            }
+        }, 200);
+
+        return () => clearTimeout(timer);
+    }, [activeTagPrefix, isSuggestionsOpen]);
+
+    // Khi click chọn một hashtag từ popup gợi ý
+    function handleSelectTag(tagName: string) {
+        const cursor = inputRef.current?.selectionStart ?? content.length;
+        const textBeforeCursor = content.slice(0, cursor);
+        const textAfterCursor = content.slice(cursor);
+
+        const updatedBefore = textBeforeCursor.replace(/#([\p{L}\p{N}_]*)$/u, `#${tagName} `);
+        const newContent = updatedBefore + textAfterCursor;
+        setContent(newContent);
+        setIsSuggestionsOpen(false);
+        setSuggestions([]);
+
+        setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.focus();
+                const newCursor = updatedBefore.length;
+                inputRef.current.setSelectionRange(newCursor, newCursor);
+            }
+        }, 0);
+    }
+
+    useEffect(() => {
+        if (!isEmojiPickerOpen && !isSuggestionsOpen) {
             return;
         }
 
@@ -88,11 +152,21 @@ export default function CreatePost({
             ) {
                 setIsEmojiPickerOpen(false);
             }
+            if (
+                suggestionsRef.current &&
+                event.target instanceof Node &&
+                !suggestionsRef.current.contains(event.target) &&
+                inputRef.current &&
+                !inputRef.current.contains(event.target)
+            ) {
+                setIsSuggestionsOpen(false);
+            }
         }
 
         function handleEscape(event: KeyboardEvent) {
             if (event.key === "Escape") {
                 setIsEmojiPickerOpen(false);
+                setIsSuggestionsOpen(false);
             }
         }
 
@@ -103,7 +177,7 @@ export default function CreatePost({
             document.removeEventListener("mousedown", handleClickOutside);
             document.removeEventListener("keydown", handleEscape);
         };
-    }, [isEmojiPickerOpen]);
+    }, [isEmojiPickerOpen, isSuggestionsOpen]);
 
     function handleEmojiClick(emojiData: EmojiClickData) {
         setContent((currentContent) =>
@@ -133,6 +207,8 @@ export default function CreatePost({
             setSelectedFiles([]);
             setPrivacy("public");
             setIsEmojiPickerOpen(false);
+            setIsSuggestionsOpen(false);
+            setSuggestions([]);
         } catch (error) {
             console.error("Không thể tạo bài viết:", error);
         } finally {
@@ -155,15 +231,44 @@ export default function CreatePost({
                     }}
                 />
 
-                <input
-                    id="create-post-content"
-                    name="postContent"
-                    type="text"
-                    value={content}
-                    onChange={(event) => setContent(event.target.value)}
-                    placeholder={`${firstName} ơi, bạn đang nghĩ gì?`}
-                    className="emoji-text h-[42px] min-w-0 flex-1 rounded-full bg-[#f2f3ff] px-4 text-sm text-[#131b2e] outline-none placeholder:text-[#8b8998] focus:ring-2 focus:ring-[#4648d4]/20"
-                />
+                <div className="relative min-w-0 flex-1">
+                    <input
+                        ref={inputRef}
+                        id="create-post-content"
+                        name="postContent"
+                        type="text"
+                        value={content}
+                        onChange={handleContentChange}
+                        placeholder={`${firstName} ơi, bạn đang nghĩ gì? (Gõ # để gắn thẻ)`}
+                        className="emoji-text h-[42px] w-full rounded-full bg-[#f2f3ff] px-4 text-sm text-[#131b2e] outline-none placeholder:text-[#8b8998] focus:ring-2 focus:ring-[#4648d4]/20"
+                    />
+
+                    {/* Popup menu gợi ý Hashtag */}
+                    {isSuggestionsOpen && suggestions.length > 0 && (
+                        <div
+                            ref={suggestionsRef}
+                            className="absolute left-0 top-12 z-50 w-64 rounded-2xl border border-indigo-100 bg-white p-2 shadow-[0_12px_36px_rgba(40,48,68,0.18)]"
+                        >
+                            <div className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-slate-400">
+                                <Hash className="h-3 w-3 text-indigo-500" />
+                                <span>GỢI Ý HASHTAG</span>
+                            </div>
+                            {suggestions.map((item) => (
+                                <button
+                                    key={item.name}
+                                    type="button"
+                                    onClick={() => handleSelectTag(item.name)}
+                                    className="flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-left text-xs transition hover:bg-[#f2f3ff]"
+                                >
+                                    <span className="font-semibold text-[#4648d4]">#{item.name}</span>
+                                    <span className="text-[11px] text-slate-400">
+                                        {item.post_count} bài viết
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
             <label className="mt-3 inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">
@@ -226,7 +331,7 @@ export default function CreatePost({
             )}
 
             <div className="mt-3 flex items-center justify-between">
-                <div className="grid flex-1 grid-cols-3">
+                <div className="grid flex-1 grid-cols-2">
                     <label
                         className="flex cursor-pointer items-center justify-center gap-2 rounded-lg px-2 py-2 text-[11px] text-[#464554] hover:bg-[#f2f3ff]"
                     >
@@ -249,14 +354,6 @@ export default function CreatePost({
                             }}
                         />
                     </label>
-
-                    <button
-                        type="button"
-                        className="flex items-center justify-center gap-2 rounded-lg px-2 py-2 text-[11px] text-[#464554] hover:bg-[#f2f3ff]"
-                    >
-                        <Mic className="h-4 w-4 text-indigo-500" />
-                        Pulse Audio
-                    </button>
 
                     <div ref={emojiPickerRef} className="relative">
                         <button

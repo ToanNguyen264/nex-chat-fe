@@ -77,6 +77,7 @@ const formatPost = (post: PostFromApi): Post => {
             .map((attachment) => attachment.file_url),
         commentCount: post.commentCount,
         shareCount: 0,
+        tags: post.tags ?? [],
     };
 };
 
@@ -89,6 +90,7 @@ const formatCreatedPost = (
     reactionCount: 0,
     reactionSummary: [],
     commentCount: 0,
+    tags: post.tags ?? [],
 });
 
 export default function Feed({
