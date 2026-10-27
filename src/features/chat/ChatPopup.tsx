@@ -85,6 +85,9 @@ export default function ChatPopup({
     const latestMessages = useChatStore(
         (state) => state.latestMessageByConversation
     );
+    const readMessageIdsByConversation = useChatStore(
+        (state) => state.readMessageIdsByConversation
+    );
     const setConversations = useChatStore(
         (state) => state.setConversations
     );
@@ -362,6 +365,21 @@ export default function ChatPopup({
         }
     };
 
+    const hasAnyUnread = Boolean(
+        currentUser &&
+            conversations.some((conversation) => {
+                const latestMessage =
+                    latestMessages[conversation.id] ??
+                    conversation.messages[0];
+                if (!latestMessage) return false;
+                if (latestMessage.sender_id === currentUser.id) return false;
+                return (
+                    readMessageIdsByConversation[conversation.id] !==
+                    latestMessage.id
+                );
+            })
+    );
+
     if (!currentUser) {
         return null;
     }
@@ -371,7 +389,7 @@ export default function ChatPopup({
             <button
                 type="button"
                 aria-label={
-                    hasUnreadMessage
+                    hasUnreadMessage || hasAnyUnread
                         ? "Mở tin nhắn, có tin nhắn mới"
                         : "Mở tin nhắn"
                 }
@@ -379,7 +397,7 @@ export default function ChatPopup({
                 className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-xl transition hover:bg-indigo-700"
             >
                 <MessageCircle className="h-6 w-6" />
-                {hasUnreadMessage && (
+                {(hasUnreadMessage || hasAnyUnread) && (
                     <span
                         aria-hidden="true"
                         className="absolute right-0 top-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-rose-500"
@@ -445,6 +463,16 @@ export default function ChatPopup({
                                     latestMessages[
                                     conversation.id
                                     ] ?? conversation.messages[0];
+                                const readMessageId =
+                                    readMessageIdsByConversation[
+                                    conversation.id
+                                    ];
+                                const isUnread = Boolean(
+                                    latestMessage &&
+                                    latestMessage.sender_id !== currentUser.id &&
+                                    readMessageId !== latestMessage.id &&
+                                    activeConversationId !== conversation.id
+                                );
 
                                 return (
                                     <button
@@ -455,7 +483,11 @@ export default function ChatPopup({
                                                 conversation.id
                                             )
                                         }
-                                        className="flex w-full items-center gap-3 rounded-xl p-3 text-left transition hover:bg-white"
+                                        className={`flex w-full items-center gap-3 rounded-xl p-3 text-left transition ${
+                                            isUnread
+                                                ? "bg-[#f0f3ff] hover:bg-[#e4ebff]"
+                                                : "hover:bg-white"
+                                        }`}
                                     >
                                         <div className="relative shrink-0">
                                             <img
@@ -479,22 +511,48 @@ export default function ChatPopup({
 
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center justify-between gap-2">
-                                                <p className="truncate text-sm font-semibold text-[#131b2e]">
+                                                <p
+                                                    className={`truncate text-sm ${
+                                                        isUnread
+                                                            ? "font-bold text-[#131b2e]"
+                                                            : "font-semibold text-slate-700"
+                                                    }`}
+                                                >
                                                     {name}
                                                 </p>
                                                 {latestMessage && (
-                                                    <span className="shrink-0 text-[10px] text-slate-400">
+                                                    <span
+                                                        className={`shrink-0 text-[10px] ${
+                                                            isUnread
+                                                                ? "font-bold text-[#4648d4]"
+                                                                : "text-slate-400"
+                                                        }`}
+                                                    >
                                                         {formatConversationTime(
                                                             latestMessage.created_at
                                                         )}
                                                     </span>
                                                 )}
                                             </div>
-                                            <p className="truncate text-xs text-slate-400">
-                                                {getMessagePreview(
-                                                    latestMessage
+                                            <div className="mt-0.5 flex items-center justify-between gap-2">
+                                                <p
+                                                    className={`truncate text-xs ${
+                                                        isUnread
+                                                            ? "font-bold text-[#131b2e]"
+                                                            : "text-slate-400"
+                                                    }`}
+                                                >
+                                                    {getMessagePreview(
+                                                        latestMessage
+                                                    )}
+                                                </p>
+                                                {isUnread && (
+                                                    <span
+                                                        aria-label="Tin nhắn chưa đọc"
+                                                        className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#4648d4]"
+                                                    />
                                                 )}
-                                            </p>
+                                            </div>
                                         </div>
                                     </button>
                                 );

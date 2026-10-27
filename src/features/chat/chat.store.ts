@@ -20,6 +20,7 @@ type ChatState = {
         string,
         RealtimeChatMessage
     >;
+    readMessageIdsByConversation: Record<string, string>;
 };
 
 type ChatActions = {
@@ -43,6 +44,10 @@ type ChatActions = {
     setConversationMessages: (
         conversationId: string,
         messages: RealtimeChatMessage[]
+    ) => void;
+    markConversationAsRead: (
+        conversationId: string,
+        messageId?: string
     ) => void;
     resetChat: () => void;
 };
@@ -111,6 +116,23 @@ const applyReactionToMessage = (
     };
 };
 
+const getStoredReadMessageIds = (): Record<string, string> => {
+    try {
+        const raw = localStorage.getItem("chat_read_message_ids");
+        return raw ? JSON.parse(raw) : {};
+    } catch {
+        return {};
+    }
+};
+
+const saveStoredReadMessageIds = (map: Record<string, string>) => {
+    try {
+        localStorage.setItem("chat_read_message_ids", JSON.stringify(map));
+    } catch {
+        // ignore
+    }
+};
+
 export const useChatStore = create<ChatStore>()(
     (set) => ({
         isChatOpen: false,
@@ -120,6 +142,7 @@ export const useChatStore = create<ChatStore>()(
         activeConversationId: null,
         messagesByConversation: {},
         latestMessageByConversation: {},
+        readMessageIdsByConversation: getStoredReadMessageIds(),
 
         openConversationList: () => {
             set({
@@ -130,11 +153,28 @@ export const useChatStore = create<ChatStore>()(
         },
 
         openConversation: (conversationId) => {
-            set({
-                isChatOpen: true,
-                hasUnreadMessage: false,
-                isConversationListVisible: false,
-                activeConversationId: conversationId,
+            set((state) => {
+                const latest =
+                    state.latestMessageByConversation[conversationId] ??
+                    state.conversations.find((c) => c.id === conversationId)?.messages[0];
+                const updated = latest
+                    ? {
+                          ...state.readMessageIdsByConversation,
+                          [conversationId]: latest.id,
+                      }
+                    : state.readMessageIdsByConversation;
+
+                if (latest) {
+                    saveStoredReadMessageIds(updated);
+                }
+
+                return {
+                    isChatOpen: true,
+                    hasUnreadMessage: false,
+                    isConversationListVisible: false,
+                    activeConversationId: conversationId,
+                    readMessageIdsByConversation: updated,
+                };
             });
         },
 
@@ -147,6 +187,26 @@ export const useChatStore = create<ChatStore>()(
         closeChat: () => {
             set({
                 isChatOpen: false,
+            });
+        },
+
+        markConversationAsRead: (conversationId, messageId) => {
+            set((state) => {
+                const targetMessageId =
+                    messageId ||
+                    state.latestMessageByConversation[conversationId]?.id ||
+                    state.conversations.find((c) => c.id === conversationId)?.messages[0]?.id;
+                if (!targetMessageId) return state;
+
+                const updated = {
+                    ...state.readMessageIdsByConversation,
+                    [conversationId]: targetMessageId,
+                };
+                saveStoredReadMessageIds(updated);
+
+                return {
+                    readMessageIdsByConversation: updated,
+                };
             });
         },
 
@@ -217,10 +277,26 @@ export const useChatStore = create<ChatStore>()(
                                 : conversation
                     );
 
+                const isCurrentlyActive =
+                    state.isChatOpen &&
+                    !state.isConversationListVisible &&
+                    state.activeConversationId === conversationId;
+
+                const updatedReadMap = isCurrentlyActive
+                    ? {
+                          ...state.readMessageIdsByConversation,
+                          [conversationId]: message.id,
+                      }
+                    : state.readMessageIdsByConversation;
+
+                if (isCurrentlyActive) {
+                    saveStoredReadMessageIds(updatedReadMap);
+                }
+
                 return {
                     hasUnreadMessage:
                         state.hasUnreadMessage ||
-                        !state.isChatOpen,
+                        !isCurrentlyActive,
                     conversations:
                         sortConversations(conversations),
                     messagesByConversation: {
@@ -231,6 +307,7 @@ export const useChatStore = create<ChatStore>()(
                         ...state.latestMessageByConversation,
                         [conversationId]: message,
                     },
+                    readMessageIdsByConversation: updatedReadMap,
                 };
             });
         },
