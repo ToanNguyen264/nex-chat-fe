@@ -1,6 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --color-primary: #2563eb;
   --color-background: #ffffff;
@@ -10,6 +12,16 @@
   --text-description: #464554;
 }
 
+.dark {
+  --color-primary: #6366f1;
+  --color-background: #151c2c;
+  --color-text: #f1f5f9;
+  --color-border: #263147;
+  --color-input-bg: #1e293b;
+  --text-description: #94a3b8;
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -17,6 +29,12 @@ body {
   color: #131b2e;
   font-family: "Plus Jakarta Sans";
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dark body {
+  background: #0b0f19;
+  color: #f1f5f9;
 }
 
 button,
@@ -26,4 +44,129 @@ input {
 
 .emoji-text {
   font-family: "Plus Jakarta Sans";
+}
+
+/* Hỗ trợ tự động chuyển đổi bề mặt, chữ và viền sang Dark Mode trên toàn ứng dụng */
+.dark .bg-\[\#faf8ff\],
+.dark .bg-\[\#fafaff\],
+.dark .bg-\[\#f8f8ff\] {
+  background-color: #0b0f19 !important;
+}
+
+.dark .bg-white {
+  background-color: #151c2c !important;
+}
+
+.dark .bg-white\/95,
+.dark .bg-white\/90,
+.dark .bg-white\/80 {
+  background-color: rgba(21, 28, 44, 0.92) !important;
+}
+
+.dark .bg-\[\#f2f3ff\],
+.dark .bg-\[\#f2f3ff\]\/50,
+.dark .bg-\[\#f2f3ff\]\/70,
+.dark .bg-\[\#f0f3ff\],
+.dark .bg-\[\#f5f4ff\],
+.dark .bg-\[\#f5f5fb\],
+.dark .bg-\[\#eef0ff\],
+.dark .bg-\[\#e8e9ff\],
+.dark .bg-\[\#e8e9fb\],
+.dark .bg-\[\#eaedff\],
+.dark .bg-\[\#e7e8ff\],
+.dark .bg-\[\#e5e7ff\],
+.dark .bg-slate-50,
+.dark .bg-slate-50\/80,
+.dark .bg-slate-100,
+.dark .bg-slate-200\/80,
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-input,
+.dark .focus\:bg-white:focus {
+  background-color: #1e293b !important;
+}
+
+.dark .hover\:bg-\[\#f2f3ff\]:hover,
+.dark .hover\:bg-\[\#eef0ff\]:hover,
+.dark .hover\:bg-\[\#faf8ff\]:hover,
+.dark .hover\:bg-\[\#fafaff\]:hover,
+.dark .hover\:bg-\[\#e8e9fb\]:hover,
+.dark .hover\:bg-\[\#dde1fb\]:hover,
+.dark .hover\:bg-\[\#dbe0ff\]:hover,
+.dark .hover\:bg-\[\#e4ebff\]:hover,
+.dark .hover\:bg-indigo-50:hover,
+.dark .hover\:bg-indigo-50\/50:hover,
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-100:hover,
+.dark .hover\:bg-slate-200\/60:hover,
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover,
+.dark .hover\:bg-white:hover {
+  background-color: #26334d !important;
+}
+
+.dark .text-\[\#131b2e\],
+.dark .text-slate-950,
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-gray-900,
+.dark .text-gray-800 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-\[\#343343\],
+.dark .text-\[\#464554\],
+.dark .text-slate-700,
+.dark .text-slate-600,
+.dark .text-gray-700,
+.dark .text-gray-600,
+.dark .text-description {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-\[\#767586\],
+.dark .text-\[\#8b8998\],
+.dark .text-\[\#9b99a8\],
+.dark .text-\[\#aaa9b8\],
+.dark .text-slate-500,
+.dark .text-slate-400,
+.dark .text-gray-500 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-\[\#4648d4\],
+.dark .text-\[\#07006c\],
+.dark .text-indigo-600 {
+  color: #818cf8 !important;
+}
+
+.dark .border-\[\#eef0ff\],
+.dark .border-\[\#e4e6f7\],
+.dark .border-\[\#e6e7f5\],
+.dark .border-\[\#d9dcff\],
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-200\/80,
+.dark .border-slate-300,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-indigo-100 {
+  border-color: #263147 !important;
+}
+
+.dark .ring-\[\#f2f3ff\],
+.dark .ring-\[\#eef0ff\],
+.dark .ring-white {
+  --tw-ring-color: #1e293b !important;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  color: #f1f5f9;
+}
+
+.dark select option {
+  background-color: #151c2c;
+  color: #f1f5f9;
 }

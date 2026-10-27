@@ -33,12 +33,12 @@ const reactionOptions: Array<{
     label: string;
     textClass: string;
 }> = [
-    { type: "like", unified: "1f44d", label: "Thích", textClass: "text-blue-600" },
-    { type: "love", unified: "2764-fe0f", label: "Yêu thích", textClass: "text-rose-600" },
-    { type: "haha", unified: "1f602", label: "Haha", textClass: "text-amber-500" },
-    { type: "wow", unified: "1f62e", label: "Wow", textClass: "text-amber-500" },
-    { type: "sad", unified: "1f622", label: "Buồn", textClass: "text-amber-500" },
-    { type: "angry", unified: "1f621", label: "Phẫn nộ", textClass: "text-orange-600" },
+    { type: "like", unified: "1f44d", label: "Thích", textClass: "text-blue-600 dark:text-blue-400" },
+    { type: "love", unified: "2764-fe0f", label: "Yêu thích", textClass: "text-rose-600 dark:text-rose-400" },
+    { type: "haha", unified: "1f602", label: "Haha", textClass: "text-amber-500 dark:text-amber-400" },
+    { type: "wow", unified: "1f62e", label: "Wow", textClass: "text-amber-500 dark:text-amber-400" },
+    { type: "sad", unified: "1f622", label: "Buồn", textClass: "text-amber-500 dark:text-amber-400" },
+    { type: "angry", unified: "1f621", label: "Phẫn nộ", textClass: "text-orange-600 dark:text-orange-400" },
 ];
 
 type PostCardProps = {
@@ -494,14 +494,14 @@ export default function PostCard({
                 <div className="flex gap-3"><span>{commentCount} bình luận</span><span>{post.shareCount ?? 0} lượt chia sẻ</span></div>
             </div>
 
-            <footer className="mt-3 grid grid-cols-3 rounded-xl bg-[#f2f3ff]/50 p-1.5">
+            <footer className="mt-3 grid grid-cols-3 rounded-xl bg-[#f2f3ff]/50 dark:bg-[#1e293b] p-1.5">
                 <div
                     className="relative"
                     onMouseEnter={() => setIsReactionPickerOpen(true)}
                     onMouseLeave={() => setIsReactionPickerOpen(false)}
                 >
                     {isReactionPickerOpen && (
-                        <div className="absolute bottom-[calc(100%-2px)] left-0 z-[100] flex items-center gap-1.5 rounded-full border border-indigo-100 bg-white/95 px-2.5 py-2 shadow-[0_12px_35px_rgba(40,48,68,0.2)] backdrop-blur-md">
+                        <div className="absolute bottom-[calc(100%-2px)] left-0 z-[100] flex items-center gap-1.5 rounded-full border border-indigo-100 dark:border-[#263147] bg-white/95 dark:bg-[#151c2c]/95 px-2.5 py-2 shadow-[0_12px_35px_rgba(40,48,68,0.2)] backdrop-blur-md">
                             {reactionOptions.map((reaction) => (
                                 <button
                                     key={reaction.type}
@@ -510,7 +510,7 @@ export default function PostCard({
                                     onClick={() =>
                                         handleReaction(reaction.type)
                                     }
-                                    className="group relative grid h-10 w-10 shrink-0 place-items-center rounded-full transition duration-150 hover:-translate-y-1 hover:scale-125 hover:bg-indigo-50"
+                                    className="group relative grid h-10 w-10 shrink-0 place-items-center rounded-full transition duration-150 hover:-translate-y-1 hover:scale-125 hover:bg-indigo-50 dark:hover:bg-[#26334d]"
                                 >
                                     <Emoji
                                         unified={reaction.unified}
@@ -532,10 +532,10 @@ export default function PostCard({
                                 post.currentReaction ?? "like"
                             )
                         }
-                        className={`flex w-full items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold hover:bg-white ${
+                        className={`flex w-full items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition hover:bg-white dark:hover:bg-[#26334d] ${
                             selectedReaction
                                 ? selectedReaction.textClass
-                                : "text-slate-600"
+                                : "text-slate-600 dark:text-slate-300"
                         }`}
                     >
                         {selectedReaction ? (
@@ -557,12 +557,12 @@ export default function PostCard({
                     type="button"
                     onClick={() => setIsCommentsOpen((current) => !current)}
                     aria-expanded={isCommentsOpen}
-                    className="flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold text-[#464554] hover:bg-white"
+                    className="flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold text-[#464554] dark:text-slate-300 transition hover:bg-white dark:hover:bg-[#26334d]"
                 >
                     <span className="relative">
                         <MessageCircle className="h-4 w-4" />
                         {commentCount > 0 && (
-                            <span className="absolute -right-2.5 -top-2.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#4648d4] px-1 text-[9px] font-bold leading-none text-white ring-2 ring-[#f2f3ff]">
+                            <span className="absolute -right-2.5 -top-2.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#4648d4] px-1 text-[9px] font-bold leading-none text-white ring-2 ring-[#f2f3ff] dark:ring-[#1e293b]">
                                 {commentCount > 99
                                     ? "99+"
                                     : commentCount}
@@ -574,7 +574,7 @@ export default function PostCard({
 
                 <button
                     type="button"
-                    className="flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold text-[#464554] hover:bg-white"
+                    className="flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold text-[#464554] dark:text-slate-300 transition hover:bg-white dark:hover:bg-[#26334d]"
                 >
                     <Share2 className="h-4 w-4" />
                     Chia sẻ

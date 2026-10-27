@@ -1,7 +1,8 @@
-import { Radio, Sparkles, Users } from "lucide-react";
+import { Moon, Radio, Sparkles, Sun, Users } from "lucide-react";
 import { useState } from "react";
 import { useFormik } from "formik";
 import { Link, useNavigate } from "react-router";
+import { useTheme } from "next-themes";
 import * as Yup from "yup";
 
 import api from "../api/axios";
@@ -14,6 +15,8 @@ import { showError } from "../utils/swal";
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const navigation = useNavigate();
+    const { resolvedTheme, setTheme } = useTheme();
+    const isDark = resolvedTheme === "dark";
 
     const formik = useFormik({
         initialValues: {
@@ -50,9 +53,19 @@ export default function LoginPage() {
     });
 
     return (
-        <main className="flex min-h-screen flex-col justify-between bg-[radial-gradient(circle_at_top_left,_#e0e7ff,_#f8fafc_45%,_#ecfeff)]">
+        <main className="relative flex min-h-screen flex-col justify-between bg-[radial-gradient(circle_at_top_left,_#e0e7ff,_#f8fafc_45%,_#ecfeff)] dark:bg-[radial-gradient(circle_at_top_left,_#1e1b4b,_#0b0f19_50%,_#091526)] transition-colors duration-200">
+            <button
+                type="button"
+                onClick={() => setTheme(isDark ? "light" : "dark")}
+                aria-label={isDark ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+                title={isDark ? "Chế độ sáng" : "Chế độ tối"}
+                className="fixed right-5 top-5 z-50 grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-slate-200 dark:border-[#263147] bg-white/90 dark:bg-[#151c2c]/90 text-slate-700 dark:text-amber-400 shadow-md backdrop-blur transition hover:scale-105"
+            >
+                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
+
             <div className="flex flex-1 items-center justify-center p-4 sm:p-6 lg:p-8">
-                <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_32px_90px_rgba(30,41,59,0.18)] lg:grid-cols-[1.05fr_0.95fr]">
+                <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-[28px] border border-white/70 dark:border-[#263147] bg-white dark:bg-[#151c2c] shadow-[0_32px_90px_rgba(30,41,59,0.18)] lg:grid-cols-[1.05fr_0.95fr]">
                 <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#3f46c8] via-[#565bdc] to-[#087386] p-10 text-white lg:flex lg:flex-col lg:justify-between">
                     <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
                     <div className="absolute -bottom-20 -right-20 h-80 w-80 rounded-full bg-indigo-950/30 blur-3xl" />
@@ -116,17 +129,17 @@ export default function LoginPage() {
                             <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-900 p-1 shadow-md">
                                 <img src="/logo.svg" alt="Nex" className="h-full w-full scale-125 object-contain" />
                             </div>
-                            <span className="text-xl font-bold text-slate-900">Nex</span>
+                            <span className="text-xl font-bold text-slate-900 dark:text-slate-100">Nex</span>
                         </div>
 
                         <div>
-                            <span className="inline-block text-xs font-bold uppercase tracking-wider text-indigo-600">
+                            <span className="inline-block text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
                                 Rất vui được gặp lại bạn
                             </span>
-                            <h1 className="mt-1.5 text-3xl font-bold tracking-tight text-slate-950 sm:text-[34px]">
+                            <h1 className="mt-1.5 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-[34px]">
                                 Đăng nhập tài khoản
                             </h1>
-                            <p className="mt-2 text-sm leading-6 text-slate-500">
+                            <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
                                 Tiếp tục trò chuyện và chia sẻ khoảnh khắc cùng bạn bè.
                             </p>
                         </div>
@@ -137,15 +150,15 @@ export default function LoginPage() {
                                 Google
                             </Button>
                             <Button className="flex cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50">
-                                <img src="/apple_logo.svg" alt="" className="h-5 w-5 object-contain" />
+                                <img src="/apple_logo.svg" alt="" className="h-5 w-5 object-contain dark:invert" />
                                 Apple ID
                             </Button>
                         </div>
 
                         <div className="my-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                            <div className="h-px flex-1 bg-slate-200" />
+                            <div className="h-px flex-1 bg-slate-200 dark:bg-[#263147]" />
                             đăng nhập bằng email
-                            <div className="h-px flex-1 bg-slate-200" />
+                            <div className="h-px flex-1 bg-slate-200 dark:bg-[#263147]" />
                         </div>
 
                         <form onSubmit={formik.handleSubmit} noValidate>
