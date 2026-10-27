@@ -36,6 +36,7 @@ export type CreatedPost = {
     deleted_at: string | null;
     users: PostAuthorFromApi;
     attachments: AttachmentFromApi[];
+    tags?: string[];
 };
 
 type CreatePostResponse = {
@@ -58,6 +59,7 @@ export type PostFromApi = {
     reactionCount: number;
     reactionSummary: ReactionSummaryItem[];
     commentCount: number;
+    tags?: string[];
 };
 
 export type SetPostReactionResult = {

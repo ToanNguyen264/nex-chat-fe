@@ -284,13 +284,28 @@ export default function PostCard({
                 />
             )}
 
-            <p className="emoji-text mt-4 whitespace-pre-wrap text-[15px] leading-[25px] text-[#131b2e]">
-                {post.content}
-            </p>
+            {(() => {
+                const cleanContent = (post.content ?? "")
+                    .replace(/#[\p{L}\p{N}_]+/gu, "")
+                    .trim();
 
-            {post.tags && (
+                return cleanContent ? (
+                    <p className="emoji-text mt-4 whitespace-pre-wrap text-[15px] leading-[25px] text-[#131b2e]">
+                        {cleanContent}
+                    </p>
+                ) : null;
+            })()}
+
+            {post.tags && post.tags.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                    {post.tags.map((tag) => <span key={tag} className="rounded-full bg-[#eaedff] px-2.5 py-1 text-[11px] font-semibold text-[#4648d4]">{tag}</span>)}
+                    {post.tags.map((tag) => (
+                        <span
+                            key={tag}
+                            className="cursor-pointer rounded-full bg-[#eaedff] px-2.5 py-1 text-[11px] font-semibold text-[#4648d4] transition hover:bg-[#dbe0ff]"
+                        >
+                            #{tag}
+                        </span>
+                    ))}
                 </div>
             )}
 
