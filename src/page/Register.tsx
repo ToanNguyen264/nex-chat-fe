@@ -1,7 +1,8 @@
-import { ArrowRight, Camera, MessageCircleMore, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Camera, MessageCircleMore, Moon, ShieldCheck, Sparkles, Sun, Users } from "lucide-react";
 import { useState } from "react";
 import { useFormik } from "formik";
 import { Link, useNavigate } from "react-router";
+import { useTheme } from "next-themes";
 import * as Yup from "yup";
 import api from "../api/axios";
 import axios from "axios";
@@ -15,6 +16,8 @@ import Input from "../component/UI/Input/Input";
 export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const { resolvedTheme, setTheme } = useTheme();
+    const isDark = resolvedTheme === "dark";
 
     const nativegate = useNavigate();
 
@@ -100,9 +103,19 @@ export default function RegisterPage() {
     const userNameHasValidFormat = /^[a-zA-Z0-9._]{3,30}$/.test(formik.values.userName);
 
     return (
-        <main className="flex min-h-screen flex-col justify-between bg-[radial-gradient(circle_at_top_left,_#e0e7ff,_#f8fafc_45%,_#ecfeff)]">
+        <main className="relative flex min-h-screen flex-col justify-between bg-[radial-gradient(circle_at_top_left,_#e0e7ff,_#f8fafc_45%,_#ecfeff)] dark:bg-[radial-gradient(circle_at_top_left,_#1e1b4b,_#0b0f19_50%,_#091526)] transition-colors duration-200">
+            <button
+                type="button"
+                onClick={() => setTheme(isDark ? "light" : "dark")}
+                aria-label={isDark ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+                title={isDark ? "Chế độ sáng" : "Chế độ tối"}
+                className="fixed right-5 top-5 z-50 grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-slate-200 dark:border-[#263147] bg-white/90 dark:bg-[#151c2c]/90 text-slate-700 dark:text-amber-400 shadow-md backdrop-blur transition hover:scale-105"
+            >
+                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
+
             <div className="flex flex-1 items-center justify-center p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_32px_90px_rgba(30,41,59,0.18)] md:grid-cols-[0.82fr_1.18fr]">
+            <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-[28px] border border-white/70 dark:border-[#263147] bg-white dark:bg-[#151c2c] shadow-[0_32px_90px_rgba(30,41,59,0.18)] md:grid-cols-[0.82fr_1.18fr]">
                 <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#3f46c8] via-[#565bdc] to-[#087386] p-7 text-white md:flex md:flex-col lg:p-10">
                     <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
                     <div className="absolute -bottom-24 -right-20 h-80 w-80 rounded-full bg-indigo-950/30 blur-3xl" />
@@ -185,15 +198,15 @@ export default function RegisterPage() {
                             <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-900 p-1 shadow-md">
                                 <img src="/logo.svg" alt="Nex" className="h-full w-full scale-125 object-contain" />
                             </div>
-                            <span className="text-xl font-bold text-slate-900">Nex</span>
+                            <span className="text-xl font-bold text-slate-900 dark:text-slate-100">Nex</span>
                         </div>
 
                         <div>
-                            <span className="text-sm font-semibold text-indigo-600">Bắt đầu hành trình của bạn</span>
-                            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                            <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">Bắt đầu hành trình của bạn</span>
+                            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
                                 Tạo tài khoản Nex mới
                             </h1>
-                            <p className="mt-3 text-sm leading-6 text-slate-500">
+                            <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
                                 Chỉ mất vài phút để tham gia cộng đồng và bắt đầu kết nối.
                             </p>
                         </div>
@@ -204,15 +217,15 @@ export default function RegisterPage() {
                                 Google
                             </Button>
                             <Button className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
-                                <img src="/apple_logo.svg" alt="" className="h-5 w-5 object-contain" />
+                                <img src="/apple_logo.svg" alt="" className="h-5 w-5 object-contain dark:invert" />
                                 Apple ID
                             </Button>
                         </div>
 
                         <div className="my-6 flex items-center gap-3 text-[11px] font-medium uppercase tracking-wider text-slate-400">
-                            <div className="h-px flex-1 bg-slate-200" />
+                            <div className="h-px flex-1 bg-slate-200 dark:bg-[#263147]" />
                             hoặc điền thông tin cá nhân
-                            <div className="h-px flex-1 bg-slate-200" />
+                            <div className="h-px flex-1 bg-slate-200 dark:bg-[#263147]" />
                         </div>
 
                         <form onSubmit={formik.handleSubmit} noValidate>
@@ -250,7 +263,7 @@ export default function RegisterPage() {
                             <div className="mt-4">
                                 <div className="mb-2 flex items-center justify-between">
                                     <label htmlFor="userName" className="text-sm">Tên người dùng</label>
-                                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${userNameHasValidFormat ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"}`}>
+                                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${userNameHasValidFormat ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400" : "bg-slate-100 text-slate-500"}`}>
                                         {userNameHasValidFormat ? "Định dạng hợp lệ" : "3–30 ký tự"}
                                     </span>
                                 </div>
@@ -356,7 +369,7 @@ export default function RegisterPage() {
                             <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
                                 <div className="flex items-center justify-between text-xs">
                                     <span className="font-medium text-slate-600">Độ mạnh mật khẩu</span>
-                                    <span className={`font-semibold ${passwordScore === 3 ? "text-emerald-600" : passwordScore === 2 ? "text-indigo-600" : "text-amber-600"}`}>
+                                    <span className={`font-semibold ${passwordScore === 3 ? "text-emerald-600 dark:text-emerald-400" : passwordScore === 2 ? "text-indigo-600 dark:text-indigo-400" : "text-amber-600 dark:text-amber-400"}`}>
                                         {formik.values.password ? passwordStrength : "Chưa nhập"}
                                     </span>
                                 </div>
@@ -364,7 +377,7 @@ export default function RegisterPage() {
                                     {[1, 2, 3].map((level) => (
                                         <div
                                             key={level}
-                                            className={`h-1.5 rounded-full transition-colors ${passwordScore >= level ? (passwordScore === 3 ? "bg-emerald-500" : "bg-indigo-500") : "bg-slate-200"}`}
+                                            className={`h-1.5 rounded-full transition-colors ${passwordScore >= level ? (passwordScore === 3 ? "bg-emerald-500" : "bg-indigo-500") : "bg-slate-200 dark:bg-slate-700"}`}
                                         />
                                     ))}
                                 </div>
@@ -408,14 +421,14 @@ export default function RegisterPage() {
                         </form>
 
                         <div className="mt-6 flex items-center gap-4 text-sm text-slate-500">
-                            <div className="h-px flex-1 bg-slate-200" />
+                            <div className="h-px flex-1 bg-slate-200 dark:bg-[#263147]" />
                             <span>
                                 Đã có tài khoản?{" "}
                                 <Link to="/" className="font-semibold text-indigo-600 hover:text-indigo-700">
                                     Đăng nhập
                                 </Link>
                             </span>
-                            <div className="h-px flex-1 bg-slate-200" />
+                            <div className="h-px flex-1 bg-slate-200 dark:bg-[#263147]" />
                         </div>
 
                         <p className="mt-5 flex items-center justify-center gap-2 text-center text-xs text-slate-400">

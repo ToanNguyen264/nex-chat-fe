@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
+import { useTheme } from "next-themes";
 import EmojiPicker, {
     EmojiStyle,
     Theme,
@@ -65,6 +66,7 @@ export default function CreatePost({
     currentUser,
     onCreatePost,
 }: CreatePostProps) {
+    const { resolvedTheme } = useTheme();
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -375,7 +377,7 @@ export default function CreatePost({
                                     onEmojiClick={handleEmojiClick}
                                     width="100%"
                                     height={360}
-                                    theme={Theme.LIGHT}
+                                    theme={resolvedTheme === "dark" ? Theme.DARK : Theme.LIGHT}
                                     emojiStyle={EmojiStyle.FACEBOOK}
                                     previewConfig={{ showPreview: false }}
                                     searchPlaceholder="Tìm cảm xúc..."
