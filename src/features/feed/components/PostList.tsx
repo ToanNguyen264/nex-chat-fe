@@ -1,3 +1,4 @@
+import type React from "react";
 import PostCard from "./PostCard";
 import type { Post } from "../types";
 import type {
@@ -18,6 +19,8 @@ type PostListProps = {
         privacy: PostPrivacy
     ) => Promise<void>;
     onDeletePost: (postId: number) => Promise<void>;
+    sentinelRef?: React.RefObject<HTMLDivElement | null>;
+    hasNextPage?: boolean;
 };
 
 export default function PostList({
@@ -26,6 +29,8 @@ export default function PostList({
     onReact,
     onEditPost,
     onDeletePost,
+    sentinelRef,
+    hasNextPage,
 }: PostListProps) {
     if (posts.length === 0) {
         return (
@@ -35,17 +40,29 @@ export default function PostList({
         );
     }
 
+    // Kích hoạt nạp thêm bài viết trước 2 bài cuối cùng
+    const triggerIndex = Math.max(posts.length - 2, 0);
+
     return (
         <section className="flex flex-col gap-4">
-            {posts.map((post) => (
-                <PostCard
-                    key={post.id}
-                    post={post}
-                    currentUserId={currentUserId}
-                    onReact={onReact}
-                    onEditPost={onEditPost}
-                    onDeletePost={onDeletePost}
-                />
+            {posts.map((post, index) => (
+                <div key={post.id} className="flex flex-col gap-4">
+                    {index === triggerIndex && hasNextPage && (
+                        <div
+                            ref={sentinelRef}
+                            className="h-px w-full pointer-events-none opacity-0"
+                            aria-hidden="true"
+                        />
+                    )}
+
+                    <PostCard
+                        post={post}
+                        currentUserId={currentUserId}
+                        onReact={onReact}
+                        onEditPost={onEditPost}
+                        onDeletePost={onDeletePost}
+                    />
+                </div>
             ))}
         </section>
     );
