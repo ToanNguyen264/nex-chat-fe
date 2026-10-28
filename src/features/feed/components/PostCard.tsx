@@ -56,6 +56,70 @@ type PostCardProps = {
     onDeletePost: (postId: number) => Promise<void>;
 };
 
+type PostMediaImageProps = {
+    src: string;
+    alt: string;
+    isSingle: boolean;
+    isRemainingOverlay?: boolean;
+    remainingCount?: number;
+    onClick: () => void;
+};
+
+function PostMediaImage({
+    src,
+    alt,
+    isSingle,
+    isRemainingOverlay = false,
+    remainingCount = 0,
+    onClick,
+}: PostMediaImageProps) {
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [hasError, setHasError] = useState(false);
+
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={`relative w-full cursor-pointer overflow-hidden bg-slate-100 ${
+                isSingle ? "max-h-[520px]" : "h-56"
+            }`}
+            aria-label={alt}
+        >
+            {!isLoaded && !hasError && (
+                <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200" />
+            )}
+
+            {hasError ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 text-slate-400">
+                    <span className="text-xs font-medium">Không thể tải ảnh</span>
+                </div>
+            ) : (
+                <img
+                    src={src}
+                    alt={alt}
+                    loading="lazy"
+                    decoding="async"
+                    onLoad={() => setIsLoaded(true)}
+                    onError={() => setHasError(true)}
+                    className={`${
+                        isSingle
+                            ? "max-h-[520px] w-full object-cover"
+                            : "h-56 w-full object-cover"
+                    } transition-opacity duration-300 ${
+                        isLoaded ? "opacity-100" : "opacity-0"
+                    }`}
+                />
+            )}
+
+            {isRemainingOverlay && remainingCount > 0 && (
+                <div className="absolute inset-0 grid place-items-center bg-black/60 text-4xl font-semibold text-white">
+                    +{remainingCount}
+                </div>
+            )}
+        </button>
+    );
+}
+
 export default function PostCard({
     post,
     currentUserId,
@@ -190,6 +254,8 @@ export default function PostCard({
                         <img
                             src={post.avatar || defaultAvatar}
                             alt={post.author}
+                            loading="lazy"
+                            decoding="async"
                             className="h-11 w-11 rounded-full object-cover bg-slate-100"
                             onError={(e) => {
                                 (e.currentTarget as HTMLImageElement).src = defaultAvatar;
@@ -318,29 +384,15 @@ export default function PostCard({
                     }`}
                 >
                     {visibleImages.map((image, index) => (
-                        <button
+                        <PostMediaImage
                             key={image}
-                            type="button"
+                            src={image}
+                            alt={`Ảnh bài viết ${index + 1}`}
+                            isSingle={visibleImages.length === 1}
+                            isRemainingOverlay={index === 3 && remainingImageCount > 0}
+                            remainingCount={remainingImageCount}
                             onClick={() => setSelectedImageIndex(index)}
-                            className="relative cursor-pointer overflow-hidden"
-                            aria-label={`Xem ảnh ${index + 1}`}
-                        >
-                            <img
-                                src={image}
-                                alt={`Ảnh bài viết ${index + 1}`}
-                                className={
-                                    visibleImages.length === 1
-                                        ? "max-h-[520px] w-full object-cover"
-                                        : "h-56 w-full object-cover"
-                                }
-                            />
-
-                            {index === 3 && remainingImageCount > 0 && (
-                                <div className="absolute inset-0 grid place-items-center bg-black/60 text-4xl font-semibold text-white">
-                                    +{remainingImageCount}
-                                </div>
-                            )}
-                        </button>
+                        />
                     ))}
                 </div>
             )}
@@ -410,6 +462,7 @@ export default function PostCard({
                         <img
                             src={allImages[selectedImageIndex]}
                             alt={`Ảnh bài viết ${selectedImageIndex + 1}`}
+                            decoding="async"
                             className="max-h-full max-w-full object-contain"
                         />
 

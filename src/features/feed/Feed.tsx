@@ -22,6 +22,7 @@ import type {
 } from "../../api/post.api";
 import CreatePost from "./components/CreatePost";
 import PostList from "./components/PostList";
+import PostSkeleton from "./components/PostSkeleton";
 import StoryList from "./components/StoryList";
 import type { Post } from "./types";
 import {
@@ -328,9 +329,7 @@ export default function Feed({
             {feedHeader}
 
             {isLoading ? (
-                <p className="rounded-2xl bg-white p-5 text-center text-sm text-slate-500">
-                    Đang tải bài viết...
-                </p>
+                <PostSkeleton count={3} />
             ) : isError ? (
                 <button
                     type="button"
@@ -359,11 +358,8 @@ export default function Feed({
                     />
 
                     {isFetchingNextPage && (
-                        <div className="flex items-center justify-center py-4">
-                            <div className="flex items-center gap-2 rounded-full border border-[#eef0ff] dark:border-[#263147] bg-white dark:bg-[#151c2c] px-4 py-2 text-xs font-semibold text-[#4648d4] dark:text-indigo-400 shadow-sm">
-                                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                <span>Đang tải thêm bài viết...</span>
-                            </div>
+                        <div className="flex flex-col gap-4 pt-2">
+                            <PostSkeleton count={1} />
                         </div>
                     )}
                 </>
