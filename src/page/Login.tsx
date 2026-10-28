@@ -1,3 +1,4 @@
+import { useGoogleLogin } from "@react-oauth/google";
 import { Moon, Radio, Sparkles, Sun, Users } from "lucide-react";
 import { useState } from "react";
 import { useFormik } from "formik";
@@ -11,12 +12,38 @@ import { KTIcon } from "../_metronic/helpers/components/KTIcon";
 import Button from "../component/UI/Button/Button";
 import Input from "../component/UI/Input/Input";
 import { showError } from "../utils/swal";
+import { queryClient } from "../lib/query-client";
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const navigation = useNavigate();
     const { resolvedTheme, setTheme } = useTheme();
     const isDark = resolvedTheme === "dark";
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            try {
+                setIsGoogleLoading(true);
+                const response = await api.post("/auth/google", {
+                    accessToken: tokenResponse.access_token,
+                });
+
+                const accessToken = response.data.accessToken;
+                queryClient.clear();
+                localStorage.setItem("accessToken", accessToken);
+                navigation("/home");
+            } catch (err: any) {
+                const message = err.response?.data?.message || "Đăng nhập Google thất bại";
+                showError(message);
+            } finally {
+                setIsGoogleLoading(false);
+            }
+        },
+        onError: () => {
+            showError("Đăng nhập với Google không thành công");
+        },
+    });
 
     const formik = useFormik({
         initialValues: {
@@ -42,7 +69,7 @@ export default function LoginPage() {
                 });
 
                 const accessToken = response.data.accessToken;
-
+                queryClient.clear();
                 localStorage.setItem("accessToken", accessToken);
 
                 navigation("/home");
@@ -144,14 +171,21 @@ export default function LoginPage() {
                             </p>
                         </div>
 
-                        <div className="mt-6 grid grid-cols-2 gap-3">
-                            <Button className="flex cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50">
+                        <div className="mt-6">
+                            <Button
+                                type="button"
+                                loading={isGoogleLoading}
+                                onClick={() => {
+                                    if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) {
+                                        showError("Chưa cấu hình VITE_GOOGLE_CLIENT_ID trong file .env");
+                                        return;
+                                    }
+                                    handleGoogleLogin();
+                                }}
+                                className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
                                 <img src="/google_logo.svg" alt="" className="h-5 w-5 object-contain" />
-                                Google
-                            </Button>
-                            <Button className="flex cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50">
-                                <img src="/apple_logo.svg" alt="" className="h-5 w-5 object-contain dark:invert" />
-                                Apple ID
+                                Đăng nhập với Google
                             </Button>
                         </div>
 

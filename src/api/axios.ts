@@ -1,5 +1,6 @@
 // axios.ts
 import axios from "axios";
+import { queryClient } from "../lib/query-client";
 
 const api = axios.create({
     baseURL: "/api",
@@ -25,6 +26,7 @@ api.interceptors.response.use(
 
         if (status === 401 && accessToken) {
             localStorage.removeItem("accessToken");
+            queryClient.clear();
 
             if (window.location.pathname !== "/") {
                 window.location.replace("/");
