@@ -3,7 +3,7 @@ import { ChevronDown, Compass, Search, UserRoundPlus } from "lucide-react";
 
 import {
     acceptFriendRequest,
-    getFriends,
+    getFriendCount,
     getFriendSuggestions,
     getIncomingFriendRequests,
     rejectFriendRequest,
@@ -63,16 +63,16 @@ export default function FriendsPage() {
                 setIsLoading(true);
                 setError(null);
 
-                const [user, friends, incomingRequests, friendSuggestions] =
+                const [user, friendCountResult, incomingRequests, friendSuggestions] =
                     await Promise.all([
                         getCurrentUser(),
-                        getFriends(),
+                        getFriendCount(),
                         getIncomingFriendRequests(),
                         getFriendSuggestions(20),
                     ]);
 
                 setCurrentUser(user);
-                setFriendCount(friends.length);
+                setFriendCount(friendCountResult);
                 setRequests(incomingRequests);
                 setSuggestions(friendSuggestions);
                 setHasMoreSuggestions(friendSuggestions.length === 20);
@@ -94,16 +94,16 @@ export default function FriendsPage() {
             payload: FriendshipChangedPayload
         ) => {
             try {
-                const [friends, incomingRequests, friendSuggestions] =
+                const [friendCountResult, incomingRequests, friendSuggestions] =
                     await Promise.all([
-                        getFriends(),
+                        getFriendCount(),
                         getIncomingFriendRequests(),
                         getFriendSuggestions(suggestionLimit),
                     ]);
 
                 if (!isActive) return;
 
-                setFriendCount(friends.length);
+                setFriendCount(friendCountResult);
                 setRequests(incomingRequests);
                 setSuggestions(friendSuggestions);
                 setHasMoreSuggestions(

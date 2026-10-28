@@ -161,6 +161,15 @@ export const getFriends = async (): Promise<
     return response.data.data;
 };
 
+export const getFriendCount = async (): Promise<number> => {
+    const response = await api.get<{
+        success: boolean;
+        data: { count: number };
+    }>("/friends/count");
+
+    return response.data.data.count;
+};
+
 export const getFriendSuggestions = async (
     limit = 20
 ): Promise<FriendSuggestion[]> => {
