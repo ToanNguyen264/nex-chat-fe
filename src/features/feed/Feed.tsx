@@ -118,6 +118,30 @@ export default function Feed({
     const canCreatePost =
         !onlyUserId || onlyUserId === currentUser?.id;
 
+    // Ref và IntersectionObserver tự động tải thêm bài viết khi cuộn gần hết
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const target = loadMoreRef.current;
+        if (!target || !hasNextPage || isFetchingNextPage) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    void fetchNextPage();
+                }
+            },
+            {
+                threshold: 0,
+                rootMargin: "0px", // Kích hoạt chính xác ngay khi đường kẻ đỏ chạm vào mép dưới màn hình
+            }
+        );
+
+        observer.observe(target);
+
+        return () => observer.disconnect();
+    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
     const updateCurrentFeed = (
         updater: (
             current: InfiniteData<PaginatedPosts>
@@ -330,19 +354,17 @@ export default function Feed({
                         onReact={handleReaction}
                         onEditPost={handleEditPost}
                         onDeletePost={handleDeletePost}
+                        sentinelRef={loadMoreRef}
+                        hasNextPage={hasNextPage}
                     />
 
-                    {hasNextPage && (
-                        <button
-                            type="button"
-                            disabled={isFetchingNextPage}
-                            onClick={() => void fetchNextPage()}
-                            className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-indigo-600 shadow-sm transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {isFetchingNextPage
-                                ? "Đang tải thêm..."
-                                : "Xem thêm"}
-                        </button>
+                    {isFetchingNextPage && (
+                        <div className="flex items-center justify-center py-4">
+                            <div className="flex items-center gap-2 rounded-full border border-[#eef0ff] dark:border-[#263147] bg-white dark:bg-[#151c2c] px-4 py-2 text-xs font-semibold text-[#4648d4] dark:text-indigo-400 shadow-sm">
+                                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                <span>Đang tải thêm bài viết...</span>
+                            </div>
+                        </div>
                     )}
                 </>
             )}
