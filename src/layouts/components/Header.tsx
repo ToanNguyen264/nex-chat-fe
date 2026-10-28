@@ -21,6 +21,9 @@ import NotificationPopover from "../../features/notifications/components/Notific
 import { useNotificationStore } from "../../features/notifications/notification.store";
 import { usePresenceStore } from "../../features/presence/presence.store";
 import { disconnectSocket } from "../../socket/socket";
+import { queryClient } from "../../lib/query-client";
+import { useChatStore } from "../../features/chat/chat.store";
+import { useFeedRealtimeStore } from "../../features/feed/feed-realtime.store";
 
 
 const navItems = [
@@ -140,8 +143,12 @@ export default function Header({ currentUser }: HeaderProps) {
             console.error("Không thể thu hồi refresh token:", error);
         } finally {
             localStorage.removeItem("accessToken");
+            queryClient.clear();
             disconnectSocket();
             resetUnread();
+            useChatStore.getState().resetChat();
+            useFeedRealtimeStore.getState().resetFeedRealtime();
+            usePresenceStore.getState().resetPresence();
             setIsNotificationOpen(false);
             setIsAccountMenuOpen(false);
             navigate("/", { replace: true });
