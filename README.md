@@ -1,9 +1,4 @@
 # 🚀 Nex Chat - Frontend (Web Client)
-
-<p align="center">
-  <img src="public/logo.svg" alt="Nex Chat Logo" width="90" height="90" />
-</p>
-
 <p align="center">
   <strong>Nền tảng mạng xã hội và liên lạc thời gian thực thế hệ mới</strong><br>
   Tích hợp Bảng tin thông minh, Nhắn tin Real-time, Cuộc gọi Video/Audio WebRTC chất lượng cao và Đăng nhập Google OAuth 2.0.
