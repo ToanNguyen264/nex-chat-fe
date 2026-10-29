@@ -1,7 +1,7 @@
-# 🚀 Nex Chat - Frontend (Web Client)
+# Nex Chat - Frontend (Web Client)
 <p align="center">
   <strong>Nền tảng mạng xã hội và liên lạc thời gian thực thế hệ mới</strong><br>
-  Tích hợp Bảng tin thông minh, Nhắn tin Real-time, Cuộc gọi Video/Audio WebRTC chất lượng cao và Đăng nhập Google OAuth 2.0.
+  Tích hợp Bảng tin thông minh, Nhắn tin Real-time, Cuộc gọi Video/Audio WebRTC và Đăng nhập Google OAuth 2.0.
 </p>
 
 <p align="center">
@@ -16,69 +16,69 @@
 
 ---
 
-## 📖 Mục lục
+## Mục lục
 
-- [Giới thiệu](#-giới-thiệu)
-- [Tính năng nổi bật](#-tính-năng-nổi-bật)
-- [Công nghệ sử dụng (Tech Stack)](#-công-nghệ-sử-dụng-tech-stack)
-- [Cấu trúc thư mục dự án](#-cấu-trúc-thư-mục-dự-án)
-- [Yêu cầu hệ thống](#-yêu-cầu-hệ-thống)
-- [Cài đặt và Khởi chạy](#-cài-đặt-và-khởi-chạy)
-- [Cấu hình biến môi trường (.env)](#-cấu-hình-biến-môi-trường-env)
-- [Điểm nổi bật về Kiến trúc & Tối ưu hiệu năng](#-điểm-nổi-bật-về-kiến-trúc--tối-ưu-hiệu-năng)
-- [Đóng góp & Giấy phép](#-đóng-góp--giấy-phép)
-
----
-
-## 🌟 Giới thiệu
-
-**Nex Chat Frontend** là ứng dụng web client hiện đại được xây dựng trên nền tảng **React 19**, **TypeScript** và **Vite**. Dự án mang đến trải nghiệm mạng xã hội toàn diện với thiết kế phẳng sang trọng (kết hợp phong cách KeenIcons Metronic 9), hỗ trợ chế độ Dark/Light mode, hiệu năng mượt mà và khả năng đồng bộ dữ liệu thời gian thực.
+- [Giới thiệu](#giới-thiệu)
+- [Tính năng nổi bật](#tính-năng-nổi-bật)
+- [Công nghệ sử dụng](#công-nghệ-sử-dụng)
+- [Cấu trúc thư mục dự án](#cấu-trúc-thư-mục-dự-án)
+- [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
+- [Cài đặt và Khởi chạy](#cài-đặt-và-khởi-chạy)
+- [Cấu hình biến môi trường (.env)](#cấu-hình-biến-môi-trường-env)
+- [Điểm nổi bật về Kiến trúc và Tối ưu hiệu năng](#điểm-nổi-bật-về-kiến-trúc-và-tối-ưu-hiệu-năng)
+- [Đóng góp và Giấy phép](#đóng-góp-và-giấy-phép)
 
 ---
 
-## ✨ Tính năng nổi bật
+## Giới thiệu
 
-### 1. 🔐 Xác thực người dùng (Authentication & Security)
-- **Đăng nhập linh hoạt**: Hỗ trợ đăng nhập truyền thống (Email/Mật khẩu) và **Google OAuth 2.0 Single Sign-On** (`@react-oauth/google`).
+Nex Chat Frontend là ứng dụng web client hiện đại được xây dựng trên nền tảng React 19, TypeScript và Vite. Dự án mang đến trải nghiệm mạng xã hội toàn diện với thiết kế phẳng sang trọng (kết hợp phong cách KeenIcons Metronic 9), hỗ trợ chế độ Dark/Light mode, hiệu năng mượt mà và khả năng đồng bộ dữ liệu thời gian thực.
+
+---
+
+## Tính năng nổi bật
+
+### 1. Xác thực người dùng (Authentication & Security)
+- **Đăng nhập linh hoạt**: Hỗ trợ đăng nhập truyền thống (Email/Mật khẩu) và Google OAuth 2.0 Single Sign-On (`@react-oauth/google`).
 - **Bảo mật phiên đăng nhập**: Kết hợp JWT Access Token lưu trữ bảo mật và HttpOnly Refresh Token.
 - **Dọn dẹp phiên triệt để**: Tự động xóa toàn bộ bộ nhớ đệm (`queryClient.clear()`) và reset các Zustand stores khi đăng xuất hoặc token hết hạn (401), ngăn rò rỉ dữ liệu giữa các tài khoản.
-- **Form Validation**: Kiểm tra tính hợp lệ của dữ liệu đầu vào với **Formik** và **Yup**.
+- **Form Validation**: Kiểm tra tính hợp lệ của dữ liệu đầu vào với Formik và Yup.
 
-### 2. 📰 Bảng tin thông minh (Newsfeed & Posts)
+### 2. Bảng tin thông minh (Newsfeed & Posts)
 - **Cuộn vô tận (Infinite Scrolling)**: Phân trang dựa trên con trỏ (Cursor-based pagination) tối ưu hóa qua TanStack Query v5.
 - **Tải trước mượt mà (Skeleton Waves)**: Hiển thị bộ khung placeholder (`PostSkeleton`) và hình ảnh lazy loading khi đang nạp dữ liệu.
-- **Đa dạng tương tác (Reactions)**: 6 trạng thái cảm xúc (Like, Love, Haha, Wow, Sad, Angry) kèm cơ chế **Optimistic Update** (cập nhật giao diện lập tức trước khi server phản hồi).
-- **Đăng tải bài viết & Media**: Hỗ trợ đính kèm nhiều hình ảnh/video, thiết lập quyền riêng tư bài viết (*Công khai, Bạn bè, Riêng tư*).
+- **Đa dạng tương tác (Reactions)**: 6 trạng thái cảm xúc (Like, Love, Haha, Wow, Sad, Angry) kèm cơ chế Optimistic Update (cập nhật giao diện lập tức trước khi server phản hồi).
+- **Đăng tải bài viết & Media**: Hỗ trợ đính kèm nhiều hình ảnh/video, thiết lập quyền riêng tư bài viết (Công khai, Bạn bè, Riêng tư).
 - **Đồng bộ thời gian thực**: Cập nhật bài viết mới và reaction qua kết nối Socket.IO.
 
-### 3. ⏱️ Khoảnh khắc 24h (Stories)
-- **Tạo & Xem Story**: Trải nghiệm xem tin theo từng slide với thanh tiến trình tự động, hỗ trợ hình ảnh và video tồn tại trong 24 giờ.
+### 3. Khoảnh khắc 24h (Stories)
+- **Tạo và Xem Story**: Trải nghiệm xem tin theo từng slide với thanh tiến trình tự động, hỗ trợ hình ảnh và video tồn tại trong 24 giờ.
 
-### 4. 💬 Tin nhắn thời gian thực (Real-time Messaging)
+### 4. Tin nhắn thời gian thực (Real-time Messaging)
 - **Khung chat nổi (Chat Popup)**: Hộp thoại trò chuyện đa nhiệm có thể kéo thả, thu nhỏ hoặc mở rộng linh hoạt.
 - **Trò chuyện trực tiếp**: Gửi nhận tin nhắn tức thì qua Socket.IO, thông báo đã xem/chưa xem, tích hợp bộ chọn biểu tượng cảm xúc (`emoji-picker-react`).
 - **Thả cảm xúc tin nhắn**: Tương tác reaction trực tiếp trên từng tin nhắn.
 
-### 5. 📹 Gọi Video & Âm thanh WebRTC (Voice/Video Call)
+### 5. Gọi Video & Âm thanh WebRTC (Voice/Video Call)
 - **Công nghệ LiveKit**: Truyền tải âm thanh/hình ảnh chất lượng cao với độ trễ cực thấp (< 200ms).
 - **Trình điều khiển cuộc gọi**: Bật/tắt camera, tắt tiếng micro, chuyển đổi chế độ xem toàn màn hình hoặc Overlay cửa sổ nổi kéo thả (`react-draggable`).
 
-### 6. 👥 Mạng lưới Bạn bè & Gợi ý (Social Graph)
+### 6. Mạng lưới Bạn bè & Gợi ý (Social Graph)
 - **Gợi ý kết bạn thông minh (Friends-of-Friends)**: Thuật toán tính toán số lượng bạn chung trực tiếp từ hệ thống.
 - **Quản lý quan hệ**: Gửi lời mời, chấp nhận, từ chối, hủy kết bạn.
 - **Trạng thái trực tuyến (Real-time Presence)**: Hiển thị trạng thái đang hoạt động (Online/Offline) và thời gian hoạt động gần nhất của bạn bè.
 
-### 7. 🔔 Thông báo tức thời (Live Notifications)
+### 7. Thông báo tức thời (Live Notifications)
 - **Notification Popover**: Xem danh sách thông báo tương tác (like, comment, kết bạn) ngay trên thanh điều hướng.
 - **Badge đếm số lượng**: Tự động tăng/giảm số lượng thông báo chưa đọc theo thời gian thực.
 
-### 8. 👤 Trang cá nhân & Tùy biến (Profile & Theming)
+### 8. Trang cá nhân & Tùy biến (Profile & Theming)
 - **Quản lý trang cá nhân**: Thay đổi ảnh đại diện, cập nhật tiểu sử, duyệt danh sách bài viết cá nhân và số lượng bạn bè.
 - **Chế độ Sáng/Tối (Dark/Light Mode)**: Chuyển đổi giao diện tức thì với `next-themes` và hệ màu tối ưu cho mắt.
 
 ---
 
-## 🛠 Công nghệ sử dụng (Tech Stack)
+## Công nghệ sử dụng
 
 | Hạng mục | Công nghệ | Phiên bản | Mục đích |
 | :--- | :--- | :--- | :--- |
@@ -98,7 +98,7 @@
 
 ---
 
-## 📁 Cấu trúc thư mục dự án
+## Cấu trúc thư mục dự án
 
 ```text
 nex-chat-fe/
@@ -132,6 +132,7 @@ nex-chat-fe/
 │   ├── main.tsx            # Điểm khởi chạy React DOM, Provider bọc ngoài
 │   └── index.css           # Cấu hình Tailwind CSS v4 toàn cục
 ├── .env                    # Biến môi trường cục bộ
+├── .env.example            # Mẫu cấu hình môi trường
 ├── package.json            # Khai báo phụ thuộc và kịch bản npm
 ├── tsconfig.json           # Cấu hình TypeScript compiler
 └── vite.config.ts          # Cấu hình máy chủ Vite và Proxy
@@ -139,16 +140,16 @@ nex-chat-fe/
 
 ---
 
-## ⚙️ Yêu cầu hệ thống
+## Yêu cầu hệ thống
 
-- **Node.js**: Phiên bản `>= 18.x` (khuyến nghị `20.x` LTS hoặc mới hơn)
-- **Trình quản lý gói**: `npm` (hoặc `yarn`, `pnpm`)
-- **Backend API**: Máy chủ `nex-chat-be` đang chạy (mặc định cổng 8080)
-- **LiveKit Server**: Máy chủ LiveKit phục vụ tính năng cuộc gọi (tùy chọn)
+- Node.js: Phiên bản `>= 18.x` (khuyến nghị `20.x` LTS hoặc mới hơn)
+- Trình quản lý gói: `npm` (hoặc `yarn`, `pnpm`)
+- Backend API: Máy chủ `nex-chat-be` đang chạy (mặc định cổng 8080)
+- LiveKit Server: Máy chủ LiveKit phục vụ tính năng cuộc gọi (tùy chọn)
 
 ---
 
-## 🚀 Cài đặt và Khởi chạy
+## Cài đặt và Khởi chạy
 
 ### 1. Tải mã nguồn về máy
 ```bash
@@ -166,7 +167,6 @@ Tạo tệp `.env` tại thư mục gốc của frontend:
 ```bash
 cp .env.example .env
 ```
-*(Nếu chưa có `.env.example`, bạn có thể tạo tệp `.env` với nội dung ở mục bên dưới).*
 
 ### 4. Khởi chạy môi trường phát triển (Development)
 ```bash
@@ -185,7 +185,7 @@ npm run preview
 
 ---
 
-## 🔧 Cấu hình biến môi trường (.env)
+## Cấu hình biến môi trường (.env)
 
 | Tên biến | Giá trị mẫu | Giải thích |
 | :--- | :--- | :--- |
@@ -210,18 +210,18 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 
 ---
 
-## 💡 Điểm nổi bật về Kiến trúc & Tối ưu hiệu năng
+## Điểm nổi bật về Kiến trúc và Tối ưu hiệu năng
 
 1. **Quản lý Cache thông minh (TanStack Query v5)**:
-   - Sử dụng `cursor-based pagination` kết hợp `useInfiniteQuery` giúp tải bảng tin mượt mà, không xảy ra hiện tượng trùng lặp dữ liệu khi bài viết mới liên tục xuất hiện.
-   - Cơ chế `Optimistic Updates` cho lượt thả cảm xúc (Love, Haha...) cập nhật ngay lập tức trên UI với độ trễ 0ms.
+   - Sử dụng cursor-based pagination kết hợp `useInfiniteQuery` giúp tải bảng tin mượt mà, không xảy ra hiện tượng trùng lặp dữ liệu khi bài viết mới liên tục xuất hiện.
+   - Cơ chế Optimistic Updates cho lượt thả cảm xúc (Love, Haha...) cập nhật ngay lập tức trên UI với độ trễ 0ms.
    - Tự động gọi `queryClient.clear()` khi đăng xuất để dọn sạch hoàn toàn bộ nhớ cache, ngăn chặn rò rỉ dữ liệu giữa các phiên tài khoản.
 
 2. **Kiến trúc State phân tầng rõ ràng**:
-   - **Server State**: Giao hoàn toàn cho `TanStack Query` (tự động deduping, refetch, stale-while-revalidate).
-   - **Client/UI State**: Giao cho `Zustand` (bộ nhớ nhẹ, tốc độ cao, không gây re-render diện rộng như React Context) cho Chat, Audio/Video Call, Realtime Feed và Presence.
+   - Server State: Giao hoàn toàn cho TanStack Query (tự động deduping, refetch, stale-while-revalidate).
+   - Client/UI State: Giao cho Zustand (bộ nhớ nhẹ, tốc độ cao, không gây re-render diện rộng như React Context) cho Chat, Audio/Video Call, Realtime Feed và Presence.
 
-3. **Tối ưu hiển thị hình ảnh & Media**:
+3. **Tối ưu hiển thị hình ảnh và Media**:
    - Sử dụng thuộc tính `loading="lazy"` và `decoding="async"` trên tất cả các thẻ hình ảnh đa phương tiện của bài viết.
    - Tích hợp hiệu ứng sóng skeleton placeholder giữ nguyên tỷ lệ khung hình (`aspect-ratio`), ngăn chặn hiện tượng vỡ bố cục (CLS - Cumulative Layout Shift).
 
