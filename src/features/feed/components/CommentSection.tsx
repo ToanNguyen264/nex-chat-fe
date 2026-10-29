@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import { Link } from "react-router";
 import { LoaderCircle, Send } from "lucide-react";
 
 import {
@@ -170,20 +171,28 @@ export default function CommentSection({
                                 key={comment.id}
                                 className="flex items-start gap-2.5"
                             >
-                                <img
-                                    src={comment.users.avatar || defaultAvatar}
-                                    alt={authorName}
-                                    className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-white bg-slate-100"
-                                    onError={(e) => {
-                                        (e.currentTarget as HTMLImageElement).src = defaultAvatar;
-                                    }}
-                                />
+                                <Link
+                                    to={`/profile/${comment.user_id}`}
+                                    className="shrink-0 transition hover:opacity-90"
+                                >
+                                    <img
+                                        src={comment.users.avatar || defaultAvatar}
+                                        alt={authorName}
+                                        className="h-9 w-9 rounded-full object-cover ring-2 ring-white bg-slate-100"
+                                        onError={(e) => {
+                                            (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                                        }}
+                                    />
+                                </Link>
 
                                 <div className="min-w-0 max-w-[85%]">
                                     <div className="rounded-2xl rounded-tl-md bg-[#f2f3ff] px-3.5 py-2.5">
-                                        <p className="text-xs font-semibold text-[#131b2e]">
+                                        <Link
+                                            to={`/profile/${comment.user_id}`}
+                                            className="text-xs font-semibold text-[#131b2e] transition hover:text-[#4648d4] hover:underline"
+                                        >
                                             {authorName}
-                                        </p>
+                                        </Link>
                                         <p className="emoji-text mt-1 whitespace-pre-wrap break-words text-sm leading-5 text-[#464554]">
                                             {comment.content}
                                         </p>

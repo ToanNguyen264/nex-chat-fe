@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { Users } from "lucide-react";
 
@@ -27,11 +27,15 @@ const getFriendName = (
     return (
         fullName ||
         friend.user_name ||
-        "Người dùng"
+        "NgÆ°á»i dÃ¹ng"
     );
 };
 
-export default function FriendsTab() {
+type FriendsTabProps = {
+    userId?: string;
+};
+
+export default function FriendsTab({ userId }: FriendsTabProps = {}) {
     const onlineUserIds = usePresenceStore(
         (state) => state.onlineUserIds
     );
@@ -62,7 +66,7 @@ export default function FriendsTab() {
             setError("");
 
             try {
-                const result = await getFriends();
+                const result = await getFriends(userId);
 
                 if (!cancelled) {
                     setFriends(result);
@@ -70,7 +74,7 @@ export default function FriendsTab() {
             } catch {
                 if (!cancelled) {
                     setError(
-                        "Không thể tải danh sách bạn bè"
+                        "KhÃ´ng thá»ƒ táº£i danh sÃ¡ch báº¡n bÃ¨"
                     );
                 }
             } finally {
@@ -85,7 +89,7 @@ export default function FriendsTab() {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [userId]);
 
     return (
         <section
@@ -95,12 +99,12 @@ export default function FriendsTab() {
             <div className="mb-6 flex items-center justify-between">
                 <div>
                     <h2 className="text-xl font-bold text-[#131b2e]">
-                        Bạn bè
+                        Báº¡n bÃ¨
                     </h2>
                     <p className="mt-1 text-sm text-[#767586]">
                         {isLoading
-                            ? "Đang tải..."
-                            : `${friends.length} người bạn`}
+                            ? "Äang táº£i..."
+                            : `${friends.length} ngÆ°á»i báº¡n`}
                     </p>
                 </div>
 
@@ -128,7 +132,7 @@ export default function FriendsTab() {
                 <div className="py-12 text-center">
                     <Users className="mx-auto h-10 w-10 text-[#c7c4d7]" />
                     <p className="mt-3 text-sm text-[#767586]">
-                        Bạn chưa có người bạn nào.
+                        Báº¡n chÆ°a cÃ³ ngÆ°á»i báº¡n nÃ o.
                     </p>
                 </div>
             ) : (
