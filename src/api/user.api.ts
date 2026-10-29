@@ -124,3 +124,30 @@ export const updateMyCoverImage = async (file: File): Promise<string> => {
 
     return response.data.data.imageUrl;
 };
+
+export type UserMediaItem = {
+    id: string;
+    post_id: string;
+    file_url: string;
+    file_type: string | null;
+    file_name: string | null;
+    created_at: string;
+};
+
+export const getUserMedia = async (
+    userId: string,
+    type?: "image" | "video",
+    limit = 20
+): Promise<UserMediaItem[]> => {
+    const response = await api.get<{
+        success: boolean;
+        data: UserMediaItem[];
+    }>(`/users/${userId}/media`, {
+        params: {
+            ...(type ? { type } : {}),
+            limit,
+        },
+    });
+
+    return response.data.data;
+};

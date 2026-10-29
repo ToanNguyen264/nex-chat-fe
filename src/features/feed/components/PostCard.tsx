@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router";
 import {
     BadgeCheck,
     ChevronLeft,
@@ -250,13 +251,16 @@ export default function PostCard({
         <article className="rounded-2xl bg-white p-5 shadow-[0_1px_1px_rgba(0,0,0,0.05)]">
             <header className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                    <span className="relative shrink-0">
+                    <Link
+                        to={`/profile/${post.userId}`}
+                        className="group relative shrink-0 focus:outline-none"
+                    >
                         <img
                             src={post.avatar || defaultAvatar}
                             alt={post.author}
                             loading="lazy"
                             decoding="async"
-                            className="h-11 w-11 rounded-full object-cover bg-slate-100"
+                            className="h-11 w-11 rounded-full object-cover bg-slate-100 transition group-hover:opacity-90 ring-2 ring-transparent group-hover:ring-[#4648d4]/30"
                             onError={(e) => {
                                 (e.currentTarget as HTMLImageElement).src = defaultAvatar;
                             }}
@@ -264,12 +268,17 @@ export default function PostCard({
                         <span
                             className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${isAuthorOnline ? "bg-[#57dffe]" : "bg-[#c7c4d7]"}`}
                         />
-                    </span>
+                    </Link>
 
                     <div>
-                        <h2 className="flex items-center gap-1 text-lg font-bold tracking-[-0.18px] text-[#131b2e]">
-                            {post.author}
-                            {post.isVerified && <BadgeCheck className="h-4 w-4 fill-[#4648d4] text-white" />}
+                        <h2>
+                            <Link
+                                to={`/profile/${post.userId}`}
+                                className="flex items-center gap-1 text-lg font-bold tracking-[-0.18px] text-[#131b2e] transition hover:text-[#4648d4]"
+                            >
+                                {post.author}
+                                {post.isVerified && <BadgeCheck className="h-4 w-4 fill-[#4648d4] text-white" />}
+                            </Link>
                         </h2>
 
                         <p className="flex items-center gap-1.5 text-[11px] text-[#767586]">

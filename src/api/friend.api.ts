@@ -1,4 +1,4 @@
-import api from "./axios";
+﻿import api from "./axios";
 
 export type FriendshipStatus =
     | "pending"
@@ -150,22 +150,26 @@ export const removeFriend = async (
     );
 };
 
-export const getFriends = async (): Promise<
-    FriendListItem[]
-> => {
-    const response =
-        await api.get<FriendListResponse>(
-            "/friends"
-        );
+export const getFriends = async (
+    userId?: string
+): Promise<FriendListItem[]> => {
+    const response = await api.get<FriendListResponse>(
+        "/friends",
+        {
+            params: userId ? { userId } : undefined,
+        }
+    );
 
     return response.data.data;
 };
 
-export const getFriendCount = async (): Promise<number> => {
+export const getFriendCount = async (userId?: string): Promise<number> => {
     const response = await api.get<{
         success: boolean;
         data: { count: number };
-    }>("/friends/count");
+    }>("/friends/count", {
+        params: userId ? { userId } : undefined,
+    });
 
     return response.data.data.count;
 };

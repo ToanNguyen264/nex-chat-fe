@@ -33,6 +33,7 @@ import { showError, showSuccess } from "../utils/swal";
 import { socket } from "../socket/socket";
 import type { FriendshipChangedPayload } from "../features/friends/types";
 import FriendsTab from "../features/friends/components/FriendsTab";
+import ProfileMediaTab from "../features/profile/components/ProfileMediaTab";
 
 export default function ProfilePage() {
     const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
@@ -522,6 +523,7 @@ export default function ProfilePage() {
                                 profile={profile}
                                 isOwnProfile={isOwnProfile}
                                 onEditProfile={() => setIsEditModalOpen(true)}
+                                onTabChange={setActiveTab}
                             />
                         </div>
                         <div className="flex min-w-0 flex-col gap-4 lg:col-span-7">
@@ -546,37 +548,28 @@ export default function ProfilePage() {
                             profile={profile}
                             isOwnProfile={isOwnProfile}
                             onEditProfile={() => setIsEditModalOpen(true)}
+                            onTabChange={setActiveTab}
                         />
                     </div>
                 )}
 
-                {activeTab === "friends" && isOwnProfile && (
-                    <FriendsTab />
+                {activeTab === "friends" && (
+                    <FriendsTab userId={profile?.id} />
                 )}
 
-                {activeTab === "friends" && !isOwnProfile && (
-                    <section
-                        role="tabpanel"
-                        className="rounded-2xl bg-white px-6 py-14 text-center shadow-sm"
-                    >
-                        <h2 className="text-lg font-bold text-[#131b2e]">
-                            Bạn bè
-                        </h2>
-                        <p className="mt-2 text-sm text-[#767586]">
-                            Danh sách bạn bè của người dùng này chưa được hỗ trợ.
-                        </p>
-                    </section>
+                {activeTab === "media" && (
+                    <ProfileMediaTab userId={profile?.id || ""} />
                 )}
 
                 {activeTab !== "posts" &&
                     activeTab !== "about" &&
-                    activeTab !== "friends" && (
+                    activeTab !== "friends" &&
+                    activeTab !== "media" && (
                     <section
                         role="tabpanel"
                         className="rounded-2xl bg-white px-6 py-14 text-center shadow-sm"
                     >
                         <h2 className="text-lg font-bold text-[#131b2e]">
-                            {activeTab === "media" && "Ảnh & Video"}
                             {activeTab === "saved" && "Bài viết đã lưu"}
                             {activeTab === "community" && "Cộng đồng"}
                         </h2>
