@@ -231,9 +231,3 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
    - Tích hợp hiệu ứng sóng skeleton placeholder giữ nguyên tỷ lệ khung hình (`aspect-ratio`), ngăn chặn hiện tượng vỡ bố cục (CLS - Cumulative Layout Shift).
 
 ---
-
-## 👥 Đóng góp & Giấy phép
-
-Dự án được xây dựng phục vụ mục đích nghiên cứu, học tập và phát triển sản phẩm mạng xã hội mã nguồn mở. Mọi đóng góp (Pull Request, Báo cáo lỗi Issue) đều được hoan nghênh!
-
-*Phát triển bởi đội ngũ Nex Chat Team.*
