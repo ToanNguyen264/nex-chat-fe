@@ -6,6 +6,7 @@ import {
     LoaderCircle,
     MessageCircle,
     UserRoundPlus,
+    UserPlus,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 
@@ -17,6 +18,7 @@ import {
 import { socket } from "../../../socket/socket";
 import { useNotificationStore } from "../notification.store";
 import type { AppNotification, NotificationType } from "../types";
+import defaultAvatar from "../../../assets/default-avatar.png";
 
 type NotificationPopoverProps = {
     onClose: () => void;
@@ -29,6 +31,7 @@ const notificationMessages: Record<NotificationType, string> = {
     post_reaction: "đã bày tỏ cảm xúc về bài viết của bạn",
     comment: "đã bình luận về bài viết của bạn",
     comment_reaction: "đã bày tỏ cảm xúc về bình luận của bạn",
+    follow: "đã bắt đầu theo dõi bạn",
 };
 
 const getActorName = (notification: AppNotification) => {
@@ -43,14 +46,6 @@ const getActorName = (notification: AppNotification) => {
     );
 };
 
-const getInitials = (name: string) =>
-    name
-        .split(" ")
-        .filter(Boolean)
-        .slice(-2)
-        .map((part) => part[0])
-        .join("")
-        .toUpperCase();
 
 const formatRelativeTime = (createdAt: string) => {
     const elapsedMinutes = Math.max(
@@ -75,6 +70,10 @@ const formatRelativeTime = (createdAt: string) => {
 };
 
 const getNotificationIcon = (type: NotificationType) => {
+    if (type === "follow") {
+        return <UserPlus className="h-4 w-4" />;
+    }
+
     if (type === "friend_request" || type === "friend_accept") {
         return <UserRoundPlus className="h-4 w-4" />;
     }
@@ -167,6 +166,13 @@ export default function NotificationPopover({
         }
 
         onClose();
+
+        if (notification.type === "follow") {
+            if (notification.actor?.id) {
+                navigate(`/profile/${notification.actor.id}`);
+            }
+            return;
+        }
 
         if (
             notification.type === "friend_request" ||
@@ -282,17 +288,14 @@ export default function NotificationPopover({
                                     className={`flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-[#f2f3ff] ${notification.is_read ? "bg-white" : "bg-[#f5f4ff]"}`}
                                 >
                                     <span className="relative shrink-0">
-                                        {actorAvatar ? (
-                                            <img
-                                                src={actorAvatar}
-                                                alt={actorName}
-                                                className="h-10 w-10 rounded-full object-cover"
-                                            />
-                                        ) : (
-                                            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#e1e0ff] text-xs font-bold text-[#4648d4]">
-                                                {getInitials(actorName)}
-                                            </span>
-                                        )}
+                                        <img
+                                            src={actorAvatar || defaultAvatar}
+                                            alt={actorName}
+                                            className="h-10 w-10 rounded-full object-cover bg-slate-100"
+                                            onError={(e) => {
+                                                (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                                            }}
+                                        />
                                         <span className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full bg-white text-[#4648d4] shadow-sm">
                                             {getNotificationIcon(notification.type)}
                                         </span>
