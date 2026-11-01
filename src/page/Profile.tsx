@@ -18,6 +18,9 @@ import ProfileDetails from "../features/profile/components/ProfileDetails";
 import ProfileHeader from "../features/profile/components/ProfileHeader";
 import type { ProfileTab } from "../features/profile/components/ProfileHeader";
 import EditProfileModal from "../features/profile/components/EditProfileModal";
+import FollowListModal, {
+    type FollowModalTab,
+} from "../features/profile/components/FollowListModal";
 import MainLayout from "../layouts/MainLayout";
 import { useParams } from "react-router";
 import {
@@ -29,6 +32,7 @@ import {
     sendFriendRequest,
 } from "../api/friend.api";
 import type { Friendship } from "../api/friend.api";
+import { followUser, unfollowUser } from "../api/follow.api";
 import { showError, showSuccess } from "../utils/swal";
 import { socket } from "../socket/socket";
 import type { FriendshipChangedPayload } from "../features/friends/types";
@@ -50,6 +54,8 @@ export default function ProfilePage() {
         isRelationshipLoading,
         setIsRelationshipLoading,
     ] = useState(false);
+    const [isFollowLoading, setIsFollowLoading] = useState(false);
+    const [followModalTab, setFollowModalTab] = useState<FollowModalTab | null>(null);
 
     const { userId: routeUserId } = useParams<{ userId: string }>();
 
@@ -492,6 +498,45 @@ export default function ProfilePage() {
         }
     }
 
+    async function handleToggleFollow() {
+        if (!profile || isOwnProfile || isFollowLoading) {
+            return;
+        }
+
+        setIsFollowLoading(true);
+        try {
+            if (profile.is_following) {
+                const res = await unfollowUser(profile.id);
+                setProfile((prev) =>
+                    prev
+                        ? {
+                              ...prev,
+                              is_following: false,
+                              follower_count: res.followerCount,
+                          }
+                        : null
+                );
+                void showSuccess("Đã bỏ theo dõi");
+            } else {
+                const res = await followUser(profile.id);
+                setProfile((prev) =>
+                    prev
+                        ? {
+                              ...prev,
+                              is_following: true,
+                              follower_count: res.followerCount,
+                          }
+                        : null
+                );
+                void showSuccess("Đã theo dõi");
+            }
+        } catch (error) {
+            void showError("Không thể cập nhật trạng thái theo dõi");
+        } finally {
+            setIsFollowLoading(false);
+        }
+    }
+
     return (
         <MainLayout currentUser={currentUser}>
             <div className="flex flex-col gap-6">
@@ -506,6 +551,10 @@ export default function ProfilePage() {
                     onRejectFriendRequest={handleRejectFriendRequest}
                     onCancelFriendRequest={handleCancelFriendRequest}
                     onRemoveFriend={handleRemoveFriend}
+                    isFollowLoading={isFollowLoading}
+                    onToggleFollow={handleToggleFollow}
+                    onOpenFollowers={() => setFollowModalTab("followers")}
+                    onOpenFollowing={() => setFollowModalTab("following")}
                     onEditProfile={() => setIsEditModalOpen(true)}
                     onUploadAvatar={handleAvatarUpload}
                     onUploadCover={handleCoverUpload}
@@ -585,6 +634,15 @@ export default function ProfilePage() {
                     profile={profile}
                     onClose={() => setIsEditModalOpen(false)}
                     onSave={handleUpdateProfile}
+                />
+            )}
+
+            {followModalTab && profile && (
+                <FollowListModal
+                    isOpen={Boolean(followModalTab)}
+                    onClose={() => setFollowModalTab(null)}
+                    userId={profile.id}
+                    initialTab={followModalTab}
                 />
             )}
         </MainLayout>

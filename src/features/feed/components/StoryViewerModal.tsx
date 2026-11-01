@@ -44,7 +44,7 @@ export default function StoryViewerModal({
     const currentStory = currentGroup?.stories[storyIndex];
 
     // Chuyển sang story tiếp theo
-    const handleNext = useCallback(() => {
+    const handleNext = useCallback(() => { /* nó giữ lại chính Function handleNext để các nơi khác có thể sử dụng cùng một tham chiếu qua nhiều lần render */
         if (!currentGroup) return;
 
         // Nếu còn story của cùng người dùng
@@ -62,7 +62,7 @@ export default function StoryViewerModal({
         else {
             onClose();
         }
-    }, [currentGroup, storyIndex, groupIndex, groups.length, onClose]);
+    }, [currentGroup, storyIndex, groupIndex, groups.length, onClose]); /* điều kiện khiến  useCallback thay đổi*/
 
     // Quay lại story trước
     const handlePrev = useCallback(() => {
