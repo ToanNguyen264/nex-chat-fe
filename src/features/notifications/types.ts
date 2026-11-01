@@ -4,7 +4,8 @@ export type NotificationType =
     | "message"
     | "post_reaction"
     | "comment"
-    | "comment_reaction";
+    | "comment_reaction"
+    | "follow";
 
 export type NotificationActor = {
     id: string;
