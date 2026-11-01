@@ -9,6 +9,7 @@ import {
 
 import type { FriendSuggestion } from "../../../api/friend.api";
 import { usePresenceStore } from "../../presence/presence.store";
+import defaultAvatar from "../../../assets/default-avatar.png";
 
 type FriendSuggestionCardProps = {
     suggestion: FriendSuggestion;
@@ -37,14 +38,6 @@ const getDisplayName = (suggestion: FriendSuggestion) => {
     );
 };
 
-const getInitials = (name: string) =>
-    name
-        .split(" ")
-        .filter(Boolean)
-        .slice(-2)
-        .map((part) => part[0])
-        .join("")
-        .toUpperCase();
 
 export default function FriendSuggestionCard({
     suggestion,
@@ -92,17 +85,14 @@ export default function FriendSuggestionCard({
             <div className="relative px-4 pb-4 pt-8">
                 <div className="absolute -top-10 left-4 right-4 flex items-end justify-between">
                     <span className="relative block">
-                        {avatar ? (
-                            <img
-                                src={avatar}
-                                alt={displayName}
-                                className="h-16 w-16 rounded-2xl border-4 border-white object-cover shadow-sm"
-                            />
-                        ) : (
-                            <span className="grid h-16 w-16 place-items-center rounded-2xl border-4 border-white bg-[#e1e0ff] text-sm font-bold text-[#07006c] shadow-sm">
-                                {getInitials(displayName)}
-                            </span>
-                        )}
+                        <img
+                            src={avatar || defaultAvatar}
+                            alt={displayName}
+                            className="h-16 w-16 rounded-2xl border-4 border-white object-cover shadow-sm bg-slate-100"
+                            onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                            }}
+                        />
                         <span
                             className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white ${isOnline ? "bg-[#57dffe]" : "bg-[#c7c4d7]"}`}
                         />

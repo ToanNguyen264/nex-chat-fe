@@ -1,4 +1,4 @@
-import { ArrowRight, Camera, MessageCircleMore, Moon, ShieldCheck, Sparkles, Sun, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Camera, MessageCircleMore, Moon, ShieldCheck, Sparkles, Sun, Users } from "lucide-react";
 import { useState } from "react";
 import { useFormik } from "formik";
 import { Link, useNavigate } from "react-router";
@@ -104,15 +104,27 @@ export default function RegisterPage() {
 
     return (
         <main className="relative flex min-h-screen flex-col justify-between bg-[radial-gradient(circle_at_top_left,_#e0e7ff,_#f8fafc_45%,_#ecfeff)] dark:bg-[radial-gradient(circle_at_top_left,_#1e1b4b,_#0b0f19_50%,_#091526)] transition-colors duration-200">
-            <button
-                type="button"
-                onClick={() => setTheme(isDark ? "light" : "dark")}
-                aria-label={isDark ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
-                title={isDark ? "Chế độ sáng" : "Chế độ tối"}
-                className="fixed right-5 top-5 z-50 grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-slate-200 dark:border-[#263147] bg-white/90 dark:bg-[#151c2c]/90 text-slate-700 dark:text-amber-400 shadow-md backdrop-blur transition hover:scale-105"
-            >
-                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button>
+            <header className="relative z-20 w-full px-4 pt-5 sm:px-6 lg:px-8">
+                <div className="mx-auto flex max-w-6xl items-center justify-between">
+                    <Link
+                        to="/"
+                        className="group inline-flex items-center gap-2 rounded-xl border border-slate-200/80 dark:border-[#263147] bg-white/80 dark:bg-[#151c2c]/80 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm backdrop-blur transition hover:bg-white dark:hover:bg-[#1e293b] hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-105"
+                    >
+                        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+                        <span>Quay lại đăng nhập</span>
+                    </Link>
+
+                    <button
+                        type="button"
+                        onClick={() => setTheme(isDark ? "light" : "dark")}
+                        aria-label={isDark ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+                        title={isDark ? "Chế độ sáng" : "Chế độ tối"}
+                        className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-slate-200 dark:border-[#263147] bg-white/90 dark:bg-[#151c2c]/90 text-slate-700 dark:text-amber-400 shadow-md backdrop-blur transition hover:scale-105"
+                    >
+                        {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                    </button>
+                </div>
+            </header>
 
             <div className="flex flex-1 items-center justify-center p-4 sm:p-6 lg:p-8">
             <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-[28px] border border-white/70 dark:border-[#263147] bg-white dark:bg-[#151c2c] shadow-[0_32px_90px_rgba(30,41,59,0.18)] md:grid-cols-[0.82fr_1.18fr]">
@@ -172,24 +184,6 @@ export default function RegisterPage() {
                             </div>
                         </div>
                     </div>
-
-                    <div className="relative z-10 mt-auto flex items-center gap-3 pt-8">
-                        <div className="flex -space-x-2">
-                            {["A", "M", "T"].map((letter, index) => (
-                                <div
-                                    key={letter}
-                                    className="grid h-9 w-9 place-items-center rounded-full border-2 border-indigo-500 bg-white text-xs font-bold text-indigo-600"
-                                    style={{ zIndex: 3 - index }}
-                                >
-                                    {letter}
-                                </div>
-                            ))}
-                        </div>
-                        <div>
-                            <p className="text-sm font-semibold">18.5K+ thành viên mới</p>
-                            <p className="text-xs text-white/60">vừa đăng ký trong tuần này</p>
-                        </div>
-                    </div>
                 </section>
 
                 <section className="flex items-center px-6 py-10 sm:px-8 lg:px-12">
@@ -211,24 +205,7 @@ export default function RegisterPage() {
                             </p>
                         </div>
 
-                        <div className="mt-6 grid grid-cols-2 gap-3">
-                            <Button className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
-                                <img src="/google_logo.svg" alt="" className="h-5 w-5 object-contain" />
-                                Google
-                            </Button>
-                            <Button className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
-                                <img src="/apple_logo.svg" alt="" className="h-5 w-5 object-contain dark:invert" />
-                                Apple ID
-                            </Button>
-                        </div>
-
-                        <div className="my-6 flex items-center gap-3 text-[11px] font-medium uppercase tracking-wider text-slate-400">
-                            <div className="h-px flex-1 bg-slate-200 dark:bg-[#263147]" />
-                            hoặc điền thông tin cá nhân
-                            <div className="h-px flex-1 bg-slate-200 dark:bg-[#263147]" />
-                        </div>
-
-                        <form onSubmit={formik.handleSubmit} noValidate>
+                        <form onSubmit={formik.handleSubmit} noValidate className="mt-8">
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div>
                                     <Input

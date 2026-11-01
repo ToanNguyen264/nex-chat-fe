@@ -1,3 +1,4 @@
+import defaultAvatar from "../../../assets/default-avatar.png";
 import { UserRoundCheck } from "lucide-react";
 
 import type { IncomingFriendRequest } from "../../../api/friend.api";
@@ -21,14 +22,6 @@ const getDisplayName = (request: IncomingFriendRequest) => {
     return fullName || request.requester.user_name || "Người dùng";
 };
 
-const getInitials = (name: string) =>
-    name
-        .split(" ")
-        .filter(Boolean)
-        .slice(-2)
-        .map((part) => part[0])
-        .join("")
-        .toUpperCase();
 
 const formatRequestTime = (createdAt: string) => {
     const elapsedMilliseconds =
@@ -63,17 +56,14 @@ export default function FriendRequestCard({
         <article className="flex min-w-0 flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm">
             <div className="flex min-w-0 items-start gap-2">
                 <div className="relative shrink-0">
-                    {avatar ? (
-                        <img
-                            src={avatar}
+                    <img
+                            src={avatar || defaultAvatar}
                             alt={displayName}
-                            className="h-14 w-14 rounded-full object-cover shadow-[0_0_0_2px_rgba(70,72,212,0.2)]"
+                            className="h-14 w-14 rounded-full object-cover shadow-[0_0_0_2px_rgba(70,72,212,0.2)] bg-slate-100"
+                            onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                            }}
                         />
-                    ) : (
-                        <span className="grid h-14 w-14 place-items-center rounded-full bg-[#e1e0ff] text-sm font-bold text-[#07006c] shadow-[0_0_0_2px_rgba(70,72,212,0.2)]">
-                            {getInitials(displayName)}
-                        </span>
-                    )}
                     <span
                         className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white ${isOnline ? "bg-[#57dffe]" : "bg-[#c7c4d7]"}`}
                     />

@@ -27,7 +27,7 @@ const getFriendName = (
     return (
         fullName ||
         friend.user_name ||
-        "NgÆ°á»i dÃ¹ng"
+        "Người dùng"
     );
 };
 
@@ -74,7 +74,7 @@ export default function FriendsTab({ userId }: FriendsTabProps = {}) {
             } catch {
                 if (!cancelled) {
                     setError(
-                        "KhÃ´ng thá»ƒ táº£i danh sÃ¡ch báº¡n bÃ¨"
+                        "Không thể tải danh sách bạn bè"
                     );
                 }
             } finally {
@@ -99,12 +99,12 @@ export default function FriendsTab({ userId }: FriendsTabProps = {}) {
             <div className="mb-6 flex items-center justify-between">
                 <div>
                     <h2 className="text-xl font-bold text-[#131b2e]">
-                        Báº¡n bÃ¨
+                        Bạn bè
                     </h2>
                     <p className="mt-1 text-sm text-[#767586]">
                         {isLoading
-                            ? "Äang táº£i..."
-                            : `${friends.length} ngÆ°á»i báº¡n`}
+                            ? "Đang tải..."
+                            : `${friends.length} người bạn`}
                     </p>
                 </div>
 
@@ -132,7 +132,7 @@ export default function FriendsTab({ userId }: FriendsTabProps = {}) {
                 <div className="py-12 text-center">
                     <Users className="mx-auto h-10 w-10 text-[#c7c4d7]" />
                     <p className="mt-3 text-sm text-[#767586]">
-                        Báº¡n chÆ°a cÃ³ ngÆ°á»i báº¡n nÃ o.
+                        Bạn chưa có người bạn nào.
                     </p>
                 </div>
             ) : (

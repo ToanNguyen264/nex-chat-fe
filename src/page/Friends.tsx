@@ -265,9 +265,6 @@ export default function FriendsPage() {
             <div className="flex flex-col gap-9">
                 <section className="flex flex-col gap-6 rounded-2xl bg-white p-6 shadow-sm md:p-9 lg:flex-row lg:items-end lg:justify-between">
                     <div className="max-w-2xl">
-                        <span className="inline-flex rounded-full bg-[#e1e0ff] px-2 py-1 text-[11px] font-medium uppercase tracking-[0.05em] text-[#07006c]">
-                            Mạng lưới Pulse
-                        </span>
                         <h1 className="mt-2 text-2xl font-bold tracking-[-0.8px] text-[#131b2e] md:text-[32px] md:leading-10">
                             Bạn bè &amp; Mạng lưới kết nối
                         </h1>

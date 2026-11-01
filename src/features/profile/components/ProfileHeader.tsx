@@ -33,6 +33,10 @@ type ProfileHeaderProps = {
     onRejectFriendRequest: () => Promise<void>;
     onCancelFriendRequest: () => Promise<void>;
     onRemoveFriend: () => Promise<void>;
+    isFollowLoading?: boolean;
+    onToggleFollow?: () => void;
+    onOpenFollowers?: () => void;
+    onOpenFollowing?: () => void;
     onEditProfile: () => void;
     onUploadAvatar: (file: File) => Promise<void>;
     onUploadCover: (file: File) => Promise<void>;
@@ -71,6 +75,10 @@ export default function ProfileHeader({
     onRejectFriendRequest,
     onCancelFriendRequest,
     onRemoveFriend,
+    isFollowLoading = false,
+    onToggleFollow,
+    onOpenFollowers,
+    onOpenFollowing,
     onEditProfile,
     onUploadAvatar,
     onUploadCover,
@@ -234,6 +242,34 @@ export default function ProfileHeader({
                         )}
                         {!isOwnProfile && profile && (
                             <>
+                                {onToggleFollow && (
+                                    <button
+                                        type="button"
+                                        disabled={isFollowLoading}
+                                        onClick={onToggleFollow}
+                                        className={`flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                                            profile.is_following
+                                                ? "bg-[#f2f3ff] text-[#464554] hover:bg-[#e8e9fb]"
+                                                : "bg-[#eef0ff] text-[#4648d4] hover:bg-[#e0e3ff]"
+                                        }`}
+                                    >
+                                        {profile.is_following ? (
+                                            <>
+                                                <UserCheck className="h-4 w-4 text-[#4648d4]" />
+                                                {isFollowLoading
+                                                    ? "Đang xử lý..."
+                                                    : "Đang theo dõi"}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <UserPlus className="h-4 w-4" />
+                                                {isFollowLoading
+                                                    ? "Đang xử lý..."
+                                                    : "Theo dõi"}
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                                 {isIncomingRequest ? (
                                     <>
                                         <button
@@ -335,17 +371,54 @@ export default function ProfileHeader({
 
                 <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-[#eef0ff] py-5 text-sm text-[#464554]">
                     {[
-                        [String(profile?.friend_count ?? 0), "bạn bè"],
-                        [String(profile?.follower_count ?? 0), "người theo dõi"],
-                        [String(profile?.following_count ?? 0), "đang theo dõi"],
-                        [String(profile?.post_count ?? 0), "bài viết"],
-                    ].map(([value, label], index) => (
-                        <div key={label} className="flex items-baseline gap-1.5">
-                            {index > 0 && <span className="mr-3 hidden h-1 w-1 rounded-full bg-[#c7c4d7] sm:block" />}
-                            <strong className="text-lg text-[#131b2e]">{value}</strong>
-                            <span className="text-xs">{label}</span>
-                        </div>
-                    ))}
+                        {
+                            count: String(profile?.friend_count ?? 0),
+                            label: "bạn bè",
+                            onClick: () => onTabChange("friends"),
+                        },
+                        {
+                            count: String(profile?.follower_count ?? 0),
+                            label: "người theo dõi",
+                            onClick: onOpenFollowers,
+                        },
+                        {
+                            count: String(profile?.following_count ?? 0),
+                            label: "đang theo dõi",
+                            onClick: onOpenFollowing,
+                        },
+                        {
+                            count: String(profile?.post_count ?? 0),
+                            label: "bài viết",
+                            onClick: () => onTabChange("posts"),
+                        },
+                    ].map((item, index) => {
+                        const content = (
+                            <div className="flex items-baseline gap-1.5">
+                                {index > 0 && (
+                                    <span className="mr-3 hidden h-1 w-1 rounded-full bg-[#c7c4d7] sm:block" />
+                                )}
+                                <strong className="text-lg text-[#131b2e]">
+                                    {item.count}
+                                </strong>
+                                <span className="text-xs">{item.label}</span>
+                            </div>
+                        );
+
+                        if (item.onClick) {
+                            return (
+                                <button
+                                    key={item.label}
+                                    type="button"
+                                    onClick={item.onClick}
+                                    className="cursor-pointer transition hover:text-[#4648d4] text-left"
+                                >
+                                    {content}
+                                </button>
+                            );
+                        }
+
+                        return <div key={item.label}>{content}</div>;
+                    })}
                 </div>
 
                 <nav
