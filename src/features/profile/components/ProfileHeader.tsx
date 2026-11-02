@@ -6,9 +6,7 @@ import {
     FileText,
     Image,
     Info,
-    LayoutGrid,
-    MessageCircle,
-    MessageSquareText,
+            MessageSquareText,
     UserCheck,
     UserPlus,
     Users,
@@ -51,17 +49,13 @@ export type ProfileTab =
     | "posts"
     | "about"
     | "friends"
-    | "media"
-    | "saved"
-    | "community";
+    | "media";
 
 const tabs = [
     { id: "posts", label: "Bài viết", icon: FileText },
     { id: "about", label: "Giới thiệu", icon: Info },
     { id: "friends", label: "Bạn bè", icon: Users },
     { id: "media", label: "Ảnh & Video", icon: Image },
-    { id: "saved", label: "Đã lưu", icon: LayoutGrid },
-    { id: "community", label: "Cộng đồng", icon: MessageCircle },
 ] satisfies Array<{ id: ProfileTab; label: string; icon: typeof FileText }>;
 
 export default function ProfileHeader({

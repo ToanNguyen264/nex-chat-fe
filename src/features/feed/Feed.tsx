@@ -79,6 +79,9 @@ const formatPost = (post: PostFromApi): Post => {
         commentCount: post.commentCount,
         shareCount: 0,
         tags: post.tags ?? [],
+        isFollowing: post.is_following ?? false,
+        isFriend: post.is_friend ?? false,
+        isFriendPending: post.is_friend_pending ?? false,
     };
 };
 

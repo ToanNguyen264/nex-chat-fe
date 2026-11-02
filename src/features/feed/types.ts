@@ -22,4 +22,7 @@ export type Post = {
     commentCount?: number;
     shareCount?: number;
     isVerified?: boolean;
+    isFollowing?: boolean;
+    isFriend?: boolean;
+    isFriendPending?: boolean;
 };

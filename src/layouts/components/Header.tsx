@@ -2,15 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import {
     Bell,
     ChevronDown,
+    Home,
     LogOut,
     Moon,
     Search,
     Sun,
     UserRound,
+    Users,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useTheme } from "next-themes";
-
 
 import { logout } from "../../api/auth.api";
 import { getUnreadNotificationCount } from "../../api/notification.api";
@@ -25,10 +26,9 @@ import { queryClient } from "../../lib/query-client";
 import { useChatStore } from "../../features/chat/chat.store";
 import { useFeedRealtimeStore } from "../../features/feed/feed-realtime.store";
 
-
 const navItems = [
-    { label: "Bảng tin", to: "/home" },
-    { label: "Khám phá", to: "/friends" },
+    { label: "Bảng tin", to: "/home", icon: Home },
+    { label: "Bạn bè", to: "/friends", icon: Users },
 ];
 
 type HeaderProps = {
@@ -51,7 +51,7 @@ export default function Header({ currentUser }: HeaderProps) {
         currentUser ? state.onlineUserIds.has(currentUser.id) : false
     );
 
-    const unreadCount = useNotificationStore((state) => state.unreadCount); //lấy uneadCount từ store
+    const unreadCount = useNotificationStore((state) => state.unreadCount);
     const setUnreadCount = useNotificationStore(
         (state) => state.setUnreadCount
     );
@@ -156,55 +156,87 @@ export default function Header({ currentUser }: HeaderProps) {
     };
 
     return (
-        <header className="sticky top-0 z-40 h-16 border-b border-[#eef0ff] dark:border-[#263147] bg-white/95 dark:bg-[#151c2c]/95 shadow-[0_1px_2px_rgba(0,0,0,0.03)] backdrop-blur transition-colors duration-200">
-            <div className="mx-auto flex h-full max-w-[1280px] items-center gap-6 px-4 sm:px-6 lg:px-8">
-                <Link to="/home" className="flex shrink-0 items-center gap-2">
-                    <img src="/logo.svg" alt="Nex Chat" className="h-8 w-8 rounded-sm" />
-                    <span className="text-xl font-bold tracking-[-0.4px] text-[#4648d4] dark:text-indigo-400">Nex Chat</span>
-                </Link>
+        <header className="sticky top-0 z-40 h-14 border-b border-[#e4e6eb] dark:border-[#393a3b] bg-white dark:bg-[#242526] shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:shadow-none transition-colors duration-200">
+            <div className="mx-auto grid h-full w-full max-w-[1280px] grid-cols-[auto_1fr_auto] xl:grid-cols-[286px_minmax(0,596px)_286px] items-center px-4 sm:px-6 lg:px-8 gap-4 xl:gap-6">
+                {/* CỘT TRÁI: KHỚP VỚI CỘT SIDEBAR TRÁI (286px) */}
+                <div className="flex items-center gap-2.5 min-w-0">
+                    <Link to="/home" className="flex shrink-0 items-center gap-2" aria-label="Nex Chat Trang chủ">
+                        <img src="/logo.svg" alt="Nex Chat" className="h-10 w-10 rounded-full" />
+                        <span className="hidden sm:inline text-xl font-bold tracking-tight text-[#4648d4] dark:text-[#5d5fee]">
+                            Nex Chat
+                        </span>
+                    </Link>
 
-                <label className="hidden h-[34px] w-[323px] items-center gap-2 rounded-full bg-[#f2f3ff] dark:bg-[#1e293b] px-4 md:flex">
-                    <Search className="h-4 w-4 shrink-0 text-[#767586] dark:text-slate-400" />
-                    <input
-                        id="global-search"
-                        name="globalSearch"
-                        type="search"
-                        placeholder="Tìm kiếm bạn bè, bài viết, hashtag..."
-                        className="min-w-0 flex-1 bg-transparent text-xs text-[#131b2e] dark:text-slate-100 outline-none placeholder:text-[#8b8998] dark:placeholder:text-slate-400"
-                    />
-                </label>
+                    <label className="hidden md:flex h-10 min-w-0 flex-1 max-w-[145px] xl:max-w-[155px] items-center gap-2 rounded-full bg-[#f0f2f5] dark:bg-[#3a3b3c] px-3 transition-colors">
+                        <Search className="h-4 w-4 shrink-0 text-[#65676b] dark:text-[#b0b3b8]" />
+                        <input
+                            id="global-search"
+                            name="globalSearch"
+                            type="search"
+                            placeholder="Tìm kiếm..."
+                            className="min-w-0 flex-1 bg-transparent text-[13px] text-[#050505] dark:text-[#e4e6eb] outline-none placeholder:text-[#65676b] dark:placeholder:text-[#b0b3b8]"
+                        />
+                    </label>
+                </div>
 
-                <nav className="hidden items-center justify-center rounded-full bg-[#f2f3ff] dark:bg-[#1e293b] p-1 lg:flex">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.label}
-                            to={item.to}
-                            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-                                location.pathname === item.to
-                                    ? "bg-[#4648d4] text-white shadow-sm"
-                                    : "text-[#464554] dark:text-slate-300 hover:text-[#4648d4] dark:hover:text-indigo-400"
-                            }`}
-                        >
-                            {item.label}
-                        </Link>
-                    ))}
+                {/* CỘT GIỮA: CĂN THẲNG TRỤC CHÍNH XÁC VỚI BẢNG TIN FEED (596px) */}
+                <nav className="flex items-center justify-center h-full w-full px-2">
+                    {navItems.map((item) => {
+                        const isActive =
+                            item.to === "/home"
+                                ? location.pathname === "/home" || location.pathname === "/"
+                                : location.pathname.startsWith("/friends");
+                        const Icon = item.icon;
+
+                        return (
+                            <Link
+                                key={item.label}
+                                to={item.to}
+                                title={item.label}
+                                aria-label={item.label}
+                                className="group relative flex h-full flex-1 max-w-[140px] items-center justify-center cursor-pointer"
+                            >
+                                <div
+                                    className={`flex h-[46px] w-full items-center justify-center rounded-xl transition ${
+                                        isActive
+                                            ? ""
+                                            : "hover:bg-[#f0f2f5] dark:hover:bg-[#3a3b3c]"
+                                    }`}
+                                >
+                                    <Icon
+                                        className={`h-6 w-6 transition ${
+                                            isActive
+                                                ? "text-[#4648d4] dark:text-[#5d5fee]"
+                                                : "text-[#65676b] dark:text-[#b0b3b8] group-hover:text-[#050505] dark:group-hover:text-[#e4e6eb]"
+                                        }`}
+                                    />
+                                </div>
+                                {isActive && (
+                                    <span className="absolute bottom-0 left-0 right-0 h-[3px] rounded-t-sm bg-[#4648d4] dark:bg-[#5d5fee]" />
+                                )}
+                            </Link>
+                        );
+                    })}
                 </nav>
 
-                <div className="ml-auto flex shrink-0 items-center gap-1">
+                {/* CỘT PHẢI: CÂN BẰNG VỚI CỘT PHẢI (286px) */}
+                <div className="flex items-center justify-end gap-2">
+                    {/* Nút Đổi giao diện Sáng / Tối */}
                     <button
                         type="button"
                         onClick={toggleTheme}
                         aria-label={isDark ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
                         title={isDark ? "Chế độ sáng" : "Chế độ tối"}
-                        className="rounded-full p-2 text-[#464554] dark:text-slate-300 transition hover:bg-[#f2f3ff] dark:hover:bg-[#1e293b] hover:text-[#4648d4] dark:hover:text-amber-300"
+                        className="grid h-10 w-10 place-items-center rounded-full bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb] transition hover:bg-[#d8dadf] dark:hover:bg-[#4e4f50]"
                     >
                         {isDark ? (
-                            <Sun className="h-[18px] w-[18px] text-amber-400" />
+                            <Sun className="h-5 w-5 text-amber-400" />
                         ) : (
-                            <Moon className="h-[18px] w-[18px]" />
+                            <Moon className="h-5 w-5" />
                         )}
                     </button>
 
+                    {/* Nút Chuông Thông báo */}
                     <div ref={notificationRef} className="relative">
                         <button
                             type="button"
@@ -215,11 +247,15 @@ export default function Header({ currentUser }: HeaderProps) {
                                 setIsNotificationOpen((isOpen) => !isOpen);
                                 setIsAccountMenuOpen(false);
                             }}
-                            className={`relative rounded-full p-2 text-[#464554] dark:text-slate-300 transition hover:bg-[#f2f3ff] dark:hover:bg-[#1e293b] ${isNotificationOpen ? "bg-[#f2f3ff] dark:bg-[#1e293b] text-[#4648d4] dark:text-indigo-400" : ""}`}
+                            className={`relative grid h-10 w-10 place-items-center rounded-full transition ${
+                                isNotificationOpen
+                                    ? "bg-[#e8e9ff] dark:bg-[#313264] text-[#4648d4] dark:text-[#5d5fee]"
+                                    : "bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb] hover:bg-[#d8dadf] dark:hover:bg-[#4e4f50]"
+                            }`}
                         >
-                            <Bell className="h-[18px] w-[18px]" />
+                            <Bell className="h-5 w-5" />
                             {unreadCount > 0 && (
-                                <span className="absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#b90538] px-1 text-[9px] font-bold text-white">
+                                <span className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#e41e3f] px-1 text-[11px] font-bold text-white border-2 border-white dark:border-[#242526]">
                                     {unreadCount > 99 ? "+99" : unreadCount}
                                 </span>
                             )}
@@ -232,6 +268,7 @@ export default function Header({ currentUser }: HeaderProps) {
                         )}
                     </div>
 
+                    {/* Nút Avatar tài khoản có mũi tên nhỏ ở góc đúng style FB */}
                     <div ref={menuRef} className="relative ml-1">
                         <button
                             type="button"
@@ -242,37 +279,35 @@ export default function Header({ currentUser }: HeaderProps) {
                                 setIsAccountMenuOpen((isOpen) => !isOpen);
                                 setIsNotificationOpen(false);
                             }}
-                            className="flex items-center gap-1 rounded-full p-1 transition hover:bg-[#f2f3ff] dark:hover:bg-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#4648d4]/30"
+                            className="relative flex items-center rounded-full p-0.5 transition hover:brightness-95 focus:outline-none"
                         >
-                            <span className="relative">
-                                <img
-                                    src={currentUser?.avatar || defaultAvatar}
-                                    alt={displayName}
-                                    className="h-8 w-8 rounded-full object-cover bg-slate-100 dark:bg-slate-800"
-                                    onError={(e) => {
-                                        (e.currentTarget as HTMLImageElement).src = defaultAvatar;
-                                    }}
-                                />
-                                {isCurrentUserOnline && (
-                                    <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-[#151c2c] bg-[#57dffe]" />
-                                )}
-                            </span>
-                            <ChevronDown
-                                className={`h-3 w-3 text-[#767586] dark:text-slate-400 transition-transform ${isAccountMenuOpen ? "rotate-180" : ""}`}
+                            <img
+                                src={currentUser?.avatar || defaultAvatar}
+                                alt={displayName}
+                                className="h-10 w-10 rounded-full object-cover bg-slate-100 dark:bg-slate-800"
+                                onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                                }}
                             />
+                            {isCurrentUserOnline && (
+                                <span className="absolute top-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-[#242526] bg-[#57dffe]" />
+                            )}
+                            <span className="absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-[#e4e6eb] dark:bg-[#3a3b3c] border-2 border-white dark:border-[#242526] text-[#050505] dark:text-[#e4e6eb]">
+                                <ChevronDown className={`h-2.5 w-2.5 transition-transform ${isAccountMenuOpen ? "rotate-180" : ""}`} />
+                            </span>
                         </button>
 
                         {isAccountMenuOpen && (
                             <div
                                 role="menu"
-                                className="absolute right-0 top-12 z-50 w-64 overflow-hidden rounded-2xl border border-[#e4e6f7] dark:border-[#263147] bg-white dark:bg-[#151c2c] p-2 shadow-[0_16px_45px_rgba(27,31,59,0.16)]"
+                                className="absolute right-0 top-12 z-50 w-72 overflow-hidden rounded-2xl border border-[#e4e6eb] dark:border-[#393a3b] bg-white dark:bg-[#242526] p-2 shadow-[0_12px_28px_rgba(0,0,0,0.2)]"
                             >
-                                <div className="border-b border-[#eef0ff] dark:border-[#263147] px-3 py-3">
-                                    <p className="truncate text-sm font-bold text-[#131b2e] dark:text-slate-100">
+                                <div className="border-b border-[#e4e6eb] dark:border-[#393a3b] px-3 py-3">
+                                    <p className="truncate text-sm font-bold text-[#050505] dark:text-[#e4e6eb]">
                                         {displayName}
                                     </p>
-                                    <p className="mt-0.5 truncate text-xs text-[#767586] dark:text-slate-400">
-                                        {currentUser?.email ?? "Tài khoản Pulse"}
+                                    <p className="mt-0.5 truncate text-xs text-[#65676b] dark:text-[#b0b3b8]">
+                                        {currentUser?.email ?? "Tài khoản Nex"}
                                     </p>
                                 </div>
 
@@ -280,9 +315,9 @@ export default function Header({ currentUser }: HeaderProps) {
                                     to="/profile"
                                     role="menuitem"
                                     onClick={() => setIsAccountMenuOpen(false)}
-                                    className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#343343] dark:text-slate-200 transition hover:bg-[#f2f3ff] dark:hover:bg-[#1e293b]"
+                                    className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#050505] dark:text-[#e4e6eb] transition hover:bg-[#f0f2f5] dark:hover:bg-[#3a3b3c]"
                                 >
-                                    <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e8e9ff] dark:bg-indigo-950/60 text-[#4648d4] dark:text-indigo-400">
+                                    <span className="grid h-9 w-9 place-items-center rounded-full bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb]">
                                         <UserRound className="h-4 w-4" />
                                     </span>
                                     Thông tin cá nhân
@@ -292,21 +327,21 @@ export default function Header({ currentUser }: HeaderProps) {
                                     type="button"
                                     role="menuitem"
                                     onClick={toggleTheme}
-                                    className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[#343343] dark:text-slate-200 transition hover:bg-[#f2f3ff] dark:hover:bg-[#1e293b]"
+                                    className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[#050505] dark:text-[#e4e6eb] transition hover:bg-[#f0f2f5] dark:hover:bg-[#3a3b3c]"
                                 >
                                     <span className="flex items-center gap-3">
-                                        <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e8e9ff] dark:bg-indigo-950/60 text-[#4648d4] dark:text-amber-400">
+                                        <span className="grid h-9 w-9 place-items-center rounded-full bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb]">
                                             {isDark ? (
-                                                <Sun className="h-4 w-4" />
+                                                <Sun className="h-4 w-4 text-amber-400" />
                                             ) : (
                                                 <Moon className="h-4 w-4" />
                                             )}
                                         </span>
-                                        Giao diện: {isDark ? "Tối" : "Sáng"}
+                                        Chế độ tối: {isDark ? "Bật" : "Tắt"}
                                     </span>
                                     <span
                                         className={`inline-flex h-5 w-9 items-center rounded-full p-0.5 transition-colors ${
-                                            isDark ? "bg-[#4648d4]" : "bg-slate-300"
+                                            isDark ? "bg-[#4648d4]" : "bg-[#ccd0d5]"
                                         }`}
                                     >
                                         <span
@@ -322,9 +357,9 @@ export default function Header({ currentUser }: HeaderProps) {
                                     role="menuitem"
                                     disabled={isLoggingOut}
                                     onClick={() => void handleLogout()}
-                                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[#b90538] dark:text-rose-400 transition hover:bg-[#fff0f1] dark:hover:bg-rose-950/40 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[#e41e3f] transition hover:bg-[#ffebe8] dark:hover:bg-[#3d1e22] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                    <span className="grid h-8 w-8 place-items-center rounded-full bg-[#ffdadb] dark:bg-rose-950/60 text-[#b90538] dark:text-rose-400">
+                                    <span className="grid h-9 w-9 place-items-center rounded-full bg-[#ffebe8] dark:bg-[#3d1e22] text-[#e41e3f]">
                                         <LogOut className="h-4 w-4" />
                                     </span>
                                     {isLoggingOut ? "Đang đăng xuất..." : "Đăng xuất"}

@@ -81,6 +81,12 @@ export default function LoginPage() {
 
     return (
         <main className="relative flex min-h-screen flex-col justify-between bg-[radial-gradient(circle_at_top_left,_#e0e7ff,_#f8fafc_45%,_#ecfeff)] dark:bg-[radial-gradient(circle_at_top_left,_#1e1b4b,_#0b0f19_50%,_#091526)] transition-colors duration-200">
+            {/* Lớp hình nền Telegram Doodle Pattern mờ tinh tế */}
+            <div
+                className="pointer-events-none fixed inset-0 z-0 bg-[url('/telegram-pattern.svg')] bg-repeat bg-[size:460px] opacity-[0.045] dark:opacity-[0.035] dark:invert"
+                aria-hidden="true"
+            />
+
             <button
                 type="button"
                 onClick={() => setTheme(isDark ? "light" : "dark")}
@@ -91,7 +97,7 @@ export default function LoginPage() {
                 {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
 
-            <div className="flex flex-1 items-center justify-center p-4 sm:p-6 lg:p-8">
+            <div className="relative z-10 flex flex-1 items-center justify-center p-4 sm:p-6 lg:p-8">
                 <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-[28px] border border-white/70 dark:border-[#263147] bg-white dark:bg-[#151c2c] shadow-[0_32px_90px_rgba(30,41,59,0.18)] lg:grid-cols-[1.05fr_0.95fr]">
                 <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#3f46c8] via-[#565bdc] to-[#087386] p-10 text-white lg:flex lg:flex-col lg:justify-between">
                     <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
@@ -290,7 +296,7 @@ export default function LoginPage() {
             </div>
             </div>
 
-            <footer className="border-t border-[#eef0ff] bg-white/80 px-6 py-4 text-[11px] text-[#767586] backdrop-blur lg:px-8">
+            <footer className="relative z-10 border-t border-[#eef0ff] bg-white/80 px-6 py-4 text-[11px] text-[#767586] backdrop-blur lg:px-8">
                 <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
                     <div>
                         <span className="font-semibold text-[#4648d4]">Nex</span>

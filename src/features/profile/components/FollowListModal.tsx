@@ -111,8 +111,8 @@ export default function FollowListModal({
                 }
             }}
         >
-            <div className="flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-3xl bg-white dark:bg-[#151c2c] border border-transparent dark:border-[#263147] shadow-[0_24px_80px_rgba(19,27,46,0.28)]">
-                <header className="flex items-center justify-between border-b border-[#eef0ff] dark:border-[#263147] px-6 py-4">
+            <div className="flex h-[480px] max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-3xl bg-white dark:bg-[#151c2c] border border-transparent dark:border-[#263147] shadow-[0_24px_80px_rgba(19,27,46,0.28)]">
+                <header className="shrink-0 flex items-center justify-between border-b border-[#eef0ff] dark:border-[#263147] px-6 py-4">
                     <div className="flex items-center gap-2">
                         <button
                             type="button"
@@ -148,7 +148,7 @@ export default function FollowListModal({
                     </button>
                 </header>
 
-                <div className="flex-1 overflow-y-auto max-h-[460px] p-4 overscroll-contain">
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 overscroll-contain">
                     {isLoading ? (
                         <div className="flex flex-col gap-3 py-2">
                             {[1, 2, 3, 4, 5].map((item) => (
@@ -165,11 +165,11 @@ export default function FollowListModal({
                             ))}
                         </div>
                     ) : error ? (
-                        <div className="py-12 text-center">
+                        <div className="flex h-full flex-col items-center justify-center py-12 text-center">
                             <p className="text-sm text-rose-600">{error}</p>
                         </div>
                     ) : users.length === 0 ? (
-                        <div className="py-12 text-center">
+                        <div className="flex h-full flex-col items-center justify-center py-12 text-center">
                             <Users className="mx-auto h-10 w-10 text-[#c7c4d7] dark:text-slate-600" />
                             <p className="mt-3 text-sm text-[#767586] dark:text-slate-400">
                                 {activeTab === "followers"

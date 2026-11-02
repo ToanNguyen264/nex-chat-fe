@@ -104,6 +104,12 @@ export default function RegisterPage() {
 
     return (
         <main className="relative flex min-h-screen flex-col justify-between bg-[radial-gradient(circle_at_top_left,_#e0e7ff,_#f8fafc_45%,_#ecfeff)] dark:bg-[radial-gradient(circle_at_top_left,_#1e1b4b,_#0b0f19_50%,_#091526)] transition-colors duration-200">
+            {/* Lớp hình nền Telegram Doodle Pattern mờ tinh tế */}
+            <div
+                className="pointer-events-none fixed inset-0 z-0 bg-[url('/telegram-pattern.svg')] bg-repeat bg-[size:460px] opacity-[0.045] dark:opacity-[0.035] dark:invert"
+                aria-hidden="true"
+            />
+
             <header className="relative z-20 w-full px-4 pt-5 sm:px-6 lg:px-8">
                 <div className="mx-auto flex max-w-6xl items-center justify-between">
                     <Link
@@ -126,7 +132,7 @@ export default function RegisterPage() {
                 </div>
             </header>
 
-            <div className="flex flex-1 items-center justify-center p-4 sm:p-6 lg:p-8">
+            <div className="relative z-10 flex flex-1 items-center justify-center p-4 sm:p-6 lg:p-8">
             <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-[28px] border border-white/70 dark:border-[#263147] bg-white dark:bg-[#151c2c] shadow-[0_32px_90px_rgba(30,41,59,0.18)] md:grid-cols-[0.82fr_1.18fr]">
                 <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#3f46c8] via-[#565bdc] to-[#087386] p-7 text-white md:flex md:flex-col lg:p-10">
                     <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
@@ -417,7 +423,7 @@ export default function RegisterPage() {
             </div>
             </div>
 
-            <footer className="border-t border-[#eef0ff] bg-white/80 px-6 py-4 text-[11px] text-[#767586] backdrop-blur lg:px-8">
+            <footer className="relative z-10 border-t border-[#eef0ff] bg-white/80 px-6 py-4 text-[11px] text-[#767586] backdrop-blur lg:px-8">
                 <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
                     <div>
                         <span className="font-semibold text-[#4648d4]">Nex</span>

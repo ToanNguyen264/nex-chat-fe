@@ -15,6 +15,7 @@ import {
     Trash2,
     X,
 } from "lucide-react";
+import { followUser, unfollowUser } from "../../../api/follow.api";
 import {
     Emoji,
     EmojiStyle,
@@ -171,6 +172,31 @@ export default function PostCard({
     );
     const isOwner = currentUserId === post.userId;
 
+    const [isFollowing, setIsFollowing] = useState(post.isFollowing ?? false);
+    const [isFollowLoading, setIsFollowLoading] = useState(false);
+
+    useEffect(() => {
+        setIsFollowing(post.isFollowing ?? false);
+    }, [post.isFollowing]);
+
+    const handleToggleFollow = async () => {
+        if (isFollowLoading) return;
+        setIsFollowLoading(true);
+        try {
+            if (isFollowing) {
+                await unfollowUser(post.userId);
+                setIsFollowing(false);
+            } else {
+                await followUser(post.userId);
+                setIsFollowing(true);
+            }
+        } catch (error) {
+            console.error("Lỗi khi thay đổi trạng thái theo dõi:", error);
+        } finally {
+            setIsFollowLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (!isMenuOpen) {
             return;
@@ -271,15 +297,41 @@ export default function PostCard({
                     </Link>
 
                     <div>
-                        <h2>
-                            <Link
-                                to={`/profile/${post.userId}`}
-                                className="flex items-center gap-1 text-lg font-bold tracking-[-0.18px] text-[#131b2e] transition hover:text-[#4648d4]"
-                            >
-                                {post.author}
-                                {post.isVerified && <BadgeCheck className="h-4 w-4 fill-[#4648d4] text-white" />}
-                            </Link>
-                        </h2>
+                        <div className="flex items-center gap-1.5">
+                            <h2>
+                                <Link
+                                    to={`/profile/${post.userId}`}
+                                    className="flex items-center gap-1 text-sm font-bold tracking-[-0.18px] text-[#131b2e] dark:text-slate-100 transition hover:text-[#4648d4]"
+                                >
+                                    {post.author}
+                                    {post.isVerified && <BadgeCheck className="h-3.5 w-3.5 fill-[#4648d4] text-white" />}
+                                </Link>
+                            </h2>
+
+                            {!isOwner && !post.isFriend && (
+                                <>
+                                    <span className="text-xs text-[#767586] dark:text-slate-400 select-none">·</span>
+                                    <button
+                                        type="button"
+                                        onClick={handleToggleFollow}
+                                        disabled={isFollowLoading}
+                                        className={`text-xs font-semibold transition hover:underline disabled:opacity-50 ${
+                                            isFollowing
+                                                ? "text-[#65676b] dark:text-[#b0b3b8] hover:text-[#4648d4] dark:hover:text-[#5d5fee]"
+                                                : "text-[#4648d4] dark:text-[#5d5fee]"
+                                        }`}
+                                    >
+                                        {isFollowLoading
+                                            ? isFollowing
+                                                ? "Đang hủy..."
+                                                : "Đang theo dõi..."
+                                            : isFollowing
+                                                ? "Đang theo dõi"
+                                                : "Theo dõi"}
+                                    </button>
+                                </>
+                            )}
+                        </div>
 
                         <p className="flex items-center gap-1.5 text-[11px] text-[#767586]">
                             {post.createdAt} <span>•</span>
