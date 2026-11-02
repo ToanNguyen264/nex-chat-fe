@@ -23,13 +23,16 @@ export default function MainLayout({
                     : "min-h-screen overflow-x-clip"
             }`}
         >
+            {/* Lớp hình nền Telegram Doodle Pattern mờ tinh tế */}
+            <div
+                className="pointer-events-none fixed inset-0 z-0 bg-[url('/telegram-pattern.svg')] bg-repeat bg-[size:460px] opacity-[0.045] dark:opacity-[0.035] dark:invert"
+                aria-hidden="true"
+            />
+
             <Header currentUser={currentUser} />
 
-            <div className="pointer-events-none absolute left-1/4 top-24 h-96 w-96 rounded-full bg-[#4648d4]/5 dark:bg-[#4648d4]/10 blur-3xl" />
-            <div className="pointer-events-none absolute right-10 top-96 h-80 w-80 rounded-full bg-[#57dffe]/10 dark:bg-[#57dffe]/5 blur-3xl" />
-
             <main
-                className={`relative mx-auto w-full max-w-[1280px] flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-6 ${
+                className={`relative z-10 mx-auto w-full max-w-[1280px] flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-6 ${
                     fixedViewport
                         ? "min-h-0 overflow-hidden"
                         : ""
@@ -38,7 +41,7 @@ export default function MainLayout({
                 {children}
             </main>
 
-            <footer className="relative shrink-0 border-t border-[#eef0ff] dark:border-[#263147] bg-white dark:bg-[#151c2c] px-6 py-4 text-[11px] text-[#767586] dark:text-slate-400 lg:px-8 transition-colors duration-200">
+            <footer className="relative z-10 shrink-0 border-t border-[#eef0ff] dark:border-[#263147] bg-white dark:bg-[#151c2c] px-6 py-4 text-[11px] text-[#767586] dark:text-slate-400 lg:px-8 transition-colors duration-200">
                 <div className="mx-auto flex max-w-[1216px] flex-wrap items-center justify-between gap-2">
                     <div>
                         <span className="font-semibold text-[#4648d4] dark:text-indigo-400">Nex</span>

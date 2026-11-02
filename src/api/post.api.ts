@@ -60,6 +60,9 @@ export type PostFromApi = {
     reactionSummary: ReactionSummaryItem[];
     commentCount: number;
     tags?: string[];
+    is_following?: boolean;
+    is_friend?: boolean;
+    is_friend_pending?: boolean;
 };
 
 export type SetPostReactionResult = {

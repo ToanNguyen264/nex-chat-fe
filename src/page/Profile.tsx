@@ -610,23 +610,7 @@ export default function ProfilePage() {
                     <ProfileMediaTab userId={profile?.id || ""} />
                 )}
 
-                {activeTab !== "posts" &&
-                    activeTab !== "about" &&
-                    activeTab !== "friends" &&
-                    activeTab !== "media" && (
-                    <section
-                        role="tabpanel"
-                        className="rounded-2xl bg-white px-6 py-14 text-center shadow-sm"
-                    >
-                        <h2 className="text-lg font-bold text-[#131b2e]">
-                            {activeTab === "saved" && "Bài viết đã lưu"}
-                            {activeTab === "community" && "Cộng đồng"}
-                        </h2>
-                        <p className="mt-2 text-sm text-[#767586]">
-                            Chưa có dữ liệu để hiển thị. Nội dung sẽ xuất hiện khi chức năng này được kết nối với API.
-                        </p>
-                    </section>
-                )}
+
             </div>
 
             {isOwnProfile && isEditModalOpen && profile && (
