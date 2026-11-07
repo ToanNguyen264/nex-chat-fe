@@ -59,3 +59,26 @@ export const confirmDelete = async (
 
     return result.isConfirmed;
 };
+
+export const promptLogin = async (
+    title = "Yêu cầu đăng nhập",
+    text = "Vui lòng đăng nhập để sử dụng tính năng này."
+) => {
+    const result = await Swal.fire({
+        icon: "info",
+        title,
+        text,
+        showCancelButton: true,
+        confirmButtonText: "Đăng nhập ngay",
+        cancelButtonText: "Để sau",
+        confirmButtonColor: "#4648d4",
+        cancelButtonColor: "#94a3b8",
+        ...getSwalThemeColors(),
+    });
+
+    if (result.isConfirmed) {
+        window.location.href = "/";
+    }
+
+    return result.isConfirmed;
+};

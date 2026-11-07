@@ -236,137 +236,156 @@ export default function Header({ currentUser }: HeaderProps) {
                         )}
                     </button>
 
-                    {/* Nút Chuông Thông báo */}
-                    <div ref={notificationRef} className="relative">
-                        <button
-                            type="button"
-                            aria-label="Mở thông báo"
-                            aria-haspopup="dialog"
-                            aria-expanded={isNotificationOpen}
-                            onClick={() => {
-                                setIsNotificationOpen((isOpen) => !isOpen);
-                                setIsAccountMenuOpen(false);
-                            }}
-                            className={`relative grid h-10 w-10 place-items-center rounded-full transition ${
-                                isNotificationOpen
-                                    ? "bg-[#e8e9ff] dark:bg-[#313264] text-[#4648d4] dark:text-[#5d5fee]"
-                                    : "bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb] hover:bg-[#d8dadf] dark:hover:bg-[#4e4f50]"
-                            }`}
-                        >
-                            <Bell className="h-5 w-5" />
-                            {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#e41e3f] px-1 text-[11px] font-bold text-white border-2 border-white dark:border-[#242526]">
-                                    {unreadCount > 99 ? "+99" : unreadCount}
-                                </span>
-                            )}
-                        </button>
-
-                        {isNotificationOpen && (
-                            <NotificationPopover
-                                onClose={() => setIsNotificationOpen(false)}
-                            />
-                        )}
-                    </div>
-
-                    {/* Nút Avatar tài khoản có mũi tên nhỏ ở góc đúng style FB */}
-                    <div ref={menuRef} className="relative ml-1">
-                        <button
-                            type="button"
-                            aria-label="Mở menu tài khoản"
-                            aria-haspopup="menu"
-                            aria-expanded={isAccountMenuOpen}
-                            onClick={() => {
-                                setIsAccountMenuOpen((isOpen) => !isOpen);
-                                setIsNotificationOpen(false);
-                            }}
-                            className="relative flex items-center rounded-full p-0.5 transition hover:brightness-95 focus:outline-none"
-                        >
-                            <img
-                                src={currentUser?.avatar || defaultAvatar}
-                                alt={displayName}
-                                className="h-10 w-10 rounded-full object-cover bg-slate-100 dark:bg-slate-800"
-                                onError={(e) => {
-                                    (e.currentTarget as HTMLImageElement).src = defaultAvatar;
-                                }}
-                            />
-                            {isCurrentUserOnline && (
-                                <span className="absolute top-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-[#242526] bg-[#57dffe]" />
-                            )}
-                            <span className="absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-[#e4e6eb] dark:bg-[#3a3b3c] border-2 border-white dark:border-[#242526] text-[#050505] dark:text-[#e4e6eb]">
-                                <ChevronDown className={`h-2.5 w-2.5 transition-transform ${isAccountMenuOpen ? "rotate-180" : ""}`} />
-                            </span>
-                        </button>
-
-                        {isAccountMenuOpen && (
-                            <div
-                                role="menu"
-                                className="absolute right-0 top-12 z-50 w-72 overflow-hidden rounded-2xl border border-[#e4e6eb] dark:border-[#393a3b] bg-white dark:bg-[#242526] p-2 shadow-[0_12px_28px_rgba(0,0,0,0.2)]"
-                            >
-                                <div className="border-b border-[#e4e6eb] dark:border-[#393a3b] px-3 py-3">
-                                    <p className="truncate text-sm font-bold text-[#050505] dark:text-[#e4e6eb]">
-                                        {displayName}
-                                    </p>
-                                    <p className="mt-0.5 truncate text-xs text-[#65676b] dark:text-[#b0b3b8]">
-                                        {currentUser?.email ?? "Tài khoản Nex"}
-                                    </p>
-                                </div>
-
-                                <Link
-                                    to="/profile"
-                                    role="menuitem"
-                                    onClick={() => setIsAccountMenuOpen(false)}
-                                    className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#050505] dark:text-[#e4e6eb] transition hover:bg-[#f0f2f5] dark:hover:bg-[#3a3b3c]"
-                                >
-                                    <span className="grid h-9 w-9 place-items-center rounded-full bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb]">
-                                        <UserRound className="h-4 w-4" />
-                                    </span>
-                                    Thông tin cá nhân
-                                </Link>
-
+                    {currentUser ? (
+                        <>
+                            {/* Nút Chuông Thông báo */}
+                            <div ref={notificationRef} className="relative">
                                 <button
                                     type="button"
-                                    role="menuitem"
-                                    onClick={toggleTheme}
-                                    className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[#050505] dark:text-[#e4e6eb] transition hover:bg-[#f0f2f5] dark:hover:bg-[#3a3b3c]"
+                                    aria-label="Mở thông báo"
+                                    aria-haspopup="dialog"
+                                    aria-expanded={isNotificationOpen}
+                                    onClick={() => {
+                                        setIsNotificationOpen((isOpen) => !isOpen);
+                                        setIsAccountMenuOpen(false);
+                                    }}
+                                    className={`relative grid h-10 w-10 place-items-center rounded-full transition ${
+                                        isNotificationOpen
+                                            ? "bg-[#e8e9ff] dark:bg-[#313264] text-[#4648d4] dark:text-[#5d5fee]"
+                                            : "bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb] hover:bg-[#d8dadf] dark:hover:bg-[#4e4f50]"
+                                    }`}
                                 >
-                                    <span className="flex items-center gap-3">
-                                        <span className="grid h-9 w-9 place-items-center rounded-full bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb]">
-                                            {isDark ? (
-                                                <Sun className="h-4 w-4 text-amber-400" />
-                                            ) : (
-                                                <Moon className="h-4 w-4" />
-                                            )}
+                                    <Bell className="h-5 w-5" />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#e41e3f] px-1 text-[11px] font-bold text-white border-2 border-white dark:border-[#242526]">
+                                            {unreadCount > 99 ? "+99" : unreadCount}
                                         </span>
-                                        Chế độ tối: {isDark ? "Bật" : "Tắt"}
-                                    </span>
-                                    <span
-                                        className={`inline-flex h-5 w-9 items-center rounded-full p-0.5 transition-colors ${
-                                            isDark ? "bg-[#4648d4]" : "bg-[#ccd0d5]"
-                                        }`}
-                                    >
-                                        <span
-                                            className={`h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                                                isDark ? "translate-x-4" : "translate-x-0"
-                                            }`}
-                                        />
+                                    )}
+                                </button>
+
+                                {isNotificationOpen && (
+                                    <NotificationPopover
+                                        onClose={() => setIsNotificationOpen(false)}
+                                    />
+                                )}
+                            </div>
+
+                            {/* Nút Avatar tài khoản có mũi tên nhỏ ở góc đúng style FB */}
+                            <div ref={menuRef} className="relative ml-1">
+                                <button
+                                    type="button"
+                                    aria-label="Mở menu tài khoản"
+                                    aria-haspopup="menu"
+                                    aria-expanded={isAccountMenuOpen}
+                                    onClick={() => {
+                                        setIsAccountMenuOpen((isOpen) => !isOpen);
+                                        setIsNotificationOpen(false);
+                                    }}
+                                    className="relative flex items-center rounded-full p-0.5 transition hover:brightness-95 focus:outline-none"
+                                >
+                                    <img
+                                        src={currentUser?.avatar || defaultAvatar}
+                                        alt={displayName}
+                                        className="h-10 w-10 rounded-full object-cover bg-slate-100 dark:bg-slate-800"
+                                        onError={(e) => {
+                                            (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                                        }}
+                                    />
+                                    {isCurrentUserOnline && (
+                                        <span className="absolute top-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-[#242526] bg-[#57dffe]" />
+                                    )}
+                                    <span className="absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-[#e4e6eb] dark:bg-[#3a3b3c] border-2 border-white dark:border-[#242526] text-[#050505] dark:text-[#e4e6eb]">
+                                        <ChevronDown className={`h-2.5 w-2.5 transition-transform ${isAccountMenuOpen ? "rotate-180" : ""}`} />
                                     </span>
                                 </button>
 
-                                <button
-                                    type="button"
-                                    role="menuitem"
-                                    disabled={isLoggingOut}
-                                    onClick={() => void handleLogout()}
-                                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[#e41e3f] transition hover:bg-[#ffebe8] dark:hover:bg-[#3d1e22] disabled:cursor-not-allowed disabled:opacity-60"
-                                >
-                                    <span className="grid h-9 w-9 place-items-center rounded-full bg-[#ffebe8] dark:bg-[#3d1e22] text-[#e41e3f]">
-                                        <LogOut className="h-4 w-4" />
-                                    </span>
-                                    {isLoggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
-                                </button>
+                                {isAccountMenuOpen && (
+                                    <div
+                                        role="menu"
+                                        className="absolute right-0 top-12 z-50 w-72 overflow-hidden rounded-2xl border border-[#e4e6eb] dark:border-[#393a3b] bg-white dark:bg-[#242526] p-2 shadow-[0_12px_28px_rgba(0,0,0,0.2)]"
+                                    >
+                                        <div className="border-b border-[#e4e6eb] dark:border-[#393a3b] px-3 py-3">
+                                            <p className="truncate text-sm font-bold text-[#050505] dark:text-[#e4e6eb]">
+                                                {displayName}
+                                            </p>
+                                            <p className="mt-0.5 truncate text-xs text-[#65676b] dark:text-[#b0b3b8]">
+                                                {currentUser?.email ?? "Tài khoản Nex"}
+                                            </p>
+                                        </div>
+
+                                        <Link
+                                            to="/profile"
+                                            role="menuitem"
+                                            onClick={() => setIsAccountMenuOpen(false)}
+                                            className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#050505] dark:text-[#e4e6eb] transition hover:bg-[#f0f2f5] dark:hover:bg-[#3a3b3c]"
+                                        >
+                                            <span className="grid h-9 w-9 place-items-center rounded-full bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb]">
+                                                <UserRound className="h-4 w-4" />
+                                            </span>
+                                            Thông tin cá nhân
+                                        </Link>
+
+                                        <button
+                                            type="button"
+                                            role="menuitem"
+                                            onClick={toggleTheme}
+                                            className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[#050505] dark:text-[#e4e6eb] transition hover:bg-[#f0f2f5] dark:hover:bg-[#3a3b3c]"
+                                        >
+                                            <span className="flex items-center gap-3">
+                                                <span className="grid h-9 w-9 place-items-center rounded-full bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb]">
+                                                    {isDark ? (
+                                                        <Sun className="h-4 w-4 text-amber-400" />
+                                                    ) : (
+                                                        <Moon className="h-4 w-4" />
+                                                    )}
+                                                </span>
+                                                Chế độ tối: {isDark ? "Bật" : "Tắt"}
+                                            </span>
+                                            <span
+                                                className={`inline-flex h-5 w-9 items-center rounded-full p-0.5 transition-colors ${
+                                                    isDark ? "bg-[#4648d4]" : "bg-[#ccd0d5]"
+                                                }`}
+                                            >
+                                                <span
+                                                    className={`h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                                                        isDark ? "translate-x-4" : "translate-x-0"
+                                                    }`}
+                                                />
+                                            </span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            role="menuitem"
+                                            disabled={isLoggingOut}
+                                            onClick={() => void handleLogout()}
+                                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[#e41e3f] transition hover:bg-[#ffebe8] dark:hover:bg-[#3d1e22] disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            <span className="grid h-9 w-9 place-items-center rounded-full bg-[#ffebe8] dark:bg-[#3d1e22] text-[#e41e3f]">
+                                                <LogOut className="h-4 w-4" />
+                                            </span>
+                                            {isLoggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
+                        </>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <Link
+                                to="/"
+                                className="rounded-xl bg-[#4648d4] dark:bg-[#5d5fee] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:opacity-90"
+                            >
+                                Đăng nhập
+                            </Link>
+                            <Link
+                                to="/register"
+                                className="hidden sm:inline-block rounded-xl bg-[#e4e6eb] dark:bg-[#3a3b3c] px-3.5 py-2 text-xs font-semibold text-[#050505] dark:text-[#e4e6eb] transition hover:bg-[#d8dadf] dark:hover:bg-[#4e4f50]"
+                            >
+                                Đăng ký
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>
