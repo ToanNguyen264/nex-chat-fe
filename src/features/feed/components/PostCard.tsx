@@ -28,6 +28,7 @@ import CommentSection from "./CommentSection";
 import defaultAvatar from "../../../assets/default-avatar.png";
 import EditPostModal from "./EditPostModal";
 import { usePresenceStore } from "../../presence/presence.store";
+import { promptLogin } from "../../../utils/swal";
 
 const reactionOptions: Array<{
     type: ReactionType;
@@ -180,6 +181,13 @@ export default function PostCard({
     }, [post.isFollowing]);
 
     const handleToggleFollow = async () => {
+        if (!currentUserId) {
+            void promptLogin(
+                "Theo dõi người dùng",
+                "Vui lòng đăng nhập để theo dõi người dùng này."
+            );
+            return;
+        }
         if (isFollowLoading) return;
         setIsFollowLoading(true);
         try {
@@ -270,6 +278,13 @@ export default function PostCard({
 
     function handleReaction(reactionType: ReactionType) {
         setIsReactionPickerOpen(false);
+        if (!currentUserId) {
+            void promptLogin(
+                "Bày tỏ cảm xúc",
+                "Vui lòng đăng nhập để bày tỏ cảm xúc với bài viết này."
+            );
+            return;
+        }
         void onReact(post.id, reactionType);
     }
 

@@ -11,11 +11,18 @@ export default function HomePage() {
 
     useEffect(() => {
         async function loadCurrentUser() {
+            const token = localStorage.getItem("accessToken");
+            if (!token) {
+                setCurrentUser(null);
+                return;
+            }
+
             try {
                 const user = await getCurrentUser();
                 setCurrentUser(user);
             } catch (error) {
                 console.error("Không thể lấy thông tin người dùng:", error);
+                setCurrentUser(null);
             }
         }
 
@@ -34,7 +41,7 @@ export default function HomePage() {
                 </section>
 
                 <aside className="sticky top-[88px] hidden xl:col-auto xl:block">
-                    <RightSidebar />
+                    <RightSidebar currentUser={currentUser} />
                 </aside>
             </div>
         </MainLayout>

@@ -33,7 +33,7 @@ import {
 } from "../api/friend.api";
 import type { Friendship } from "../api/friend.api";
 import { followUser, unfollowUser } from "../api/follow.api";
-import { showError, showSuccess } from "../utils/swal";
+import { showError, showSuccess, promptLogin } from "../utils/swal";
 import { socket } from "../socket/socket";
 import type { FriendshipChangedPayload } from "../features/friends/types";
 import FriendsTab from "../features/friends/components/FriendsTab";
@@ -73,20 +73,32 @@ export default function ProfilePage() {
             setProfile(null);
 
             try {
-                // Người đang đăng nhập
-                const loggedInUser =
-                    await getCurrentUser();
+                const token = localStorage.getItem("accessToken");
+                let loggedInUser: CurrentUser | null = null;
 
-                if (cancelled) {
-                    return;
+                if (token) {
+                    try {
+                        loggedInUser = await getCurrentUser();
+                        if (!cancelled) {
+                            setCurrentUser(loggedInUser);
+                        }
+                    } catch {
+                        if (!cancelled) {
+                            setCurrentUser(null);
+                        }
+                    }
+                } else if (!cancelled) {
+                    setCurrentUser(null);
                 }
-
-                setCurrentUser(loggedInUser);
 
                 // Có ID trên URL thì xem người đó.
                 // Không có thì xem chính mình.
-                const profileUserId =
-                    routeUserId ?? loggedInUser.id;
+                const profileUserId = routeUserId ?? loggedInUser?.id;
+
+                if (!profileUserId) {
+                    window.location.replace("/");
+                    return;
+                }
 
                 const userProfile =
                     await getUserProfile(
@@ -349,6 +361,14 @@ export default function ProfilePage() {
     }
 
     async function handleSendFriendRequest() {
+        if (!currentUser) {
+            void promptLogin(
+                "Kết bạn",
+                "Vui lòng đăng nhập để gửi lời mời kết bạn."
+            );
+            return;
+        }
+
         if (
             !profile ||
             isOwnProfile ||
@@ -499,6 +519,14 @@ export default function ProfilePage() {
     }
 
     async function handleToggleFollow() {
+        if (!currentUser) {
+            void promptLogin(
+                "Theo dõi",
+                "Vui lòng đăng nhập để theo dõi người dùng này."
+            );
+            return;
+        }
+
         if (!profile || isOwnProfile || isFollowLoading) {
             return;
         }
@@ -576,7 +604,7 @@ export default function ProfilePage() {
                             />
                         </div>
                         <div className="flex min-w-0 flex-col gap-4 lg:col-span-7">
-                            {currentUser && profile && !isLoading ? (
+                            {profile && !isLoading ? (
                                 <Feed
                                     currentUser={currentUser}
                                     onlyUserId={profile.id}

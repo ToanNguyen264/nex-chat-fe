@@ -9,6 +9,7 @@ import {
 } from "../../../api/comment.api";
 import type { CommentFromApi } from "../../../api/comment.api";
 import defaultAvatar from "../../../assets/default-avatar.png";
+import { promptLogin } from "../../../utils/swal";
 
 type CommentSectionProps = {
     postId: number;
@@ -90,6 +91,15 @@ export default function CommentSection({
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            void promptLogin(
+                "Viết bình luận",
+                "Vui lòng đăng nhập để bình luận về bài viết này."
+            );
+            return;
+        }
 
         const newContent = content.trim();
 

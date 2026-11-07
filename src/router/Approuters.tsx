@@ -10,14 +10,7 @@ export default function AppRouters() {
         <Routes>
             <Route path="/" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route
-                path="/home"
-                element={
-                    <ProtectedRoute>
-                        <HomePage />
-                    </ProtectedRoute>
-                }
-            />
+            <Route path="/home" element={<HomePage />} />
             <Route
                 path="/profile"
                 element={
@@ -26,14 +19,7 @@ export default function AppRouters() {
                     </ProtectedRoute>
                 }
             />
-            <Route
-                path="/profile/:userId"
-                element={
-                    <ProtectedRoute>
-                        <ProfilePage />
-                    </ProtectedRoute>
-                }
-            />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route
                 path="/friends"
                 element={

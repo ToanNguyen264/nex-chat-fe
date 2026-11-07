@@ -34,6 +34,7 @@ import {
     updatePostInInfiniteFeed,
 } from "./feed-query";
 import { useFeedRealtimeStore } from "./feed-realtime.store";
+import { promptLogin } from "../../utils/swal";
 
 type FeedProps = {
     currentUser: CurrentUser | null;
@@ -119,8 +120,9 @@ export default function Feed({
         () => flattenFeedPosts(data).map(formatPost),
         [data]
     );
-    const canCreatePost =
-        !onlyUserId || onlyUserId === currentUser?.id;
+    const canCreatePost = Boolean(
+        currentUser && (!onlyUserId || onlyUserId === currentUser.id)
+    );
 
     // Ref và IntersectionObserver tự động tải thêm bài viết khi cuộn gần hết
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -194,6 +196,14 @@ export default function Feed({
         postId: number,
         reactionType: ReactionType
     ) {
+        if (!currentUser) {
+            void promptLogin(
+                "Bày tỏ cảm xúc",
+                "Vui lòng đăng nhập để thả cảm xúc cho bài viết này."
+            );
+            return;
+        }
+
         const previousFeed = data; // Lưu lại Feed cũ để khôi phục nếu gọi API lỗi
         let nextReaction: ReactionType | null = null;
 
@@ -320,13 +330,24 @@ export default function Feed({
 
     return (
         <div className="flex flex-col gap-4">
-            {showStories && <StoryList currentUser={currentUser} />}
+            {showStories && currentUser && <StoryList currentUser={currentUser} />}
 
             {canCreatePost && (
                 <CreatePost
                     currentUser={currentUser}
                     onCreatePost={handleCreatePost}
                 />
+            )}
+
+            {!currentUser && !onlyUserId && (
+                <div className="rounded-2xl border border-[#eef0ff] dark:border-[#263147] bg-white dark:bg-[#151c2c] p-4 text-center shadow-sm transition-colors">
+                    <p className="text-sm font-semibold text-[#131b2e] dark:text-slate-100">
+                        Bạn đang xem bảng tin ở chế độ Khách
+                    </p>
+                    <p className="mt-1 text-xs text-[#767586] dark:text-slate-400">
+                        Đăng nhập để đăng bài viết, tương tác cảm xúc và kết nối cùng bạn bè.
+                    </p>
+                </div>
             )}
 
             {feedHeader}
